@@ -21,5 +21,5 @@ type Store interface {
 // A Registrar registers bucket informations
 type Registrar interface {
 	Register(*BucketInfo) error
-	Bucket(id string) BucketInfo
+	Bucket(id string) (*BucketInfo, error)
 }
