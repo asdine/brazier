@@ -1,17 +1,17 @@
 package brazier
 
-// A Bucket manages a collection of documents.
+// A Bucket manages a collection of items.
 type Bucket interface {
 	Close() error
 }
 
-// BucketInfo holds a bucket informations
+// BucketInfo holds bucket informations
 type BucketInfo struct {
 	ID    string
 	Store string
 }
 
-// A Store manages backend specific Buckets
+// A Store manages the backend of specific buckets
 type Store interface {
 	Name() string
 	Create(id string) (*BucketInfo, error)

@@ -3,6 +3,7 @@ package boltdb_test
 import (
 	"testing"
 
+	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
 	"github.com/stretchr/testify/require"
 )
@@ -20,8 +21,9 @@ func TestRegistrar(t *testing.T) {
 	err = r.Register(info1)
 	require.NoError(t, err)
 
-	err = r.Register(nil)
+	err = r.Register(info1)
 	require.Error(t, err)
+	require.Equal(t, store.ErrAlreadyExists, err)
 
 	info2, err := r.Bucket(info1.ID)
 	require.NoError(t, err)
@@ -29,4 +31,5 @@ func TestRegistrar(t *testing.T) {
 
 	_, err = r.Bucket("something")
 	require.Error(t, err)
+	require.Equal(t, store.ErrNotFound, err)
 }
