@@ -7,15 +7,15 @@ type Bucket interface {
 
 // BucketInfo holds a bucket informations
 type BucketInfo struct {
-	ID      string
-	StoreID string
+	ID    string
+	Store string
 }
 
 // A Store manages backend specific Buckets
 type Store interface {
-	ID() string
-	Create() (*BucketInfo, error)
-	Bucket(id string) Bucket
+	Name() string
+	Create(id string) (*BucketInfo, error)
+	Bucket(id string) (Bucket, error)
 }
 
 // A Registrar registers bucket informations
