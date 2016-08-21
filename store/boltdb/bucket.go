@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/store"
 	"github.com/asdine/storm"
 	"github.com/dchest/uniuri"
 )
@@ -43,6 +44,27 @@ func (b *Bucket) Add(data []byte, mimeType string, name string) (*brazier.Item, 
 		Data:      i.Data,
 		MimeType:  i.MimeType,
 		CreatedAt: i.CreatedAt,
+	}, nil
+}
+
+// Get an item by id
+func (b *Bucket) Get(id string) (*brazier.Item, error) {
+	var item item
+
+	err := b.node.One("PublicID", id, &item)
+	if err != nil {
+		if err == storm.ErrNotFound {
+			return nil, store.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &brazier.Item{
+		ID:        item.PublicID,
+		CreatedAt: item.CreatedAt,
+		UpdatedAt: item.UpdatedAt,
+		Data:      item.Data,
+		MimeType:  item.MimeType,
 	}, nil
 }
 
