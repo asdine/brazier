@@ -1,16 +1,20 @@
 package boltdb
 
 import (
+	"time"
+
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/storm"
 	"github.com/pkg/errors"
 )
 
-type info struct {
-	ID       int
-	BucketID string `storm:"unique"`
-	Store    string
+type bucketInfo struct {
+	ID        int
+	PublicID  string `storm:"unique"`
+	Store     string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // NewRegistrar returns a Registrar
@@ -26,10 +30,11 @@ type Registrar struct {
 }
 
 // Register a bucket in the registrar
-func (r *Registrar) Register(bucketInfo *brazier.BucketInfo) error {
-	i := info{
-		BucketID: bucketInfo.ID,
-		Store:    bucketInfo.Store,
+func (r *Registrar) Register(info *brazier.BucketInfo) error {
+	i := bucketInfo{
+		PublicID:  info.ID,
+		Store:     info.Store,
+		CreatedAt: info.CreatedAt,
 	}
 
 	err := r.db.Save(&i)
@@ -44,9 +49,9 @@ func (r *Registrar) Register(bucketInfo *brazier.BucketInfo) error {
 
 // Bucket returns the bucket informations associated with the given id
 func (r *Registrar) Bucket(id string) (*brazier.BucketInfo, error) {
-	var i info
+	var i bucketInfo
 
-	err := r.db.One("BucketID", id, &i)
+	err := r.db.One("PublicID", id, &i)
 	if err != nil {
 		if err == storm.ErrNotFound {
 			return nil, store.ErrNotFound
@@ -55,7 +60,8 @@ func (r *Registrar) Bucket(id string) (*brazier.BucketInfo, error) {
 	}
 
 	return &brazier.BucketInfo{
-		ID:    i.BucketID,
-		Store: i.Store,
+		ID:        i.PublicID,
+		CreatedAt: i.CreatedAt,
+		Store:     i.Store,
 	}, nil
 }

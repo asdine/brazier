@@ -1,10 +1,11 @@
 package boltdb
 
 import (
+	"time"
+
 	"github.com/asdine/brazier"
-	"github.com/asdine/brazier/store"
 	"github.com/asdine/storm"
-	"github.com/pkg/errors"
+	"github.com/dchest/uniuri"
 )
 
 const name = "boltdb"
@@ -30,37 +31,18 @@ func (s *Store) Name() string {
 
 // Create a bucket and return its informations
 func (s *Store) Create(id string) (*brazier.BucketInfo, error) {
-	b := Bucket{
-		PublicID: id,
-	}
-
-	err := s.db.Save(&b)
-	if err != nil {
-		if err == storm.ErrAlreadyExists {
-			return nil, store.ErrAlreadyExists
-		}
-
-		return nil, errors.Wrap(err, "store create bucket failed")
+	if id == "" {
+		id = uniuri.NewLen(10)
 	}
 
 	return &brazier.BucketInfo{
-		ID:    b.PublicID,
-		Store: s.Name(),
+		ID:        id,
+		Store:     s.Name(),
+		CreatedAt: time.Now(),
 	}, nil
 }
 
 // Bucket returns the bucket associated with the given id
-func (s *Store) Bucket(id string) (brazier.Bucket, error) {
-	var b Bucket
-
-	err := s.db.One("PublicID", id, &b)
-	if err != nil {
-		if err == storm.ErrNotFound {
-			return nil, store.ErrNotFound
-		}
-
-		return nil, errors.Wrap(err, "store get bucket failed")
-	}
-
-	return &b, nil
+func (s *Store) Bucket(id string) (*Bucket, error) {
+	return NewBucket(s.db.From(id)), nil
 }

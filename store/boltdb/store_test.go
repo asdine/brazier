@@ -6,17 +6,16 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
 	"github.com/asdine/storm"
 	"github.com/stretchr/testify/require"
 )
 
-func prepareDB(t *testing.T) (*storm.DB, func()) {
+func prepareDB(t *testing.T, opts ...func(*storm.DB) error) (*storm.DB, func()) {
 	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
 	require.NoError(t, err)
 
-	db, err := storm.Open(filepath.Join(dir, "brazier.db"))
+	db, err := storm.Open(filepath.Join(dir, "brazier.db"), opts...)
 	require.NoError(t, err)
 
 	return db, func() {
@@ -38,17 +37,9 @@ func TestStore(t *testing.T) {
 	require.Equal(t, "bucket1", info.ID)
 	require.Equal(t, s.Name(), info.Store)
 
-	_, err = s.Create("bucket1")
-	require.Error(t, err)
-	require.Equal(t, store.ErrAlreadyExists, err)
-
 	bucket, err := s.Bucket(info.ID)
 	require.NoError(t, err)
 
 	err = bucket.Close()
 	require.NoError(t, err)
-
-	bucket, err = s.Bucket("some id")
-	require.Error(t, err)
-	require.Equal(t, store.ErrNotFound, err)
 }
