@@ -14,7 +14,6 @@ type bucketInfo struct {
 	PublicID  string `storm:"unique"`
 	Store     string
 	CreatedAt time.Time
-	UpdatedAt time.Time
 }
 
 // NewRegistrar returns a Registrar

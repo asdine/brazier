@@ -21,7 +21,6 @@ func TestBucketAdd(t *testing.T) {
 	i, err := b.Add([]byte("Data"), "json", "")
 	require.NoError(t, err)
 	require.True(t, i.CreatedAt.After(now))
-	require.Zero(t, i.UpdatedAt)
 	require.NotEmpty(t, i.ID)
 	require.Equal(t, "json", i.MimeType)
 	require.Equal(t, []byte("Data"), i.Data)
@@ -46,5 +45,25 @@ func TestBucketGet(t *testing.T) {
 	require.Equal(t, i, j)
 
 	_, err = b.Get("some id")
+	require.Equal(t, store.ErrNotFound, err)
+}
+
+func TestBucketDelete(t *testing.T) {
+	db, cleanup := prepareDB(t, storm.AutoIncrement())
+	defer cleanup()
+
+	node := db.From("buckets")
+	b := boltdb.NewBucket(node.From("b1"))
+
+	i, err := b.Add([]byte("Data"), "json", "")
+	require.NoError(t, err)
+
+	_, err = b.Get(i.ID)
+	require.NoError(t, err)
+
+	err = b.Delete(i.ID)
+	require.NoError(t, err)
+
+	err = b.Delete(i.ID)
 	require.Equal(t, store.ErrNotFound, err)
 }
