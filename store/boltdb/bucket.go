@@ -57,7 +57,7 @@ func (b *Bucket) Get(id string) (*brazier.Item, error) {
 		if err == storm.ErrNotFound {
 			return nil, store.ErrNotFound
 		}
-		return nil, errors.Wrap(err, "bucket.Get failed to fetch item")
+		return nil, errors.Wrap(err, "boltdb.bucket.Get failed to fetch item")
 	}
 
 	return &brazier.Item{
@@ -74,7 +74,7 @@ func (b *Bucket) Delete(id string) error {
 
 	tx, err := b.node.Begin(true)
 	if err != nil {
-		return errors.Wrap(err, "bucket.Delete failed to create transaction")
+		return errors.Wrap(err, "boltdb.bucket.Delete failed to create transaction")
 	}
 
 	err = tx.One("PublicID", id, &i)
@@ -83,18 +83,18 @@ func (b *Bucket) Delete(id string) error {
 		if err == storm.ErrNotFound {
 			return store.ErrNotFound
 		}
-		return errors.Wrap(err, "bucket.Delete failed to fetch item")
+		return errors.Wrap(err, "boltdb.bucket.Delete failed to fetch item")
 	}
 
 	err = tx.DeleteStruct(&i)
 	if err != nil {
 		tx.Rollback()
-		return errors.Wrap(err, "bucket.Delete failed to delete item")
+		return errors.Wrap(err, "boltdb.bucket.Delete failed to delete item")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "bucket.Delete failed to commit")
+		return errors.Wrap(err, "boltdb.bucket.Delete failed to commit")
 	}
 
 	return nil

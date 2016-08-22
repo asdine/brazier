@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
 	"github.com/asdine/storm"
@@ -14,8 +15,9 @@ func TestBucketAdd(t *testing.T) {
 	db, cleanup := prepareDB(t, storm.AutoIncrement())
 	defer cleanup()
 
+	var b brazier.Bucket
 	node := db.From("buckets")
-	b := boltdb.NewBucket(node.From("b1"))
+	b = boltdb.NewBucket(node.From("b1"))
 
 	now := time.Now()
 	i, err := b.Add([]byte("Data"), "json", "")

@@ -15,17 +15,17 @@ func TestRegistrar(t *testing.T) {
 	r := boltdb.NewRegistrar(db)
 	s := boltdb.NewStore(db)
 
-	info1, err := s.Create("b1")
+	info1, err := r.Create("b1", s)
 	require.NoError(t, err)
 
-	err = r.Register(info1)
-	require.NoError(t, err)
-
-	err = r.Register(info1)
+	info2, err := r.Create(info1.ID, s)
 	require.Error(t, err)
 	require.Equal(t, store.ErrAlreadyExists, err)
 
-	info2, err := r.Bucket(info1.ID)
+	err = s.Create(info1.ID)
+	require.NoError(t, err)
+
+	info2, err = r.Bucket(info1.ID)
 	require.NoError(t, err)
 	require.Equal(t, info1, info2)
 

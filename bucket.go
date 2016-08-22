@@ -22,19 +22,19 @@ type Bucket interface {
 // BucketInfo holds bucket informations
 type BucketInfo struct {
 	ID        string
-	Store     string
+	Stores    []string
 	CreatedAt time.Time
 }
 
 // A Store manages the backend of specific buckets
 type Store interface {
 	Name() string
-	Create(id string) (*BucketInfo, error)
+	Create(id string) error
 	Bucket(id string) (Bucket, error)
 }
 
 // A Registrar registers bucket informations
 type Registrar interface {
-	Register(*BucketInfo) error
+	Create(id string, s Store) (*BucketInfo, error)
 	Bucket(id string) (*BucketInfo, error)
 }

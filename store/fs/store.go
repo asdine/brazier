@@ -3,10 +3,8 @@ package fs
 import (
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/asdine/brazier"
-	"github.com/dchest/uniuri"
 	"github.com/pkg/errors"
 )
 
@@ -30,21 +28,9 @@ func (s *Store) Name() string {
 }
 
 // Create a bucket and return its informations
-func (s *Store) Create(id string) (*brazier.BucketInfo, error) {
-	if id == "" {
-		id = uniuri.NewLen(10)
-	}
-
+func (s *Store) Create(id string) error {
 	err := os.Mkdir(filepath.Join(s.root, id), 0700)
-	if err != nil {
-		return nil, errors.Wrap(err, "fsStore.Create failed to create directory")
-	}
-
-	return &brazier.BucketInfo{
-		ID:        id,
-		Store:     s.Name(),
-		CreatedAt: time.Now(),
-	}, nil
+	return errors.Wrap(err, "fsStore.Create failed to create directory")
 }
 
 // Bucket returns the bucket associated with the given id

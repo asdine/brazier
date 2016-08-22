@@ -6,13 +6,14 @@ import (
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/storm"
+	"github.com/dchest/uniuri"
 	"github.com/pkg/errors"
 )
 
 type bucketInfo struct {
 	ID        int
 	PublicID  string `storm:"unique"`
-	Store     string
+	Stores    []string
 	CreatedAt time.Time
 }
 
@@ -28,22 +29,36 @@ type Registrar struct {
 	db *storm.DB
 }
 
-// Register a bucket in the registrar
-func (r *Registrar) Register(info *brazier.BucketInfo) error {
+// Create a new bucket in the registrar
+func (r *Registrar) Create(id string, s brazier.Store) (*brazier.BucketInfo, error) {
+	if id == "" {
+		id = uniuri.NewLen(10)
+	}
+
 	i := bucketInfo{
-		PublicID:  info.ID,
-		Store:     info.Store,
-		CreatedAt: info.CreatedAt,
+		PublicID:  id,
+		Stores:    []string{s.Name()},
+		CreatedAt: time.Now(),
 	}
 
 	err := r.db.Save(&i)
 	if err != nil {
 		if err == storm.ErrAlreadyExists {
-			return store.ErrAlreadyExists
+			return nil, store.ErrAlreadyExists
 		}
-		return errors.Wrap(err, "registrar register bucket failed")
+		return nil, errors.Wrap(err, "boltdb.registrar.Create failed saving bucket")
 	}
-	return nil
+
+	err = s.Create(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "boltdb.registrar.Create failed creating bucket in the store")
+	}
+
+	return &brazier.BucketInfo{
+		ID:        i.PublicID,
+		Stores:    i.Stores,
+		CreatedAt: i.CreatedAt,
+	}, nil
 }
 
 // Bucket returns the bucket informations associated with the given id
@@ -55,12 +70,12 @@ func (r *Registrar) Bucket(id string) (*brazier.BucketInfo, error) {
 		if err == storm.ErrNotFound {
 			return nil, store.ErrNotFound
 		}
-		return nil, errors.Wrap(err, "registrar get bucket failed")
+		return nil, errors.Wrap(err, "boltdb.registrar.Bucket failed getting bucket")
 	}
 
 	return &brazier.BucketInfo{
 		ID:        i.PublicID,
 		CreatedAt: i.CreatedAt,
-		Store:     i.Store,
+		Stores:    i.Stores,
 	}, nil
 }

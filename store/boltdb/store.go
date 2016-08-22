@@ -1,11 +1,8 @@
 package boltdb
 
 import (
-	"time"
-
 	"github.com/asdine/brazier"
 	"github.com/asdine/storm"
-	"github.com/dchest/uniuri"
 )
 
 const name = "boltdb"
@@ -30,19 +27,11 @@ func (s *Store) Name() string {
 }
 
 // Create a bucket and return its informations
-func (s *Store) Create(id string) (*brazier.BucketInfo, error) {
-	if id == "" {
-		id = uniuri.NewLen(10)
-	}
-
-	return &brazier.BucketInfo{
-		ID:        id,
-		Store:     s.Name(),
-		CreatedAt: time.Now(),
-	}, nil
+func (s *Store) Create(id string) error {
+	return s.db.From(id).Init(&item{})
 }
 
 // Bucket returns the bucket associated with the given id
-func (s *Store) Bucket(id string) (*Bucket, error) {
+func (s *Store) Bucket(id string) (brazier.Bucket, error) {
 	return NewBucket(s.db.From(id)), nil
 }
