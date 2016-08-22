@@ -15,9 +15,9 @@ func TestBucketAdd(t *testing.T) {
 	defer cleanup()
 
 	s := fs.NewStore(dir)
-	info, err := s.Create("b1")
+	err := s.Create("b1")
 	require.NoError(t, err)
-	b, err := s.Bucket(info.ID)
+	b, err := s.Bucket("b1")
 	require.NoError(t, err)
 
 	now := time.Now()
@@ -42,9 +42,9 @@ func TestBucketGet(t *testing.T) {
 	defer cleanup()
 
 	s := fs.NewStore(dir)
-	info, err := s.Create("b1")
+	err := s.Create("b1")
 	require.NoError(t, err)
-	b, err := s.Bucket(info.ID)
+	b, err := s.Bucket("b1")
 	require.NoError(t, err)
 
 	i, err := b.Add([]byte("Data"), "application/json", "")
@@ -63,9 +63,9 @@ func TestBucketDelete(t *testing.T) {
 	defer cleanup()
 
 	s := fs.NewStore(dir)
-	info, err := s.Create("b1")
+	err := s.Create("b1")
 	require.NoError(t, err)
-	b, err := s.Bucket(info.ID)
+	b, err := s.Bucket("b1")
 	require.NoError(t, err)
 
 	i, err := b.Add([]byte("Data"), "application/json", "")

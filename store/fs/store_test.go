@@ -26,12 +26,10 @@ func TestStore(t *testing.T) {
 
 	require.Equal(t, "fs", s.Name())
 
-	info, err := s.Create("bucket1")
+	err := s.Create("bucket1")
 	require.NoError(t, err)
-	require.Equal(t, "bucket1", info.ID)
-	require.Equal(t, s.Name(), info.Store)
 
-	bucket, err := s.Bucket(info.ID)
+	bucket, err := s.Bucket("bucket1")
 	require.NoError(t, err)
 	require.NotNil(t, bucket)
 

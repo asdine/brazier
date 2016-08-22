@@ -18,15 +18,15 @@ type bucketInfo struct {
 }
 
 // NewRegistrar returns a Registrar
-func NewRegistrar(db *storm.DB) *Registrar {
+func NewRegistrar(db storm.Node) *Registrar {
 	return &Registrar{
-		db: db,
+		node: db,
 	}
 }
 
 // A Registrar registers bucket informations
 type Registrar struct {
-	db *storm.DB
+	node storm.Node
 }
 
 // Create a new bucket in the registrar
@@ -41,7 +41,7 @@ func (r *Registrar) Create(id string, s brazier.Store) (*brazier.BucketInfo, err
 		CreatedAt: time.Now(),
 	}
 
-	err := r.db.Save(&i)
+	err := r.node.Save(&i)
 	if err != nil {
 		if err == storm.ErrAlreadyExists {
 			return nil, store.ErrAlreadyExists
@@ -65,7 +65,7 @@ func (r *Registrar) Create(id string, s brazier.Store) (*brazier.BucketInfo, err
 func (r *Registrar) Bucket(id string) (*brazier.BucketInfo, error) {
 	var i bucketInfo
 
-	err := r.db.One("PublicID", id, &i)
+	err := r.node.One("PublicID", id, &i)
 	if err != nil {
 		if err == storm.ErrNotFound {
 			return nil, store.ErrNotFound

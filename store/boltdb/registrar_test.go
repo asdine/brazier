@@ -5,11 +5,12 @@ import (
 
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
+	"github.com/asdine/storm"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRegistrar(t *testing.T) {
-	db, cleanup := prepareDB(t)
+	db, cleanup := prepareDB(t, storm.AutoIncrement())
 	defer cleanup()
 
 	r := boltdb.NewRegistrar(db)

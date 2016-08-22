@@ -3,10 +3,10 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "Jc92bNcA8hzNniYYXid5d80vAqc=",
+			"checksumSHA1": "WoiyoksKzqzUwtAQJlsmKWcGrfo=",
 			"path": "github.com/asdine/storm",
-			"revision": "bc60a938f399612300c6825a6dab14b1a109b4cd",
-			"revisionTime": "2016-08-20T18:42:44Z"
+			"revision": "9423b4753d3185e9c523113f4ec8b89c4d7cdee0",
+			"revisionTime": "2016-08-22T11:21:51Z"
 		},
 		{
 			"checksumSHA1": "Q0zxg3PVPS/5dqLWQQdi+OGrFj0=",

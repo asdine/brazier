@@ -8,17 +8,15 @@ import (
 const name = "boltdb"
 
 // NewStore returns a BoltDB store
-func NewStore(db *storm.DB) *Store {
-	storm.AutoIncrement()(db)
-
+func NewStore(node storm.Node) *Store {
 	return &Store{
-		db: db,
+		node: node,
 	}
 }
 
 // Store is a BoltDB store
 type Store struct {
-	db *storm.DB
+	node storm.Node
 }
 
 // Name of the store
@@ -28,10 +26,10 @@ func (s *Store) Name() string {
 
 // Create a bucket and return its informations
 func (s *Store) Create(id string) error {
-	return s.db.From(id).Init(&item{})
+	return s.node.From(id).Init(&item{})
 }
 
 // Bucket returns the bucket associated with the given id
 func (s *Store) Bucket(id string) (brazier.Bucket, error) {
-	return NewBucket(s.db.From(id)), nil
+	return NewBucket(s.node.From(id)), nil
 }
