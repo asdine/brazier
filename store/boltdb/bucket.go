@@ -23,10 +23,9 @@ type Bucket struct {
 }
 
 // Add user data to the bucket. Returns an Iten
-func (b *Bucket) Add(data []byte, mimeType string, name string) (*brazier.Item, error) {
+func (b *Bucket) Add(data []byte, name string) (*brazier.Item, error) {
 	i := item{
 		Data:      data,
-		MimeType:  mimeType,
 		PublicID:  name,
 		CreatedAt: time.Now(),
 	}
@@ -43,7 +42,6 @@ func (b *Bucket) Add(data []byte, mimeType string, name string) (*brazier.Item, 
 	return &brazier.Item{
 		ID:        i.PublicID,
 		Data:      i.Data,
-		MimeType:  i.MimeType,
 		CreatedAt: i.CreatedAt,
 	}, nil
 }
@@ -64,7 +62,6 @@ func (b *Bucket) Get(id string) (*brazier.Item, error) {
 		ID:        item.PublicID,
 		CreatedAt: item.CreatedAt,
 		Data:      item.Data,
-		MimeType:  item.MimeType,
 	}, nil
 }
 

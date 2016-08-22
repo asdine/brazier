@@ -8,12 +8,11 @@ type Item struct {
 	ID        string
 	CreatedAt time.Time
 	Data      []byte
-	MimeType  string
 }
 
 // A Bucket manages a collection of items.
 type Bucket interface {
-	Add(data []byte, mimeType string, name string) (*Item, error)
+	Add(data []byte, name string) (*Item, error)
 	Get(id string) (*Item, error)
 	Delete(id string) error
 	Close() error

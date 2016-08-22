@@ -20,14 +20,13 @@ func TestBucketAdd(t *testing.T) {
 	b = boltdb.NewBucket(node.From("b1"))
 
 	now := time.Now()
-	i, err := b.Add([]byte("Data"), "json", "")
+	i, err := b.Add([]byte("Data"), "")
 	require.NoError(t, err)
 	require.True(t, i.CreatedAt.After(now))
 	require.NotEmpty(t, i.ID)
-	require.Equal(t, "json", i.MimeType)
 	require.Equal(t, []byte("Data"), i.Data)
 
-	i, err = b.Add([]byte("Data"), "json", "name")
+	i, err = b.Add([]byte("Data"), "name")
 	require.NoError(t, err)
 	require.Equal(t, "name", i.ID)
 }
@@ -39,7 +38,7 @@ func TestBucketGet(t *testing.T) {
 	node := db.From("buckets")
 	b := boltdb.NewBucket(node.From("b1"))
 
-	i, err := b.Add([]byte("Data"), "json", "")
+	i, err := b.Add([]byte("Data"), "")
 	require.NoError(t, err)
 
 	j, err := b.Get(i.ID)
@@ -57,7 +56,7 @@ func TestBucketDelete(t *testing.T) {
 	node := db.From("buckets")
 	b := boltdb.NewBucket(node.From("b1"))
 
-	i, err := b.Add([]byte("Data"), "json", "")
+	i, err := b.Add([]byte("Data"), "")
 	require.NoError(t, err)
 
 	_, err = b.Get(i.ID)
