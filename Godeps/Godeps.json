@@ -8,23 +8,23 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/asdine/storm",
-			"Rev": "9423b4753d3185e9c523113f4ec8b89c4d7cdee0"
+			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/codec",
-			"Rev": "9423b4753d3185e9c523113f4ec8b89c4d7cdee0"
+			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/codec/gob",
-			"Rev": "9423b4753d3185e9c523113f4ec8b89c4d7cdee0"
+			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/index",
-			"Rev": "9423b4753d3185e9c523113f4ec8b89c4d7cdee0"
+			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/q",
-			"Rev": "9423b4753d3185e9c523113f4ec8b89c4d7cdee0"
+			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
 		},
 		{
 			"ImportPath": "github.com/boltdb/bolt",
@@ -34,10 +34,6 @@
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
-		},
-		{
-			"ImportPath": "github.com/dchest/uniuri",
-			"Rev": "8902c56451e9b58ff940bbe5fec35d5f9c04584a"
 		},
 		{
 			"ImportPath": "github.com/pkg/errors",

@@ -6,7 +6,6 @@ import (
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/storm"
-	"github.com/dchest/uniuri"
 	"github.com/pkg/errors"
 )
 
@@ -31,10 +30,6 @@ type Registrar struct {
 
 // Create a new bucket in the registrar
 func (r *Registrar) Create(id string, s brazier.Store) (*brazier.BucketInfo, error) {
-	if id == "" {
-		id = uniuri.NewLen(10)
-	}
-
 	i := bucketInfo{
 		PublicID:  id,
 		Stores:    []string{s.Name()},

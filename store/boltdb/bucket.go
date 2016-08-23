@@ -6,7 +6,6 @@ import (
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/storm"
-	"github.com/dchest/uniuri"
 	"github.com/pkg/errors"
 )
 
@@ -23,15 +22,11 @@ type Bucket struct {
 }
 
 // Add user data to the bucket. Returns an Iten
-func (b *Bucket) Add(data []byte, name string) (*brazier.Item, error) {
+func (b *Bucket) Add(id string, data []byte) (*brazier.Item, error) {
 	i := item{
 		Data:      data,
-		PublicID:  name,
+		PublicID:  id,
 		CreatedAt: time.Now(),
-	}
-
-	if i.PublicID == "" {
-		i.PublicID = uniuri.NewLen(10)
 	}
 
 	err := b.node.Save(&i)
