@@ -13,8 +13,8 @@ func NewCreateCmd(a *app) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "create",
-		Short: "Create a bucket",
-		Long:  `Creates a bucket in Brazier`,
+		Short: "Creates a bucket",
+		Long:  `Creates a bucket`,
 		RunE:  createCmd.Create,
 	}
 
@@ -30,12 +30,12 @@ func (c *createCmd) Create(cmd *cobra.Command, args []string) error {
 		return errors.New("Bucket name is missing")
 	}
 
-	s, err := c.App.Store()
+	store, err := c.App.Store()
 	if err != nil {
 		return err
 	}
 
-	err = s.Create(args[0])
+	err = store.Create(args[0])
 	if err != nil {
 		return err
 	}
