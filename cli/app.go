@@ -53,17 +53,7 @@ func (a *app) db() (*storm.DB, error) {
 	return a.DB, nil
 }
 
-// Registrar returns the active registrar
-func (a *app) Registrar() (brazier.Registrar, error) {
-	db, err := a.db()
-	if err != nil {
-		return nil, err
-	}
-
-	return boltdb.NewRegistrar(db), nil
-}
-
-// Registrar returns the active registrar
+// Store returns the boltdb store
 func (a *app) Store() (brazier.Store, error) {
 	db, err := a.db()
 	if err != nil {

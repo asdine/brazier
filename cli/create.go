@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/asdine/brazier/store"
 	"github.com/spf13/cobra"
 )
 
@@ -31,21 +30,13 @@ func (c *createCmd) Create(cmd *cobra.Command, args []string) error {
 		return errors.New("Bucket name is missing")
 	}
 
-	reg, err := c.App.Registrar()
-	if err != nil {
-		return err
-	}
-
 	s, err := c.App.Store()
 	if err != nil {
 		return err
 	}
 
-	_, err = reg.Create(args[0], s)
+	err = s.Create(args[0])
 	if err != nil {
-		if err == store.ErrAlreadyExists {
-			return fmt.Errorf("The bucket \"%s\" already exists.\n", args[0])
-		}
 		return err
 	}
 

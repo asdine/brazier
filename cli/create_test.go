@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreate(t *testing.T) {
@@ -16,14 +16,10 @@ func TestCreate(t *testing.T) {
 	c := createCmd{App: app}
 
 	err := c.Create(nil, nil)
-	assert.Error(t, err)
-	assert.EqualError(t, err, "Bucket name is missing")
+	require.Error(t, err)
+	require.EqualError(t, err, "Bucket name is missing")
 
 	err = c.Create(nil, []string{"my bucket"})
-	assert.NoError(t, err)
-	assert.Equal(t, "Bucket \"my bucket\" successfully created.\n", out.String())
-
-	err = c.Create(nil, []string{"my bucket"})
-	assert.Error(t, err)
-	assert.EqualError(t, err, "The bucket \"my bucket\" already exists.\n")
+	require.NoError(t, err)
+	require.Equal(t, "Bucket \"my bucket\" successfully created.\n", out.String())
 }
