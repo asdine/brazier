@@ -12,7 +12,7 @@ type Item struct {
 
 // A Bucket manages a collection of items.
 type Bucket interface {
-	Add(id string, data []byte) (*Item, error)
+	Save(id string, data []byte) (*Item, error)
 	Get(id string) (*Item, error)
 	Delete(id string) error
 	Close() error

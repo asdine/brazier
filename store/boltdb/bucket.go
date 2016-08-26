@@ -21,8 +21,8 @@ type Bucket struct {
 	node storm.Node
 }
 
-// Add user data to the bucket. Returns an Iten
-func (b *Bucket) Add(id string, data []byte) (*brazier.Item, error) {
+// Save user data to the bucket. Returns an Iten
+func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 	i := item{
 		Data:      data,
 		PublicID:  id,

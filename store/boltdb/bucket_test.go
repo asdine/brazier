@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBucketAdd(t *testing.T) {
+func TestBucketSave(t *testing.T) {
 	db, cleanup := prepareDB(t, storm.AutoIncrement())
 	defer cleanup()
 
@@ -20,7 +20,7 @@ func TestBucketAdd(t *testing.T) {
 	b = boltdb.NewBucket(node.From("b1"))
 
 	now := time.Now()
-	i, err := b.Add("id", []byte("Data"))
+	i, err := b.Save("id", []byte("Data"))
 	require.NoError(t, err)
 	require.True(t, i.CreatedAt.After(now))
 	require.Equal(t, "id", i.ID)
@@ -34,7 +34,7 @@ func TestBucketGet(t *testing.T) {
 	node := db.From("buckets")
 	b := boltdb.NewBucket(node.From("b1"))
 
-	i, err := b.Add("id", []byte("Data"))
+	i, err := b.Save("id", []byte("Data"))
 	require.NoError(t, err)
 
 	j, err := b.Get(i.ID)
@@ -52,7 +52,7 @@ func TestBucketDelete(t *testing.T) {
 	node := db.From("buckets")
 	b := boltdb.NewBucket(node.From("b1"))
 
-	i, err := b.Add("id", []byte("Data"))
+	i, err := b.Save("id", []byte("Data"))
 	require.NoError(t, err)
 
 	_, err = b.Get(i.ID)
