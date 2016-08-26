@@ -27,6 +27,7 @@ func New() *cobra.Command {
 	cmd.SetOutput(os.Stdout)
 	cmd.AddCommand(NewCreateCmd(&a))
 	cmd.AddCommand(NewSaveCmd(&a))
+	cmd.AddCommand(NewGetCmd(&a))
 
 	return &cmd
 }

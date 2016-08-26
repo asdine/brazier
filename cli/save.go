@@ -10,13 +10,13 @@ import (
 
 // NewSaveCmd creates a "Save" cli command
 func NewSaveCmd(a *app) *cobra.Command {
-	SaveCmd := saveCmd{App: a}
+	saveCmd := saveCmd{App: a}
 
 	cmd := cobra.Command{
 		Use:   "save",
 		Short: "Saves a value in a bucket",
 		Long:  `Saves a value in a bucket`,
-		RunE:  SaveCmd.Save,
+		RunE:  saveCmd.Save,
 	}
 
 	return &cmd
