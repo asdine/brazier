@@ -8,32 +8,40 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/asdine/storm",
-			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
+			"Rev": "bf32177f38222560443ad23b19b7e7245df34433"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/codec",
-			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
+			"Rev": "bf32177f38222560443ad23b19b7e7245df34433"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/codec/gob",
-			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
+			"Rev": "bf32177f38222560443ad23b19b7e7245df34433"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/index",
-			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
+			"Rev": "bf32177f38222560443ad23b19b7e7245df34433"
+		},
+		{
+			"ImportPath": "github.com/asdine/storm/internal",
+			"Rev": "bf32177f38222560443ad23b19b7e7245df34433"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/q",
-			"Rev": "51cdedf27e9843ac024a9060f2113b8fe5423cab"
+			"Rev": "bf32177f38222560443ad23b19b7e7245df34433"
 		},
 		{
 			"ImportPath": "github.com/boltdb/bolt",
-			"Comment": "v1.2.1-15-g94c8db5",
-			"Rev": "94c8db596809690a3f7046fa83c7b0dda13a3222"
+			"Comment": "v1.2.1-17-g583e893",
+			"Rev": "583e8937c61f1af6513608ccc75c97b6abdf4ff9"
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
+		{
+			"ImportPath": "github.com/inconshreveable/mousetrap",
+			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
 		},
 		{
 			"ImportPath": "github.com/pkg/errors",
@@ -43,6 +51,14 @@
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
 			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
+		},
+		{
+			"ImportPath": "github.com/spf13/cobra",
+			"Rev": "7c674d9e72017ed25f6d2b5e497a1368086b6a6f"
+		},
+		{
+			"ImportPath": "github.com/spf13/pflag",
+			"Rev": "103ce5cd2042f2fe629c1957abb64ab3e7f50235"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",

@@ -4,6 +4,7 @@ import (
 	"reflect"
 
 	"github.com/asdine/storm/index"
+	"github.com/asdine/storm/internal"
 	"github.com/asdine/storm/q"
 	"github.com/boltdb/bolt"
 )
@@ -73,19 +74,7 @@ func (q *query) Find(to interface{}) error {
 	sink.limit = q.limit
 	sink.skip = q.skip
 
-	if q.node.tx != nil {
-		err = q.query(q.node.tx, sink)
-	} else {
-		err = q.node.s.Bolt.Update(func(tx *bolt.Tx) error {
-			return q.query(tx, sink)
-		})
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return sink.flush()
+	return q.runQuery(sink)
 }
 
 func (q *query) First(to interface{}) error {
@@ -96,19 +85,7 @@ func (q *query) First(to interface{}) error {
 
 	sink.skip = q.skip
 
-	if q.node.tx != nil {
-		err = q.query(q.node.tx, sink)
-	} else {
-		err = q.node.s.Bolt.Update(func(tx *bolt.Tx) error {
-			return q.query(tx, sink)
-		})
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return sink.flush()
+	return q.runQuery(sink)
 }
 
 func (q *query) Delete(kind interface{}) error {
@@ -120,6 +97,29 @@ func (q *query) Delete(kind interface{}) error {
 	sink.limit = q.limit
 	sink.skip = q.skip
 
+	return q.runQuery(sink)
+}
+
+func (q *query) Count(kind interface{}) (int, error) {
+	sink, err := newCountSink(kind)
+	if err != nil {
+		return 0, err
+	}
+
+	sink.limit = q.limit
+	sink.skip = q.skip
+
+	err = q.runQuery(sink)
+	if err != nil {
+		return 0, err
+	}
+
+	return sink.counter, nil
+}
+
+func (q *query) runQuery(sink sink) error {
+	var err error
+
 	if q.node.tx != nil {
 		err = q.query(q.node.tx, sink)
 	} else {
@@ -135,30 +135,6 @@ func (q *query) Delete(kind interface{}) error {
 	return sink.flush()
 }
 
-func (q *query) Count(kind interface{}) (int, error) {
-	sink, err := newCountSink(kind)
-	if err != nil {
-		return 0, err
-	}
-
-	sink.limit = q.limit
-	sink.skip = q.skip
-
-	if q.node.tx != nil {
-		err = q.query(q.node.tx, sink)
-	} else {
-		err = q.node.s.Bolt.Update(func(tx *bolt.Tx) error {
-			return q.query(tx, sink)
-		})
-	}
-
-	if err != nil {
-		return 0, err
-	}
-
-	return sink.counter, sink.flush()
-}
-
 func (q *query) query(tx *bolt.Tx, sink sink) error {
 	bucket := q.node.GetBucket(tx, sink.name())
 
@@ -167,7 +143,7 @@ func (q *query) query(tx *bolt.Tx, sink sink) error {
 	}
 
 	if bucket != nil {
-		c := cursor{c: bucket.Cursor(), reverse: q.reverse}
+		c := internal.Cursor{C: bucket.Cursor(), Reverse: q.reverse}
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			if v == nil {
 				continue
@@ -189,27 +165,6 @@ func (q *query) query(tx *bolt.Tx, sink sink) error {
 	}
 
 	return nil
-}
-
-type cursor struct {
-	c       *bolt.Cursor
-	reverse bool
-}
-
-func (c *cursor) First() ([]byte, []byte) {
-	if c.reverse {
-		return c.c.Last()
-	}
-
-	return c.c.First()
-}
-
-func (c *cursor) Next() ([]byte, []byte) {
-	if c.reverse {
-		return c.c.Prev()
-	}
-
-	return c.c.Next()
 }
 
 type sink interface {
