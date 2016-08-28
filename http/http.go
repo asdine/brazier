@@ -22,15 +22,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p := strings.Trim(r.URL.EscapedPath(), "/")
 	parts := strings.Split(p, "/")
 
-	if len(parts) == 0 || parts[0] == "" {
-		if r.Method != "POST" {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		h.createBucket(w, r)
-		return
-	}
-
 	if len(parts) != 2 {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -46,30 +37,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.createItem(w, r, bucketName, key)
 }
 
-func (h *Handler) createBucket(w http.ResponseWriter, r *http.Request) {
-	var c createBucket
-
-	d := json.NewDecoder(r.Body)
-	err := d.Decode(&c)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	if c.Name == "" {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		return
-	}
-
-	err = h.Store.Create(c.Name)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-}
-
 func (h *Handler) createItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
 	var value interface{}
 	var buffer bytes.Buffer
@@ -77,11 +44,20 @@ func (h *Handler) createItem(w http.ResponseWriter, r *http.Request, bucketName 
 	bucket, err := h.Store.Bucket(bucketName)
 	if err != nil {
 		if err != store.ErrNotFound {
-			w.WriteHeader(http.StatusNotFound)
+			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
-		log.Print(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		err = h.Store.Create(bucketName)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		bucket, err = h.Store.Bucket(bucketName)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 	defer bucket.Close()
 
