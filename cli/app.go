@@ -28,6 +28,7 @@ func New() *cobra.Command {
 	cmd.AddCommand(NewCreateCmd(&a))
 	cmd.AddCommand(NewSaveCmd(&a))
 	cmd.AddCommand(NewGetCmd(&a))
+	cmd.AddCommand(NewHTTPCmd(&a))
 
 	return &cmd
 }

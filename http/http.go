@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -10,6 +11,12 @@ import (
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 )
+
+// Serve runs the HTTP server
+func Serve(s brazier.Store, port int) error {
+	http.Handle("/", &Handler{Store: s})
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+}
 
 // Handler is the main http handler
 type Handler struct {
