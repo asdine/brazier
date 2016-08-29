@@ -23,29 +23,49 @@ type Bucket struct {
 
 // Save user data to the bucket. Returns an Iten
 func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
-	i := item{
-		Data:      data,
-		PublicID:  id,
-		CreatedAt: time.Now(),
-	}
+	var i item
 
-	err := b.node.Save(&i)
+	tx, err := b.node.Begin(true)
 	if err != nil {
 		return nil, err
 	}
 
+	err = tx.One("ID", id, &i)
+	if err != nil {
+		if err != storm.ErrNotFound {
+			tx.Rollback()
+			return nil, err
+		}
+
+		i = item{
+			ID:        id,
+			Data:      data,
+			CreatedAt: time.Now(),
+		}
+	} else {
+		i.UpdatedAt = time.Now()
+		i.Data = data
+	}
+
+	err = tx.Save(&i)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
 	return &brazier.Item{
-		ID:        i.PublicID,
+		ID:        i.ID,
 		Data:      i.Data,
 		CreatedAt: i.CreatedAt,
-	}, nil
+		UpdatedAt: i.UpdatedAt,
+	}, tx.Commit()
 }
 
 // Get an item by id
 func (b *Bucket) Get(id string) (*brazier.Item, error) {
-	var item item
+	var i item
 
-	err := b.node.One("PublicID", id, &item)
+	err := b.node.One("ID", id, &i)
 	if err != nil {
 		if err == storm.ErrNotFound {
 			return nil, store.ErrNotFound
@@ -54,9 +74,10 @@ func (b *Bucket) Get(id string) (*brazier.Item, error) {
 	}
 
 	return &brazier.Item{
-		ID:        item.PublicID,
-		CreatedAt: item.CreatedAt,
-		Data:      item.Data,
+		ID:        i.ID,
+		CreatedAt: i.CreatedAt,
+		UpdatedAt: i.UpdatedAt,
+		Data:      i.Data,
 	}, nil
 }
 
@@ -69,7 +90,7 @@ func (b *Bucket) Delete(id string) error {
 		return errors.Wrap(err, "boltdb.bucket.Delete failed to create transaction")
 	}
 
-	err = tx.One("PublicID", id, &i)
+	err = tx.One("ID", id, &i)
 	if err != nil {
 		tx.Rollback()
 		if err == storm.ErrNotFound {
@@ -89,10 +110,5 @@ func (b *Bucket) Delete(id string) error {
 		return errors.Wrap(err, "boltdb.bucket.Delete failed to commit")
 	}
 
-	return nil
-}
-
-// Close the session of the bucket
-func (b *Bucket) Close() error {
 	return nil
 }

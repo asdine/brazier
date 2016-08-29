@@ -25,6 +25,12 @@ func TestBucketSave(t *testing.T) {
 	require.True(t, i.CreatedAt.After(now))
 	require.Equal(t, "id", i.ID)
 	require.Equal(t, []byte("Data"), i.Data)
+
+	j, err := b.Save("id", []byte("New Data"))
+	require.NoError(t, err)
+	require.Equal(t, i.CreatedAt, j.CreatedAt)
+	require.Equal(t, []byte("New Data"), j.Data)
+	require.True(t, j.UpdatedAt.After(j.CreatedAt))
 }
 
 func TestBucketGet(t *testing.T) {

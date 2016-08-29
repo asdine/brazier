@@ -39,7 +39,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "PUT":
-		h.createItem(w, r, bucketName, key)
+		h.saveItem(w, r, bucketName, key)
 	case "GET":
 		h.getItem(w, r, bucketName, key)
 	default:
@@ -47,7 +47,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) createItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
+func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
 	var value interface{}
 	var buffer bytes.Buffer
 
@@ -69,7 +69,6 @@ func (h *Handler) createItem(w http.ResponseWriter, r *http.Request, bucketName 
 			return
 		}
 	}
-	defer bucket.Close()
 
 	_, err = buffer.ReadFrom(r.Body)
 	if err != nil {
@@ -110,7 +109,6 @@ func (h *Handler) getItem(w http.ResponseWriter, r *http.Request, bucketName str
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	defer bucket.Close()
 
 	item, err := bucket.Get(key)
 	if err != nil {

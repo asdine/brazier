@@ -7,6 +7,7 @@ import "time"
 type Item struct {
 	ID        string
 	CreatedAt time.Time
+	UpdatedAt time.Time
 	Data      []byte
 }
 
@@ -15,7 +16,6 @@ type Bucket interface {
 	Save(id string, data []byte) (*Item, error)
 	Get(id string) (*Item, error)
 	Delete(id string) error
-	Close() error
 }
 
 // A Store manages the backend of specific buckets

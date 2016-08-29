@@ -37,7 +37,5 @@ func TestStore(t *testing.T) {
 
 	bucket, err := s.Bucket("bucket1")
 	require.NoError(t, err)
-
-	err = bucket.Close()
-	require.NoError(t, err)
+	require.NotNil(t, bucket)
 }

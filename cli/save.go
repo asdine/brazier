@@ -40,7 +40,6 @@ func (s *saveCmd) Save(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer bucket.Close()
 
 	raw := []byte(args[2])
 
