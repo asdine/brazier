@@ -30,11 +30,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	bucketName = parts[0]
 	key = parts[1]
 
-	if r.Method != "PUT" {
+	switch r.Method {
+	case "PUT":
+		h.createItem(w, r, bucketName, key)
+	case "GET":
+		h.getItem(w, r, bucketName, key)
+	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
 	}
-	h.createItem(w, r, bucketName, key)
 }
 
 func (h *Handler) createItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
@@ -87,4 +90,32 @@ func (h *Handler) createItem(w http.ResponseWriter, r *http.Request, bucketName 
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) getItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
+	bucket, err := h.Store.Bucket(bucketName)
+	if err != nil {
+		if err != store.ErrNotFound {
+			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	defer bucket.Close()
+
+	item, err := bucket.Get(key)
+	if err != nil {
+		if err != store.ErrNotFound {
+			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(item.Data)
 }
