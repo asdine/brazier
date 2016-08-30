@@ -2,13 +2,13 @@ package http
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/json"
 	"github.com/asdine/brazier/store"
 )
 
@@ -48,9 +48,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
-	var value interface{}
-	var buffer bytes.Buffer
-
 	bucket, err := h.Store.Bucket(bucketName)
 	if err != nil {
 		if err != store.ErrNotFound {
@@ -70,22 +67,17 @@ func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName st
 		}
 	}
 
-	_, err = buffer.ReadFrom(r.Body)
-	if err != nil {
-		log.Print(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	defer r.Body.Close()
+	ok, data := json.IsValidReader(r.Body)
 
-	data := buffer.Bytes()
-	err = json.Unmarshal(data, &value)
-	if err != nil {
-		data, err = json.Marshal(buffer.String())
-		if err != nil {
-			log.Print(err)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	if !ok {
+		var b bytes.Buffer
+		b.WriteByte('"')
+		b.Write(data)
+		b.WriteByte('"')
+		data = b.Bytes()
+	} else {
+		data = json.Clean(data)
 	}
 
 	_, err = bucket.Save(key, data)
