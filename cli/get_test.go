@@ -17,11 +17,11 @@ func TestGet(t *testing.T) {
 	g := getCmd{App: app}
 
 	tests := map[string][]string{
-		"\"abc\"\n":                     []string{"bucket", "string", "abc"},
-		"\"bcd\"\n":                     []string{"bucket", "json string", "\"bcd\""},
-		"10\n":                          []string{"bucket", "number", "10"},
-		"{\"a\": \"b\"}\n":              []string{"bucket", "object", `{"a": "b"}`},
-		"[\"a\", 10, {\"c\": \"d\"}]\n": []string{"bucket", "array", `["a", 10, {"c": "d"}]`},
+		"\"abc\"\n":                  []string{"bucket", "string", "abc"},
+		"\"bcd\"\n":                  []string{"bucket", "json string", "\"bcd\""},
+		"10\n":                       []string{"bucket", "number", "10"},
+		"{\"a\":\"b\"}\n":            []string{"bucket", "object", `{"a": "b"}`},
+		"[\"a\",10,{\"c\":\"d\"}]\n": []string{"bucket", "array", `["a", 10, {"c": "d"}]`},
 	}
 
 	for expected, cmds := range tests {

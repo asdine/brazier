@@ -28,16 +28,19 @@ func TestIsValidFromReader(t *testing.T) {
 	ok, data = json.IsValidReader(strings.NewReader(`{"key": "value"}`))
 	require.True(t, ok)
 	require.Equal(t, `{"key": "value"}`, string(data))
-	ok, _ = json.IsValidReader(strings.NewReader(`{"bad": "format"`))
+	ok, data = json.IsValidReader(strings.NewReader(`{"bad": "format"`))
 	require.False(t, ok)
-	ok, _ = json.IsValidReader(strings.NewReader(`something else`))
+	require.Nil(t, data)
+	ok, data = json.IsValidReader(strings.NewReader(`"something else`))
 	require.False(t, ok)
+	require.Nil(t, data)
 }
 
 func TestClean(t *testing.T) {
 	require.Equal(t, []byte(``), json.Clean([]byte(``)))
 	require.Equal(t, []byte(`"a b    c"`), json.Clean([]byte(`"a b    c"`)))
 	require.Equal(t, []byte(`"a b    c"`), json.Clean([]byte(`   "a b    c"  `)))
+	require.Equal(t, []byte(`10`), json.Clean([]byte("10\n")))
 	require.Equal(t, []byte(`{"the name":"  &éà","another     key":[1,10,9,"    str  "]}`), json.Clean([]byte(`
 
 		{

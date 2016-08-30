@@ -1,10 +1,11 @@
 package cli
 
 import (
-	"encoding/json"
+	"bytes"
 	"errors"
 	"fmt"
 
+	"github.com/asdine/brazier/json"
 	"github.com/spf13/cobra"
 )
 
@@ -41,18 +42,19 @@ func (s *saveCmd) Save(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	raw := []byte(args[2])
-
-	var value interface{}
-	err = json.Unmarshal(raw, &value)
-	if err != nil {
-		raw, err = json.Marshal(args[2])
-		if err != nil {
-			return err
-		}
+	data := []byte(args[2])
+	if !json.IsValid(data) {
+		var buffer bytes.Buffer
+		buffer.Grow(len(data) + 2)
+		buffer.WriteByte('"')
+		buffer.Write(data)
+		buffer.WriteByte('"')
+		data = buffer.Bytes()
+	} else {
+		data = json.Clean(data)
 	}
 
-	_, err = bucket.Save(args[1], raw)
+	_, err = bucket.Save(args[1], data)
 	if err != nil {
 		return err
 	}

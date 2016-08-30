@@ -67,11 +67,25 @@ func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName st
 		}
 	}
 
-	defer r.Body.Close()
-	ok, data := json.IsValidReader(r.Body)
+	if r.ContentLength == 0 {
+		log.Print(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-	if !ok {
+	defer r.Body.Close()
+	var buffer bytes.Buffer
+	_, err = buffer.ReadFrom(r.Body)
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	data := buffer.Bytes()
+	if !json.IsValid(data) {
 		var b bytes.Buffer
+		b.Grow(len(data) + 2)
 		b.WriteByte('"')
 		b.Write(data)
 		b.WriteByte('"')
