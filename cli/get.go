@@ -39,6 +39,7 @@ func (g *getCmd) Get(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	defer bucket.Close()
 
 	item, err := bucket.Get(args[1])
 	if err != nil {

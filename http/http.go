@@ -66,6 +66,7 @@ func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName st
 			return
 		}
 	}
+	defer bucket.Close()
 
 	if r.ContentLength == 0 {
 		log.Print(err)
@@ -115,6 +116,7 @@ func (h *Handler) getItem(w http.ResponseWriter, r *http.Request, bucketName str
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+	defer bucket.Close()
 
 	item, err := bucket.Get(key)
 	if err != nil {

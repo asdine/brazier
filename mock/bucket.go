@@ -20,6 +20,7 @@ type Bucket struct {
 	SaveInvoked   bool
 	GetInvoked    bool
 	DeleteInvoked bool
+	CloseInvoked  bool
 }
 
 // Save user data to the bucket. Returns an Iten
@@ -58,4 +59,10 @@ func (b *Bucket) Delete(id string) error {
 	}
 
 	return store.ErrNotFound
+}
+
+// Close bucket
+func (b *Bucket) Close() error {
+	b.CloseInvoked = true
+	return nil
 }

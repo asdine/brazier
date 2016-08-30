@@ -41,6 +41,7 @@ func (s *saveCmd) Save(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	defer bucket.Close()
 
 	data := []byte(args[2])
 	if !json.IsValid(data) {

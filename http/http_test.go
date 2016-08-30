@@ -27,6 +27,7 @@ func TestCreateItemValidJSON(t *testing.T) {
 	b := bucket.(*mock.Bucket)
 
 	require.True(t, b.SaveInvoked)
+	require.True(t, b.CloseInvoked)
 	item, err := b.Get("b")
 	require.NoError(t, err)
 	require.Equal(t, []byte(`{" the  key":[1,"hi",45.6]}`), item.Data)
@@ -48,6 +49,7 @@ func TestCreateItemInvalidJSON(t *testing.T) {
 	b := bucket.(*mock.Bucket)
 
 	require.True(t, b.SaveInvoked)
+	require.True(t, b.CloseInvoked)
 	item, err := b.Get("b")
 	require.NoError(t, err)
 	require.Equal(t, []byte(`"my value"`), item.Data)
@@ -77,6 +79,7 @@ func TestGetItem(t *testing.T) {
 	require.Equal(t, item.Data, w.Body.Bytes())
 
 	require.True(t, b.GetInvoked)
+	require.True(t, b.CloseInvoked)
 }
 
 func TestBadRequests(t *testing.T) {

@@ -10,15 +10,19 @@ import (
 )
 
 // NewBucket returns a Bucket
-func NewBucket(node storm.Node) *Bucket {
+func NewBucket(s *Store, id string, node storm.Node) *Bucket {
 	return &Bucket{
-		node: node,
+		id:    id,
+		store: s,
+		node:  node,
 	}
 }
 
 // Bucket is a BoltDB implementation a bucket
 type Bucket struct {
-	node storm.Node
+	id    string
+	store *Store
+	node  storm.Node
 }
 
 // Save user data to the bucket. Returns an Iten
@@ -111,4 +115,9 @@ func (b *Bucket) Delete(id string) error {
 	}
 
 	return nil
+}
+
+// Close the bucket session
+func (b *Bucket) Close() error {
+	return b.store.closeSession(b.id)
 }

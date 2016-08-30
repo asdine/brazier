@@ -16,11 +16,11 @@ type Bucket interface {
 	Save(id string, data []byte) (*Item, error)
 	Get(id string) (*Item, error)
 	Delete(id string) error
+	Close() error
 }
 
 // A Store manages the backend of specific buckets
 type Store interface {
-	Name() string
 	Create(id string) error
 	Bucket(id string) (Bucket, error)
 }

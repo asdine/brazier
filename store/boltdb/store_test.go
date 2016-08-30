@@ -11,6 +11,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func preparePath(t *testing.T) (string, func()) {
+	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
+	require.NoError(t, err)
+
+	return filepath.Join(dir, "brazier.db"), func() {
+		os.RemoveAll(dir)
+	}
+}
+
 func prepareDB(t *testing.T, opts ...func(*storm.DB) error) (*storm.DB, func()) {
 	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
 	require.NoError(t, err)
@@ -25,12 +34,10 @@ func prepareDB(t *testing.T, opts ...func(*storm.DB) error) (*storm.DB, func()) 
 }
 
 func TestStore(t *testing.T) {
-	db, cleanup := prepareDB(t)
+	path, cleanup := preparePath(t)
 	defer cleanup()
 
-	s := boltdb.NewStore(db)
-
-	require.Equal(t, "boltdb", s.Name())
+	s := boltdb.NewStore(path)
 
 	err := s.Create("bucket1")
 	require.NoError(t, err)
@@ -38,4 +45,23 @@ func TestStore(t *testing.T) {
 	bucket, err := s.Bucket("bucket1")
 	require.NoError(t, err)
 	require.NotNil(t, bucket)
+	require.NotNil(t, s.DB)
+
+	err = bucket.Close()
+	require.NoError(t, err)
+	require.Nil(t, s.DB)
+
+	b1, err := s.Bucket("bucket1")
+	require.NoError(t, err)
+	b2, err := s.Bucket("bucket2")
+	require.NoError(t, err)
+
+	err = b1.Close()
+	require.NoError(t, err)
+	require.NotNil(t, s.DB)
+
+	err = b2.Close()
+	require.NoError(t, err)
+
+	require.Nil(t, s.DB)
 }
