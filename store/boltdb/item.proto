@@ -1,0 +1,9 @@
+syntax = "proto3";
+package boltdb;
+
+message Item {
+  string ID = 1;
+  int64 CreatedAt = 2;
+  int64 UpdatedAt = 3;
+  bytes Data = 4;
+}

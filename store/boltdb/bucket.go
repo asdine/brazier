@@ -27,7 +27,7 @@ type Bucket struct {
 
 // Save user data to the bucket. Returns an Iten
 func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
-	var i item
+	var i Item
 
 	tx, err := b.node.Begin(true)
 	if err != nil {
@@ -41,13 +41,13 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 			return nil, err
 		}
 
-		i = item{
+		i = Item{
 			ID:        id,
 			Data:      data,
-			CreatedAt: time.Now(),
+			CreatedAt: time.Now().UnixNano(),
 		}
 	} else {
-		i.UpdatedAt = time.Now()
+		i.UpdatedAt = time.Now().UnixNano()
 		i.Data = data
 	}
 
@@ -60,14 +60,14 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 	return &brazier.Item{
 		ID:        i.ID,
 		Data:      i.Data,
-		CreatedAt: i.CreatedAt,
-		UpdatedAt: i.UpdatedAt,
+		CreatedAt: time.Unix(0, i.CreatedAt),
+		UpdatedAt: time.Unix(0, i.UpdatedAt),
 	}, tx.Commit()
 }
 
 // Get an item by id
 func (b *Bucket) Get(id string) (*brazier.Item, error) {
-	var i item
+	var i Item
 
 	err := b.node.One("ID", id, &i)
 	if err != nil {
@@ -79,15 +79,15 @@ func (b *Bucket) Get(id string) (*brazier.Item, error) {
 
 	return &brazier.Item{
 		ID:        i.ID,
-		CreatedAt: i.CreatedAt,
-		UpdatedAt: i.UpdatedAt,
+		CreatedAt: time.Unix(i.CreatedAt, 0),
+		UpdatedAt: time.Unix(i.UpdatedAt, 0),
 		Data:      i.Data,
 	}, nil
 }
 
 // Delete item from the bucket
 func (b *Bucket) Delete(id string) error {
-	var i item
+	var i Item
 
 	tx, err := b.node.Begin(true)
 	if err != nil {

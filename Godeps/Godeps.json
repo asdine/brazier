@@ -8,27 +8,31 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/asdine/storm",
-			"Rev": "99ec1debea07c2bbff4d8cc153a177ff18996c18"
+			"Rev": "677925ed51b442bef41debb26776fa7a43d054a9"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/codec",
-			"Rev": "99ec1debea07c2bbff4d8cc153a177ff18996c18"
+			"Rev": "677925ed51b442bef41debb26776fa7a43d054a9"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/codec/json",
-			"Rev": "99ec1debea07c2bbff4d8cc153a177ff18996c18"
+			"Rev": "677925ed51b442bef41debb26776fa7a43d054a9"
+		},
+		{
+			"ImportPath": "github.com/asdine/storm/codec/protobuf",
+			"Rev": "677925ed51b442bef41debb26776fa7a43d054a9"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/index",
-			"Rev": "99ec1debea07c2bbff4d8cc153a177ff18996c18"
+			"Rev": "677925ed51b442bef41debb26776fa7a43d054a9"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/internal",
-			"Rev": "99ec1debea07c2bbff4d8cc153a177ff18996c18"
+			"Rev": "677925ed51b442bef41debb26776fa7a43d054a9"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/q",
-			"Rev": "99ec1debea07c2bbff4d8cc153a177ff18996c18"
+			"Rev": "677925ed51b442bef41debb26776fa7a43d054a9"
 		},
 		{
 			"ImportPath": "github.com/boltdb/bolt",
@@ -38,6 +42,10 @@
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a"
 		},
 		{
 			"ImportPath": "github.com/inconshreveable/mousetrap",
