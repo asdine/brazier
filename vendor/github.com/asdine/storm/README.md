@@ -9,7 +9,7 @@ Storm is a simple and powerful ORM for [BoltDB](https://github.com/boltdb/bolt).
 In addition to the examples below, see also the [examples in the GoDoc](https://godoc.org/github.com/asdine/storm#pkg-examples).
 
 **NEWS**
-*Big update: From now on, every record can be fetched even if the specified field is not indexed. Also, there is a new query system for more [advanced queries.](#advanced-queries)*
+*Update: JSON is the new default codec and replaces Gob. To keep using gob use the [`storm.Codec` option](#provided-codecs) below*
 
 ## Getting Started
 
@@ -163,6 +163,16 @@ err = db.Range("Age", 10, 21, &users, storm.Limit(10), storm.Skip(10), storm.Rev
 
 ```go
 err := db.DeleteStruct(&user)
+```
+
+#### Update an object
+
+```go
+// Update multiple fields
+err := db.Update(&User{ID: 10, Name: "Jack", Age: 45})
+
+// Update a single field
+err := db.UpdateField(&User{ID: 10}, "Age", 0)
 ```
 
 #### Initialize buckets and indexes before saving an object
