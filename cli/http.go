@@ -32,11 +32,7 @@ type httpCmd struct {
 }
 
 func (h *httpCmd) Serve(cmd *cobra.Command, args []string) error {
-	store, err := h.App.Store()
-	if err != nil {
-		return err
-	}
-	err = h.ServeFunc(store, h.Port)
+	err := h.ServeFunc(h.App.Store, h.Port)
 	if err != nil {
 		return err
 	}

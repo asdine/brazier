@@ -55,6 +55,8 @@ func TestStore(t *testing.T) {
 	require.NoError(t, err)
 	b2, err := s.Bucket("bucket2")
 	require.NoError(t, err)
+	b1bis, err := s.Bucket("bucket1")
+	require.NoError(t, err)
 
 	err = b1.Close()
 	require.NoError(t, err)
@@ -62,6 +64,9 @@ func TestStore(t *testing.T) {
 
 	err = b2.Close()
 	require.NoError(t, err)
+	require.NotNil(t, s.DB)
 
+	err = b1bis.Close()
+	require.NoError(t, err)
 	require.Nil(t, s.DB)
 }

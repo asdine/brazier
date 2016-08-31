@@ -5,13 +5,12 @@ import (
 	"os"
 
 	"github.com/asdine/brazier"
-	"github.com/asdine/brazier/store/boltdb"
 	"github.com/spf13/cobra"
 )
 
 // New returns a configured Cobra command
-func New() *cobra.Command {
-	a := app{Out: os.Stdout, Path: "brazier.db"}
+func New(s brazier.Store) *cobra.Command {
+	a := app{Out: os.Stdout, Store: s}
 
 	cmd := cobra.Command{
 		Use:           "brazier",
@@ -33,13 +32,8 @@ func New() *cobra.Command {
 
 // App is the main cli application
 type app struct {
-	Path string
-	Out  io.Writer
-}
-
-// Store returns the boltdb store
-func (a *app) Store() (brazier.Store, error) {
-	return boltdb.NewStore(a.Path), nil
+	Out   io.Writer
+	Store brazier.Store
 }
 
 // Run runs the root command

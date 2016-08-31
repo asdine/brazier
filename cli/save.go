@@ -32,12 +32,7 @@ func (s *saveCmd) Save(cmd *cobra.Command, args []string) error {
 		return errors.New("Wrong number of arguments")
 	}
 
-	store, err := s.App.Store()
-	if err != nil {
-		return err
-	}
-
-	bucket, err := store.Bucket(args[0])
+	bucket, err := s.App.Store.Bucket(args[0])
 	if err != nil {
 		return err
 	}

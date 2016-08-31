@@ -14,7 +14,7 @@ import (
 func NewStore(path string) *Store {
 	return &Store{
 		Path:     path,
-		sessions: make(map[string]storm.Node),
+		sessions: make(map[string][]storm.Node),
 	}
 }
 
@@ -23,7 +23,7 @@ type Store struct {
 	sync.Mutex
 	DB       *storm.DB
 	Path     string
-	sessions map[string]storm.Node
+	sessions map[string][]storm.Node
 }
 
 // Create a bucket and return its informations
@@ -51,7 +51,7 @@ func (s *Store) Bucket(id string) (brazier.Bucket, error) {
 	}
 
 	node := s.DB.From(id)
-	s.sessions[id] = node
+	s.sessions[id] = append(s.sessions[id], node)
 
 	return NewBucket(s, id, node), nil
 }
@@ -79,7 +79,7 @@ func (s *Store) Close() error {
 func (s *Store) close() error {
 	var err error
 
-	s.sessions = make(map[string]storm.Node)
+	s.sessions = make(map[string][]storm.Node)
 	if s.DB != nil {
 		err = s.DB.Close()
 		s.DB = nil
@@ -92,15 +92,18 @@ func (s *Store) closeSession(id string) error {
 	s.Lock()
 	defer s.Unlock()
 
-	_, ok := s.sessions[id]
+	list, ok := s.sessions[id]
 	if !ok {
 		return errors.New("unknown session id")
 	}
 
-	delete(s.sessions, id)
-
-	if len(s.sessions) == 0 {
-		return s.close()
+	if len(list) == 1 {
+		delete(s.sessions, id)
+		if len(s.sessions) == 0 {
+			return s.close()
+		}
+	} else {
+		s.sessions[id] = list[:len(list)-1]
 	}
 
 	return nil

@@ -18,6 +18,7 @@ type Store struct {
 	NameInvoked   bool
 	CreateInvoked bool
 	BucketInvoked bool
+	CloseInvoked  bool
 }
 
 // Name of the store
@@ -42,4 +43,10 @@ func (s *Store) Bucket(id string) (brazier.Bucket, error) {
 	}
 
 	return b, nil
+}
+
+// Close the store
+func (s *Store) Close() error {
+	s.CloseInvoked = true
+	return nil
 }

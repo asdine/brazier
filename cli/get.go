@@ -30,12 +30,7 @@ func (g *getCmd) Get(cmd *cobra.Command, args []string) error {
 		return errors.New("Wrong number of arguments")
 	}
 
-	store, err := g.App.Store()
-	if err != nil {
-		return err
-	}
-
-	bucket, err := store.Bucket(args[0])
+	bucket, err := g.App.Store.Bucket(args[0])
 	if err != nil {
 		return err
 	}

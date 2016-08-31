@@ -23,4 +23,5 @@ type Bucket interface {
 type Store interface {
 	Create(id string) error
 	Bucket(id string) (Bucket, error)
+	Close() error
 }

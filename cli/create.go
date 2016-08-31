@@ -30,12 +30,7 @@ func (c *createCmd) Create(cmd *cobra.Command, args []string) error {
 		return errors.New("Bucket name is missing")
 	}
 
-	store, err := c.App.Store()
-	if err != nil {
-		return err
-	}
-
-	err = store.Create(args[0])
+	err := c.App.Store.Create(args[0])
 	if err != nil {
 		return err
 	}
