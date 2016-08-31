@@ -49,7 +49,7 @@ func TestBucketGet(t *testing.T) {
 
 	j, err := b.Get(i.ID)
 	require.NoError(t, err)
-	require.Equal(t, i, j)
+	require.Equal(t, i.Data, j.Data)
 
 	_, err = b.Get("some id")
 	require.Equal(t, store.ErrNotFound, err)

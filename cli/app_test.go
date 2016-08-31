@@ -1,12 +1,12 @@
 package cli
 
 import (
-	"os"
+	"bytes"
 	"testing"
 
 	"github.com/asdine/brazier/mock"
 )
 
 func testableApp(t *testing.T) *app {
-	return &app{Out: os.Stdout, Store: mock.NewStore()}
+	return &app{Out: bytes.NewBuffer([]byte("")), Store: mock.NewStore()}
 }

@@ -1,14 +1,11 @@
 package boltdb
 
-import (
-	"encoding/json"
-	"time"
-)
+import "time"
 
 type item struct {
 	ID        string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Data      json.RawMessage
+	Data      []byte
 	MimeType  string
 }
