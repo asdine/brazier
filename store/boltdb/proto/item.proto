@@ -1,5 +1,6 @@
 syntax = "proto3";
-package boltdb;
+
+package proto;
 
 message Item {
   string ID = 1;

@@ -5,6 +5,7 @@ import (
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
+	"github.com/asdine/brazier/store/boltdb/proto"
 	"github.com/asdine/storm"
 	"github.com/pkg/errors"
 )
@@ -27,7 +28,7 @@ type Bucket struct {
 
 // Save user data to the bucket. Returns an Iten
 func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
-	var i Item
+	var i proto.Item
 
 	tx, err := b.node.Begin(true)
 	if err != nil {
@@ -41,7 +42,7 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 			return nil, err
 		}
 
-		i = Item{
+		i = proto.Item{
 			ID:        id,
 			Data:      data,
 			CreatedAt: time.Now().UnixNano(),
@@ -67,7 +68,7 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 
 // Get an item by id
 func (b *Bucket) Get(id string) (*brazier.Item, error) {
-	var i Item
+	var i proto.Item
 
 	err := b.node.One("ID", id, &i)
 	if err != nil {
@@ -87,7 +88,7 @@ func (b *Bucket) Get(id string) (*brazier.Item, error) {
 
 // Delete item from the bucket
 func (b *Bucket) Delete(id string) error {
-	var i Item
+	var i proto.Item
 
 	tx, err := b.node.Begin(true)
 	if err != nil {

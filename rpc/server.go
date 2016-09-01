@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/rpc/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -15,7 +16,7 @@ type Server struct {
 }
 
 // Save a record to the store
-func (s *Server) Save(ctx context.Context, in *SaveRequest) (*SaveReply, error) {
+func (s *Server) Save(ctx context.Context, in *proto.SaveRequest) (*proto.SaveReply, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
 		return nil, err
@@ -26,7 +27,7 @@ func (s *Server) Save(ctx context.Context, in *SaveRequest) (*SaveReply, error) 
 		return nil, err
 	}
 
-	return &SaveReply{Status: 200}, nil
+	return &proto.SaveReply{Status: 200}, nil
 }
 
 // Serve runs the RPC server
@@ -36,6 +37,6 @@ func Serve(s brazier.Store, port int) error {
 		return err
 	}
 	srv := grpc.NewServer()
-	RegisterSaverServer(srv, &Server{Store: s})
+	proto.RegisterSaverServer(srv, &Server{Store: s})
 	return srv.Serve(l)
 }

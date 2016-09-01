@@ -6,6 +6,7 @@ import (
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/rpc"
+	"github.com/asdine/brazier/rpc/proto"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 )
@@ -15,7 +16,7 @@ func newServer(t *testing.T, s brazier.Store) (*grpc.ClientConn, func()) {
 	require.NoError(t, err)
 
 	srv := grpc.NewServer()
-	rpc.RegisterSaverServer(srv, &rpc.Server{Store: s})
+	proto.RegisterSaverServer(srv, &rpc.Server{Store: s})
 	go func() {
 		srv.Serve(l)
 	}()

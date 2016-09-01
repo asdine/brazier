@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/store/boltdb/proto"
 	"github.com/asdine/storm"
 	"github.com/asdine/storm/codec/protobuf"
 	"github.com/boltdb/bolt"
@@ -36,7 +37,7 @@ func (s *Store) Create(id string) error {
 	defer bucket.Close()
 
 	b := bucket.(*Bucket)
-	return b.node.Init(&Item{})
+	return b.node.Init(&proto.Item{})
 }
 
 // Bucket returns the bucket associated with the given id

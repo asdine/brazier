@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package rpc;
+package proto;
 
 // The Saver service definition.
 service Saver {
-  // Sends a greeting
+  // Saves user data
   rpc Save (SaveRequest) returns (SaveReply) {}
 }
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/asdine/brazier/mock"
-	"github.com/asdine/brazier/rpc"
+	"github.com/asdine/brazier/rpc/proto"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,9 +14,9 @@ func TestSaver(t *testing.T) {
 	conn, cleanup := newServer(t, s)
 	defer cleanup()
 
-	c := rpc.NewSaverClient(conn)
+	c := proto.NewSaverClient(conn)
 
-	r, err := c.Save(context.Background(), &rpc.SaveRequest{Bucket: "bucket", Key: "key", Data: []byte("data")})
+	r, err := c.Save(context.Background(), &proto.SaveRequest{Bucket: "bucket", Key: "key", Data: []byte("data")})
 	require.NoError(t, err)
 	require.Equal(t, int32(200), r.Status)
 
