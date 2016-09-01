@@ -11,9 +11,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func preparePath(t *testing.T) (string, func()) {
+type errorHandler interface {
+	Error(args ...interface{})
+}
+
+func preparePath(t errorHandler) (string, func()) {
 	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
-	require.NoError(t, err)
+	if err != nil {
+		t.Error(err)
+	}
 
 	return filepath.Join(dir, "brazier.db"), func() {
 		os.RemoveAll(dir)
