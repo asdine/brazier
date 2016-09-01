@@ -12,16 +12,9 @@ func NewStore() *Store {
 // Store is a BoltDB store
 type Store struct {
 	Buckets       map[string]brazier.Bucket
-	NameInvoked   bool
 	CreateInvoked bool
 	BucketInvoked bool
 	CloseInvoked  bool
-}
-
-// Name of the store
-func (s *Store) Name() string {
-	s.NameInvoked = true
-	return "mock"
 }
 
 // Create a bucket
