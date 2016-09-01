@@ -10,13 +10,13 @@ import (
 // NewBucket returns a Bucket
 func NewBucket() *Bucket {
 	return &Bucket{
-		data: make(map[string][]byte),
+		data: make(map[string]*brazier.Item),
 	}
 }
 
 // Bucket is a mock implementation of a bucket
 type Bucket struct {
-	data          map[string][]byte
+	data          map[string]*brazier.Item
 	SaveInvoked   bool
 	GetInvoked    bool
 	DeleteInvoked bool
@@ -27,23 +27,28 @@ type Bucket struct {
 func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 	b.SaveInvoked = true
 
-	b.data[id] = data
-	return &brazier.Item{
-		ID:        id,
-		Data:      data,
-		CreatedAt: time.Now(),
-	}, nil
+	item, ok := b.data[id]
+	if !ok {
+		item = &brazier.Item{
+			ID:        id,
+			Data:      data,
+			CreatedAt: time.Now(),
+		}
+		b.data[id] = item
+	} else {
+		item.Data = data
+		item.UpdatedAt = time.Now()
+	}
+
+	return item, nil
 }
 
 // Get an item by id
 func (b *Bucket) Get(id string) (*brazier.Item, error) {
 	b.GetInvoked = true
 
-	if data, ok := b.data[id]; ok {
-		return &brazier.Item{
-			ID:   id,
-			Data: data,
-		}, nil
+	if item, ok := b.data[id]; ok {
+		return item, nil
 	}
 
 	return nil, store.ErrNotFound

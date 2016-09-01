@@ -16,12 +16,15 @@ func newServer(t *testing.T, s brazier.Store) (*grpc.ClientConn, func()) {
 	require.NoError(t, err)
 
 	srv := grpc.NewServer()
-	proto.RegisterSaverServer(srv, &rpc.Server{Store: s})
+	bSrv := rpc.Server{Store: s}
+	proto.RegisterSaverServer(srv, &bSrv)
+	proto.RegisterGetterServer(srv, &bSrv)
+
 	go func() {
 		srv.Serve(l)
 	}()
 
-	conn, err := grpc.Dial(l.Addr().String(), grpc.WithInsecure())
+	conn, err := grpc.Dial(l.Addr().String(), grpc.WithInsecure(), grpc.WithBlock())
 	require.NoError(t, err)
 
 	return conn, func() {

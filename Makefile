@@ -23,5 +23,5 @@ testrace:
 	go test -v -race -cover `go list ./... | grep -v /vendor/`
 
 proto:
-	protoc -I=store/boltdb/proto store/boltdb/proto/item.proto --go_out=store/boltdb/proto
-	protoc -I=rpc/proto rpc/proto/saver.proto --go_out=plugins=grpc:rpc/proto
+	protoc --proto_path=./store/boltdb/proto store/boltdb/proto/item.proto --go_out=store/boltdb/proto
+	protoc --proto_path=./rpc/proto ./rpc/proto/*.proto --go_out=plugins=grpc:rpc/proto

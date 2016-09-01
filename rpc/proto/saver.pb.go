@@ -2,16 +2,6 @@
 // source: saver.proto
 // DO NOT EDIT!
 
-/*
-Package proto is a generated protocol buffer package.
-
-It is generated from these files:
-	saver.proto
-
-It has these top-level messages:
-	SaveRequest
-	SaveReply
-*/
 package proto
 
 import proto1 "github.com/golang/protobuf/proto"
@@ -28,12 +18,6 @@ var _ = proto1.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto1.ProtoPackageIsVersion2 // please upgrade the proto package
-
 // The request message containing the user's data.
 type SaveRequest struct {
 	Bucket string `protobuf:"bytes,1,opt,name=bucket" json:"bucket,omitempty"`
@@ -44,7 +28,7 @@ type SaveRequest struct {
 func (m *SaveRequest) Reset()                    { *m = SaveRequest{} }
 func (m *SaveRequest) String() string            { return proto1.CompactTextString(m) }
 func (*SaveRequest) ProtoMessage()               {}
-func (*SaveRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (*SaveRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
 // The response message containing the status
 type SaveReply struct {
@@ -54,7 +38,7 @@ type SaveReply struct {
 func (m *SaveReply) Reset()                    { *m = SaveReply{} }
 func (m *SaveReply) String() string            { return proto1.CompactTextString(m) }
 func (*SaveReply) ProtoMessage()               {}
-func (*SaveReply) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*SaveReply) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
 
 func init() {
 	proto1.RegisterType((*SaveRequest)(nil), "proto.SaveRequest")
@@ -132,12 +116,12 @@ var _Saver_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: fileDescriptor0,
+	Metadata: fileDescriptor1,
 }
 
-func init() { proto1.RegisterFile("saver.proto", fileDescriptor0) }
+func init() { proto1.RegisterFile("saver.proto", fileDescriptor1) }
 
-var fileDescriptor0 = []byte{
+var fileDescriptor1 = []byte{
 	// 161 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0xe2, 0x2e, 0x4e, 0x2c, 0x4b,
 	0x2d, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x05, 0x53, 0x4a, 0xde, 0x5c, 0xdc, 0xc1,

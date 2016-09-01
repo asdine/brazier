@@ -1,0 +1,39 @@
+package rpc_test
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/asdine/brazier/mock"
+	"github.com/asdine/brazier/rpc/proto"
+	"github.com/stretchr/testify/require"
+)
+
+func TestGetter(t *testing.T) {
+	now := time.Now()
+	s := mock.NewStore()
+	conn, cleanup := newServer(t, s)
+	defer cleanup()
+	c := proto.NewGetterClient(conn)
+
+	bucket, err := s.Bucket("bucket")
+	require.NoError(t, err)
+	b := bucket.(*mock.Bucket)
+	s.BucketInvoked = false
+	item, err := b.Save("key", []byte("data"))
+	require.NoError(t, err)
+	b.SaveInvoked = false
+
+	r, err := c.Get(context.Background(), &proto.GetRequest{Bucket: "bucket", Key: "key"})
+	require.NoError(t, err)
+	require.Equal(t, "key", r.Key)
+	require.True(t, now.UnixNano() < r.CreatedAt)
+	require.Zero(t, r.UpdatedAt)
+	require.True(t, s.BucketInvoked)
+	require.True(t, b.GetInvoked)
+	require.Equal(t, item.Data, r.Data)
+
+	r, err = c.Get(context.Background(), &proto.GetRequest{Bucket: "bucket", Key: "unknown key"})
+	require.Error(t, err)
+}

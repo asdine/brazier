@@ -10,8 +10,10 @@
 		"github.com/asdine/brazier/json",
 		"github.com/asdine/brazier/mock",
 		"github.com/asdine/brazier/rpc",
+		"github.com/asdine/brazier/rpc/proto",
 		"github.com/asdine/brazier/store",
-		"github.com/asdine/brazier/store/boltdb"
+		"github.com/asdine/brazier/store/boltdb",
+		"github.com/asdine/brazier/store/boltdb/proto"
 	],
 	"Deps": [
 		{
