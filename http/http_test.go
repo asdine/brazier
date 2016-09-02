@@ -82,6 +82,35 @@ func TestGetItem(t *testing.T) {
 	require.True(t, b.CloseInvoked)
 }
 
+func TestDeleteItem(t *testing.T) {
+	var h brazierHttp.Handler
+
+	s := mock.NewStore()
+	h.Store = s
+
+	err := s.Create("a")
+	require.NoError(t, err)
+
+	bucket, err := s.Bucket("a")
+	require.NoError(t, err)
+	b := bucket.(*mock.Bucket)
+
+	_, err = b.Save("b", []byte(`"my value"`))
+	require.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("DELETE", "/a/b", nil)
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusOK, w.Code)
+	require.True(t, b.DeleteInvoked)
+	require.True(t, b.CloseInvoked)
+
+	w = httptest.NewRecorder()
+	r, _ = http.NewRequest("DELETE", "/a/b", nil)
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusNotFound, w.Code)
+}
+
 func TestBadRequests(t *testing.T) {
 	var h brazierHttp.Handler
 

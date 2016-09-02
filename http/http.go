@@ -42,6 +42,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.saveItem(w, r, bucketName, key)
 	case "GET":
 		h.getItem(w, r, bucketName, key)
+	case "DELETE":
+		h.deleteItem(w, r, bucketName, key)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -131,4 +133,31 @@ func (h *Handler) getItem(w http.ResponseWriter, r *http.Request, bucketName str
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(item.Data)
+}
+
+func (h *Handler) deleteItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
+	bucket, err := h.Store.Bucket(bucketName)
+	if err != nil {
+		if err != store.ErrNotFound {
+			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	defer bucket.Close()
+
+	err = bucket.Delete(key)
+	if err != nil {
+		if err != store.ErrNotFound {
+			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
