@@ -3,6 +3,7 @@ package rpc_test
 import (
 	"net"
 	"testing"
+	"time"
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/rpc"
@@ -19,6 +20,7 @@ func newServer(t *testing.T, s brazier.Store) (*grpc.ClientConn, func()) {
 	bSrv := rpc.Server{Store: s}
 	proto.RegisterSaverServer(srv, &bSrv)
 	proto.RegisterGetterServer(srv, &bSrv)
+	proto.RegisterDeleterServer(srv, &bSrv)
 
 	go func() {
 		srv.Serve(l)
@@ -29,6 +31,7 @@ func newServer(t *testing.T, s brazier.Store) (*grpc.ClientConn, func()) {
 
 	return conn, func() {
 		conn.Close()
+		time.Sleep(1 * time.Millisecond)
 		srv.Stop()
 	}
 }

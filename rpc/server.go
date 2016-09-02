@@ -15,7 +15,7 @@ type Server struct {
 	Store brazier.Store
 }
 
-// Save an item to the store
+// Save an item to the bucket
 func (s *Server) Save(ctx context.Context, in *proto.SaveRequest) (*proto.SaveReply, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
@@ -30,7 +30,7 @@ func (s *Server) Save(ctx context.Context, in *proto.SaveRequest) (*proto.SaveRe
 	return &proto.SaveReply{Status: 200}, nil
 }
 
-// Get an item from the store
+// Get an item from the bucket
 func (s *Server) Get(ctx context.Context, in *proto.GetRequest) (*proto.GetReply, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
@@ -53,6 +53,21 @@ func (s *Server) Get(ctx context.Context, in *proto.GetRequest) (*proto.GetReply
 	}
 
 	return &r, nil
+}
+
+// Delete an item from the bucket
+func (s *Server) Delete(ctx context.Context, in *proto.DeleteRequest) (*proto.DeleteReply, error) {
+	b, err := s.Store.Bucket(in.Bucket)
+	if err != nil {
+		return nil, err
+	}
+
+	err = b.Delete(in.Key)
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.DeleteReply{Status: 200}, nil
 }
 
 // Serve runs the RPC server

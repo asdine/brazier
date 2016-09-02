@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package proto;
+
+// The Deleter service definition.
+service Deleter {
+  // Get an item
+  rpc Delete (DeleteRequest) returns (DeleteReply) {}
+}
+
+// The request message containing the bucket and key
+message DeleteRequest {
+  string bucket = 1;
+  string key = 2;
+}
+
+// The response message containing the status
+message DeleteReply {
+  int32 status = 1;
+}

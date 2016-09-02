@@ -2,19 +2,6 @@
 // source: getter.proto
 // DO NOT EDIT!
 
-/*
-Package proto is a generated protocol buffer package.
-
-It is generated from these files:
-	getter.proto
-	saver.proto
-
-It has these top-level messages:
-	GetRequest
-	GetReply
-	SaveRequest
-	SaveReply
-*/
 package proto
 
 import proto1 "github.com/golang/protobuf/proto"
@@ -31,12 +18,6 @@ var _ = proto1.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto1.ProtoPackageIsVersion2 // please upgrade the proto package
-
 // The request message containing the bucket and key
 type GetRequest struct {
 	Bucket string `protobuf:"bytes,1,opt,name=bucket" json:"bucket,omitempty"`
@@ -46,7 +27,7 @@ type GetRequest struct {
 func (m *GetRequest) Reset()                    { *m = GetRequest{} }
 func (m *GetRequest) String() string            { return proto1.CompactTextString(m) }
 func (*GetRequest) ProtoMessage()               {}
-func (*GetRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (*GetRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
 // The response message containing the item informations
 type GetReply struct {
@@ -59,7 +40,7 @@ type GetReply struct {
 func (m *GetReply) Reset()                    { *m = GetReply{} }
 func (m *GetReply) String() string            { return proto1.CompactTextString(m) }
 func (*GetReply) ProtoMessage()               {}
-func (*GetReply) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*GetReply) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
 
 func init() {
 	proto1.RegisterType((*GetRequest)(nil), "proto.GetRequest")
@@ -137,12 +118,12 @@ var _Getter_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: fileDescriptor0,
+	Metadata: fileDescriptor1,
 }
 
-func init() { proto1.RegisterFile("getter.proto", fileDescriptor0) }
+func init() { proto1.RegisterFile("getter.proto", fileDescriptor1) }
 
-var fileDescriptor0 = []byte{
+var fileDescriptor1 = []byte{
 	// 181 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x4c, 0x8f, 0x4f, 0x0b, 0x82, 0x40,
 	0x10, 0xc5, 0xdb, 0xd6, 0x24, 0x07, 0xa1, 0x9a, 0x43, 0x48, 0x74, 0x10, 0x4f, 0x42, 0xe0, 0xa1,

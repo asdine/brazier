@@ -23,9 +23,9 @@ func TestSaver(t *testing.T) {
 	require.True(t, s.BucketInvoked)
 	bucket, err := s.Bucket("bucket")
 	b := bucket.(*mock.Bucket)
-
 	require.NoError(t, err)
 	require.True(t, b.SaveInvoked)
+
 	item, err := b.Get("key")
 	require.NoError(t, err)
 	require.Equal(t, []byte("data"), item.Data)
