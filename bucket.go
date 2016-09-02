@@ -16,6 +16,7 @@ type Bucket interface {
 	Save(id string, data []byte) (*Item, error)
 	Get(id string) (*Item, error)
 	Delete(id string) error
+	Page(page int, perPage int) ([]Item, error)
 	Close() error
 }
 

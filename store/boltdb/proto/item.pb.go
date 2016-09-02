@@ -30,7 +30,7 @@ const _ = proto1.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type Item struct {
 	ID        string `protobuf:"bytes,1,opt,name=ID,json=iD" json:"ID,omitempty"`
-	CreatedAt int64  `protobuf:"varint,2,opt,name=CreatedAt,json=createdAt" json:"CreatedAt,omitempty"`
+	CreatedAt int64  `protobuf:"varint,2,opt,name=CreatedAt,json=createdAt" json:"CreatedAt,omitempty" storm:"index"`
 	UpdatedAt int64  `protobuf:"varint,3,opt,name=UpdatedAt,json=updatedAt" json:"UpdatedAt,omitempty"`
 	Data      []byte `protobuf:"bytes,4,opt,name=Data,json=data,proto3" json:"Data,omitempty"`
 }

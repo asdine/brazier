@@ -17,9 +17,11 @@ func NewBucket() *Bucket {
 // Bucket is a mock implementation of a bucket
 type Bucket struct {
 	data          map[string]*brazier.Item
+	index         []*brazier.Item
 	SaveInvoked   bool
 	GetInvoked    bool
 	DeleteInvoked bool
+	PageInvoked   bool
 	CloseInvoked  bool
 }
 
@@ -35,6 +37,7 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 			CreatedAt: time.Now(),
 		}
 		b.data[id] = item
+		b.index = append(b.index, item)
 	} else {
 		item.Data = data
 		item.UpdatedAt = time.Now()
@@ -64,6 +67,27 @@ func (b *Bucket) Delete(id string) error {
 	}
 
 	return store.ErrNotFound
+}
+
+// Page returns a list of items
+func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
+	b.PageInvoked = true
+
+	start := perPage * (page - 1)
+	end := start + perPage
+	if end > len(b.index) {
+		end = len(b.index)
+	}
+
+	if start >= len(b.index) {
+		return nil, nil
+	}
+
+	items := make([]brazier.Item, end-start)
+	for i := range b.index[start:end] {
+		items[i] = *b.index[i]
+	}
+	return items, nil
 }
 
 // Close bucket

@@ -1,6 +1,7 @@
 package boltdb_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -81,4 +82,56 @@ func TestBucketDelete(t *testing.T) {
 
 	err = b.Close()
 	require.NoError(t, err)
+}
+
+func TestBucketPage(t *testing.T) {
+	path, cleanup := preparePath(t)
+	defer cleanup()
+
+	s := boltdb.NewStore(path)
+
+	b, err := s.Bucket("b1")
+	require.NoError(t, err)
+	defer b.Close()
+
+	for i := 0; i < 20; i++ {
+		_, err := b.Save(fmt.Sprintf("id%d", i), []byte("Data"))
+		require.NoError(t, err)
+	}
+
+	list, err := b.Page(0, 0)
+	require.NoError(t, err)
+	require.Len(t, list, 0)
+
+	list, err = b.Page(0, 10)
+	require.NoError(t, err)
+	require.Len(t, list, 0)
+
+	list, err = b.Page(1, 5)
+	require.NoError(t, err)
+	require.Len(t, list, 5)
+	require.Equal(t, "id0", list[0].ID)
+	require.Equal(t, "id4", list[4].ID)
+
+	list, err = b.Page(1, 25)
+	require.NoError(t, err)
+	require.Len(t, list, 20)
+	require.Equal(t, "id0", list[0].ID)
+	require.Equal(t, "id19", list[19].ID)
+
+	list, err = b.Page(2, 5)
+	require.NoError(t, err)
+	require.Len(t, list, 5)
+	require.Equal(t, "id5", list[0].ID)
+	require.Equal(t, "id9", list[4].ID)
+
+	list, err = b.Page(2, 15)
+	require.NoError(t, err)
+	require.Len(t, list, 5)
+	require.Equal(t, "id15", list[0].ID)
+	require.Equal(t, "id19", list[4].ID)
+
+	list, err = b.Page(3, 15)
+	require.NoError(t, err)
+	require.Len(t, list, 0)
 }
