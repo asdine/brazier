@@ -25,6 +25,7 @@ func New(s brazier.Store) *cobra.Command {
 	cmd.AddCommand(NewCreateCmd(&a))
 	cmd.AddCommand(NewSaveCmd(&a))
 	cmd.AddCommand(NewGetCmd(&a))
+	cmd.AddCommand(NewDeleteCmd(&a))
 	cmd.AddCommand(NewHTTPCmd(&a))
 	cmd.AddCommand(NewRPCCmd(&a))
 
