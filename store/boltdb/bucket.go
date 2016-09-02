@@ -120,13 +120,17 @@ func (b *Bucket) Delete(id string) error {
 
 // Page returns a list of items
 func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
+	var skip int
 	var list []proto.Item
 
 	if page <= 0 {
 		return nil, nil
 	}
 
-	skip := (page - 1) * perPage
+	if perPage >= 0 {
+		skip = (page - 1) * perPage
+	}
+
 	err := b.node.AllByIndex("CreatedAt", &list, storm.Skip(skip), storm.Limit(perPage))
 	if err != nil {
 		return nil, errors.Wrap(err, "boltdb.bucket.Page failed to fetch items")

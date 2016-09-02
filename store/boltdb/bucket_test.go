@@ -134,4 +134,11 @@ func TestBucketPage(t *testing.T) {
 	list, err = b.Page(3, 15)
 	require.NoError(t, err)
 	require.Len(t, list, 0)
+
+	// all
+	list, err = b.Page(1, -1)
+	require.NoError(t, err)
+	require.Len(t, list, 20)
+	require.Equal(t, "id0", list[0].ID)
+	require.Equal(t, "id19", list[19].ID)
 }

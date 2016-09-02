@@ -73,14 +73,27 @@ func (b *Bucket) Delete(id string) error {
 func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
 	b.PageInvoked = true
 
-	start := perPage * (page - 1)
-	end := start + perPage
-	if end > len(b.index) {
-		end = len(b.index)
+	var start, end int
+
+	if page <= 0 {
+		return nil, nil
+	}
+
+	if perPage >= 0 {
+		start = (page - 1) * perPage
 	}
 
 	if start >= len(b.index) {
 		return nil, nil
+	}
+
+	if perPage == -1 {
+		end = len(b.index)
+	} else {
+		end = start + perPage
+		if end > len(b.index) {
+			end = len(b.index)
+		}
 	}
 
 	items := make([]brazier.Item, end-start)
