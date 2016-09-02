@@ -17,6 +17,8 @@ func TestGetter(t *testing.T) {
 	defer cleanup()
 	c := proto.NewGetterClient(conn)
 
+	err := s.Create("bucket")
+	require.NoError(t, err)
 	bucket, err := s.Bucket("bucket")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)

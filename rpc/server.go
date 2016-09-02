@@ -6,6 +6,7 @@ import (
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/rpc/proto"
+	"github.com/asdine/brazier/store"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
@@ -19,7 +20,17 @@ type Server struct {
 func (s *Server) Save(ctx context.Context, in *proto.SaveRequest) (*proto.SaveReply, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
-		return nil, err
+		if err != store.ErrNotFound {
+			return nil, err
+		}
+		err = s.Store.Create(in.Bucket)
+		if err != nil {
+			return nil, err
+		}
+		b, err = s.Store.Bucket(in.Bucket)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	_, err = b.Save(in.Key, in.Data)

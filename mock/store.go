@@ -1,6 +1,9 @@
 package mock
 
-import "github.com/asdine/brazier"
+import (
+	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/store"
+)
 
 // NewStore returns a BoltDB store
 func NewStore() *Store {
@@ -29,8 +32,7 @@ func (s *Store) Bucket(id string) (brazier.Bucket, error) {
 	s.BucketInvoked = true
 	b, ok := s.Buckets[id]
 	if !ok {
-		b = NewBucket()
-		s.Buckets[id] = b
+		return nil, store.ErrNotFound
 	}
 
 	return b, nil

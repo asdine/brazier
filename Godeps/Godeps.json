@@ -18,31 +18,31 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/asdine/storm",
-			"Rev": "3867fe679cd3483e9723cfdd9ba8d9e34272df7b"
+			"Rev": "163181092c07eac4b720f855eec54be0a606e94e"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/codec",
-			"Rev": "3867fe679cd3483e9723cfdd9ba8d9e34272df7b"
+			"Rev": "163181092c07eac4b720f855eec54be0a606e94e"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/codec/json",
-			"Rev": "3867fe679cd3483e9723cfdd9ba8d9e34272df7b"
+			"Rev": "163181092c07eac4b720f855eec54be0a606e94e"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/codec/protobuf",
-			"Rev": "3867fe679cd3483e9723cfdd9ba8d9e34272df7b"
+			"Rev": "163181092c07eac4b720f855eec54be0a606e94e"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/index",
-			"Rev": "3867fe679cd3483e9723cfdd9ba8d9e34272df7b"
+			"Rev": "163181092c07eac4b720f855eec54be0a606e94e"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/internal",
-			"Rev": "3867fe679cd3483e9723cfdd9ba8d9e34272df7b"
+			"Rev": "163181092c07eac4b720f855eec54be0a606e94e"
 		},
 		{
 			"ImportPath": "github.com/asdine/storm/q",
-			"Rev": "3867fe679cd3483e9723cfdd9ba8d9e34272df7b"
+			"Rev": "163181092c07eac4b720f855eec54be0a606e94e"
 		},
 		{
 			"ImportPath": "github.com/boltdb/bolt",

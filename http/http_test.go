@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -107,6 +108,37 @@ func TestDeleteItem(t *testing.T) {
 
 	w = httptest.NewRecorder()
 	r, _ = http.NewRequest("DELETE", "/a/b", nil)
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestListItem(t *testing.T) {
+	var h brazierHttp.Handler
+
+	s := mock.NewStore()
+	h.Store = s
+
+	err := s.Create("a")
+	require.NoError(t, err)
+	bucket, err := s.Bucket("a")
+	require.NoError(t, err)
+	b := bucket.(*mock.Bucket)
+
+	for i := 0; i < 20; i++ {
+		_, err = b.Save(fmt.Sprintf("id%d", i), []byte(`"my value"`))
+		require.NoError(t, err)
+	}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/a", nil)
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusOK, w.Code)
+	require.True(t, b.PageInvoked)
+	require.True(t, b.CloseInvoked)
+	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
+
+	w = httptest.NewRecorder()
+	r, _ = http.NewRequest("GET", "/z", nil)
 	h.ServeHTTP(w, r)
 	require.Equal(t, http.StatusNotFound, w.Code)
 }

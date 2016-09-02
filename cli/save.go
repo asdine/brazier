@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/asdine/brazier/json"
+	"github.com/asdine/brazier/store"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +35,17 @@ func (s *saveCmd) Save(cmd *cobra.Command, args []string) error {
 
 	bucket, err := s.App.Store.Bucket(args[0])
 	if err != nil {
-		return err
+		if err != store.ErrNotFound {
+			return err
+		}
+		err = s.App.Store.Create(args[0])
+		if err != nil {
+			return err
+		}
+		bucket, err = s.App.Store.Bucket(args[0])
+		if err != nil {
+			return err
+		}
 	}
 	defer bucket.Close()
 

@@ -29,19 +29,25 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p := strings.Trim(r.URL.EscapedPath(), "/")
 	parts := strings.Split(p, "/")
 
-	if len(parts) != 2 {
+	if len(parts) > 2 {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	bucketName = parts[0]
-	key = parts[1]
+	if len(parts) > 1 {
+		key = parts[1]
+	}
 
 	switch r.Method {
 	case "PUT":
 		h.saveItem(w, r, bucketName, key)
 	case "GET":
-		h.getItem(w, r, bucketName, key)
+		if key != "" {
+			h.getItem(w, r, bucketName, key)
+		} else {
+			h.listBucket(w, r, bucketName)
+		}
 	case "DELETE":
 		h.deleteItem(w, r, bucketName, key)
 	default:
@@ -160,4 +166,34 @@ func (h *Handler) deleteItem(w http.ResponseWriter, r *http.Request, bucketName 
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) listBucket(w http.ResponseWriter, r *http.Request, bucketName string) {
+	bucket, err := h.Store.Bucket(bucketName)
+	if err != nil {
+		if err != store.ErrNotFound {
+			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	defer bucket.Close()
+
+	items, err := bucket.Page(1, -1)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	raw, err := json.MarshalList(items)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(raw)
 }

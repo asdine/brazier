@@ -1,10 +1,10 @@
 package cli
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
+	"github.com/asdine/brazier/json"
 	"github.com/spf13/cobra"
 )
 
@@ -42,16 +42,7 @@ func (l *listCmd) List(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	list := make([]map[string]*json.RawMessage, len(items))
-
-	for i := range items {
-		d := json.RawMessage(items[i].Data)
-		list[i] = map[string]*json.RawMessage{
-			items[i].ID: &d,
-		}
-	}
-
-	raw, err := json.Marshal(list)
+	raw, err := json.MarshalList(items)
 	if err != nil {
 		return err
 	}
