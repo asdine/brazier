@@ -21,6 +21,7 @@ func newServer(t *testing.T, s brazier.Store) (*grpc.ClientConn, func()) {
 	proto.RegisterSaverServer(srv, &bSrv)
 	proto.RegisterGetterServer(srv, &bSrv)
 	proto.RegisterDeleterServer(srv, &bSrv)
+	proto.RegisterListerServer(srv, &bSrv)
 
 	go func() {
 		srv.Serve(l)
@@ -31,7 +32,7 @@ func newServer(t *testing.T, s brazier.Store) (*grpc.ClientConn, func()) {
 
 	return conn, func() {
 		conn.Close()
-		time.Sleep(1 * time.Millisecond)
+		time.Sleep(5 * time.Millisecond)
 		srv.Stop()
 	}
 }

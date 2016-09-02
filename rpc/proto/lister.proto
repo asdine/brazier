@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package proto;
+
+// The Lister service definition.
+service Lister {
+  // List the bucket content
+  rpc List (ListRequest) returns (ListReply) {}
+}
+
+// The request message containing the bucket
+message ListRequest {
+  string bucket = 1;
+}
+
+// The response message containing the status
+message ListReply {
+  repeated bytes items = 1;
+}

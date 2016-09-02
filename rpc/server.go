@@ -81,6 +81,26 @@ func (s *Server) Delete(ctx context.Context, in *proto.DeleteRequest) (*proto.De
 	return &proto.DeleteReply{Status: 200}, nil
 }
 
+// List the content of a bucket
+func (s *Server) List(ctx context.Context, in *proto.ListRequest) (*proto.ListReply, error) {
+	b, err := s.Store.Bucket(in.Bucket)
+	if err != nil {
+		return nil, err
+	}
+
+	items, err := b.Page(1, -1)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([][]byte, len(items))
+	for i := range items {
+		list[i] = items[i].Data
+	}
+
+	return &proto.ListReply{Items: list}, nil
+}
+
 // Serve runs the RPC server
 func Serve(s brazier.Store, port int) error {
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))

@@ -8,6 +8,7 @@ Package proto is a generated protocol buffer package.
 It is generated from these files:
 	deleter.proto
 	getter.proto
+	lister.proto
 	saver.proto
 
 It has these top-level messages:
@@ -15,6 +16,8 @@ It has these top-level messages:
 	DeleteReply
 	GetRequest
 	GetReply
+	ListRequest
+	ListReply
 	SaveRequest
 	SaveReply
 */
