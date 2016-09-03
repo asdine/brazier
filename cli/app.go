@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/config"
 	"github.com/spf13/cobra"
 )
 
@@ -13,12 +14,13 @@ func New(s brazier.Store) *cobra.Command {
 	a := app{Out: os.Stdout, Store: s}
 
 	cmd := cobra.Command{
-		Use:           "brazier",
-		Short:         "Brazier",
-		Long:          `Brazier`,
-		Run:           a.Run,
-		SilenceErrors: true,
-		SilenceUsage:  true,
+		Use:               "brazier",
+		Short:             "Brazier",
+		Long:              `Brazier`,
+		Run:               a.Run,
+		SilenceErrors:     true,
+		SilenceUsage:      true,
+		PersistentPreRunE: a.PreRun,
 	}
 
 	cmd.SetOutput(os.Stdout)
@@ -30,16 +32,27 @@ func New(s brazier.Store) *cobra.Command {
 	cmd.AddCommand(NewHTTPCmd(&a))
 	cmd.AddCommand(NewRPCCmd(&a))
 
+	cmd.PersistentFlags().StringVarP(&a.ConfigPath, "config", "c", "", "config file")
 	return &cmd
 }
 
 // App is the main cli application
 type app struct {
-	Out   io.Writer
-	Store brazier.Store
+	Out        io.Writer
+	Store      brazier.Store
+	ConfigPath string
+	Config     config.Config
 }
 
 // Run runs the root command
 func (a *app) Run(cmd *cobra.Command, args []string) {
 	cmd.Usage()
+}
+
+// PreRun runs the root command
+func (a *app) PreRun(cmd *cobra.Command, args []string) error {
+	if a.ConfigPath != "" {
+		return config.FromFile(a.ConfigPath, &a.Config)
+	}
+	return nil
 }

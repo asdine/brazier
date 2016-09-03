@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/rpc"
 	"github.com/spf13/cobra"
@@ -20,8 +22,7 @@ func NewRPCCmd(a *app) *cobra.Command {
 		RunE:  rpcCmd.Serve,
 	}
 
-	cmd.Flags().IntVarP(&rpcCmd.Port, "port", "p", 5657, "Port")
-
+	cmd.Flags().IntVarP(&rpcCmd.App.Config.RPC.Port, "port", "p", 5657, "Port")
 	return &cmd
 }
 
@@ -31,10 +32,8 @@ type rpcCmd struct {
 	ServeFunc func(brazier.Store, int) error
 }
 
-func (h *rpcCmd) Serve(cmd *cobra.Command, args []string) error {
-	err := h.ServeFunc(h.App.Store, h.Port)
-	if err != nil {
-		return err
-	}
-	return nil
+func (r *rpcCmd) Serve(cmd *cobra.Command, args []string) error {
+	fmt.Fprintf(r.App.Out, "Serving RPC on port %d\n", r.App.Config.RPC.Port)
+
+	return r.ServeFunc(r.App.Store, r.App.Config.RPC.Port)
 }

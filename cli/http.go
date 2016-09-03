@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/http"
 	"github.com/spf13/cobra"
@@ -20,21 +22,17 @@ func NewHTTPCmd(a *app) *cobra.Command {
 		RunE:  httpCmd.Serve,
 	}
 
-	cmd.Flags().IntVarP(&httpCmd.Port, "port", "p", 5656, "Port")
-
+	cmd.Flags().IntVarP(&httpCmd.App.Config.HTTP.Port, "port", "p", 5656, "Port")
 	return &cmd
 }
 
 type httpCmd struct {
 	App       *app
-	Port      int
 	ServeFunc func(brazier.Store, int) error
 }
 
 func (h *httpCmd) Serve(cmd *cobra.Command, args []string) error {
-	err := h.ServeFunc(h.App.Store, h.Port)
-	if err != nil {
-		return err
-	}
-	return nil
+	fmt.Fprintf(h.App.Out, "Serving HTTP on port %d\n", h.App.Config.HTTP.Port)
+
+	return h.ServeFunc(h.App.Store, h.App.Config.HTTP.Port)
 }

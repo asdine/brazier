@@ -9,8 +9,9 @@ import (
 
 func TestHTTP(t *testing.T) {
 	app := testableApp(t)
+	app.Config.HTTP.Port = 55898
 
-	h := httpCmd{App: app, Port: 55898, ServeFunc: func(s brazier.Store, port int) error {
+	h := httpCmd{App: app, ServeFunc: func(s brazier.Store, port int) error {
 		require.Equal(t, 55898, port)
 		return nil
 	}}
