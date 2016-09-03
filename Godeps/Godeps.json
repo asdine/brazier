@@ -6,6 +6,7 @@
 		"github.com/asdine/brazier",
 		"github.com/asdine/brazier/cli",
 		"github.com/asdine/brazier/cmd/brazier",
+		"github.com/asdine/brazier/config",
 		"github.com/asdine/brazier/http",
 		"github.com/asdine/brazier/json",
 		"github.com/asdine/brazier/mock",
@@ -50,8 +51,16 @@
 			"Rev": "583e8937c61f1af6513608ccc75c97b6abdf4ff9"
 		},
 		{
+			"ImportPath": "github.com/cloudfoundry-incubator/candiedyaml",
+			"Rev": "99c3df83b51532e3615f851d8c2dbb638f5313bf"
+		},
+		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
+		{
+			"ImportPath": "github.com/ghodss/yaml",
+			"Rev": "1a6f069841556a7bcaff4a397ca6e8328d266c2f"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
