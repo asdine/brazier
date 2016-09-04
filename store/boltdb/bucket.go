@@ -34,11 +34,11 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer tx.Rollback()
 
 	err = tx.One("ID", id, &i)
 	if err != nil {
 		if err != storm.ErrNotFound {
-			tx.Rollback()
 			return nil, err
 		}
 
@@ -54,7 +54,6 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 
 	err = tx.Save(&i)
 	if err != nil {
-		tx.Rollback()
 		return nil, err
 	}
 
