@@ -1,5 +1,6 @@
 NAME		:= brazier
 GOFILES := $(shell find . -type f -name '*.go')
+PACKAGES := $(shell glide novendor)
 
 .PHONY: all build $(NAME) deps restore test
 
@@ -11,16 +12,16 @@ $(NAME): $(GOFILES)
 	go install ./cmd/$@
 
 deps:
-	godep save `go list ./... | grep -v /vendor/`
+	glide up
 
-restore:
-	godep restore
+install:
+	glide install
 
 test:
-	go test -v -cover `go list ./... | grep -v /vendor/`
+	go test -v -cover $(PACKAGES)
 
 testrace:
-	go test -v -race -cover `go list ./... | grep -v /vendor/`
+	go test -v -race -cover $(PACKAGES)
 
 gen:
-	go generate `go list ./... | grep -v /vendor/`
+	go generate $(PACKAGES)

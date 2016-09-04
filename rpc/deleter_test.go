@@ -1,8 +1,9 @@
 package rpc_test
 
 import (
-	"context"
 	"testing"
+
+	"golang.org/x/net/context"
 
 	"github.com/asdine/brazier/mock"
 	"github.com/asdine/brazier/rpc/internal"
