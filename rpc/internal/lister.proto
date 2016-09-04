@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package proto;
+package internal;
 
 // The Lister service definition.
 service Lister {

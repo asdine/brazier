@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/asdine/brazier/mock"
-	"github.com/asdine/brazier/rpc/proto"
+	"github.com/asdine/brazier/rpc/internal"
 	"github.com/asdine/brazier/store"
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +14,7 @@ func TestDeleter(t *testing.T) {
 	s := mock.NewStore()
 	conn, cleanup := newServer(t, s)
 	defer cleanup()
-	c := proto.NewDeleterClient(conn)
+	c := internal.NewDeleterClient(conn)
 
 	err := s.Create("bucket")
 	require.NoError(t, err)
@@ -26,7 +26,7 @@ func TestDeleter(t *testing.T) {
 	require.NoError(t, err)
 	b.SaveInvoked = false
 
-	r, err := c.Delete(context.Background(), &proto.DeleteRequest{Bucket: "bucket", Key: "key"})
+	r, err := c.Delete(context.Background(), &internal.DeleteRequest{Bucket: "bucket", Key: "key"})
 	require.NoError(t, err)
 	require.Equal(t, int32(200), r.Status)
 	require.True(t, s.BucketInvoked)
@@ -35,6 +35,6 @@ func TestDeleter(t *testing.T) {
 	_, err = b.Get("key")
 	require.Equal(t, store.ErrNotFound, err)
 
-	r, err = c.Delete(context.Background(), &proto.DeleteRequest{Bucket: "bucket", Key: "key"})
+	r, err = c.Delete(context.Background(), &internal.DeleteRequest{Bucket: "bucket", Key: "key"})
 	require.Error(t, err)
 }

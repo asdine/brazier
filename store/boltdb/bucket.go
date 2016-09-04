@@ -5,7 +5,7 @@ import (
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
-	"github.com/asdine/brazier/store/boltdb/proto"
+	"github.com/asdine/brazier/store/boltdb/internal"
 	"github.com/asdine/storm"
 	"github.com/pkg/errors"
 )
@@ -28,7 +28,7 @@ type Bucket struct {
 
 // Save user data to the bucket. Returns an Iten
 func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
-	var i proto.Item
+	var i internal.Item
 
 	tx, err := b.node.Begin(true)
 	if err != nil {
@@ -42,7 +42,7 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 			return nil, err
 		}
 
-		i = proto.Item{
+		i = internal.Item{
 			ID:        id,
 			Data:      data,
 			CreatedAt: time.Now().UnixNano(),
@@ -68,7 +68,7 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 
 // Get an item by id
 func (b *Bucket) Get(id string) (*brazier.Item, error) {
-	var i proto.Item
+	var i internal.Item
 
 	err := b.node.One("ID", id, &i)
 	if err != nil {
@@ -88,7 +88,7 @@ func (b *Bucket) Get(id string) (*brazier.Item, error) {
 
 // Delete item from the bucket
 func (b *Bucket) Delete(id string) error {
-	var i proto.Item
+	var i internal.Item
 
 	tx, err := b.node.Begin(true)
 	if err != nil {
@@ -121,7 +121,7 @@ func (b *Bucket) Delete(id string) error {
 // Page returns a list of items
 func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
 	var skip int
-	var list []proto.Item
+	var list []internal.Item
 
 	if page <= 0 {
 		return nil, nil

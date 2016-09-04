@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"github.com/asdine/brazier"
-	"github.com/asdine/brazier/rpc/proto"
+	"github.com/asdine/brazier/rpc/internal"
 	"github.com/asdine/brazier/store"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -17,7 +17,7 @@ type Server struct {
 }
 
 // Save an item to the bucket
-func (s *Server) Save(ctx context.Context, in *proto.SaveRequest) (*proto.SaveReply, error) {
+func (s *Server) Save(ctx context.Context, in *internal.SaveRequest) (*internal.SaveReply, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
 		if err != store.ErrNotFound {
@@ -38,11 +38,11 @@ func (s *Server) Save(ctx context.Context, in *proto.SaveRequest) (*proto.SaveRe
 		return nil, err
 	}
 
-	return &proto.SaveReply{Status: 200}, nil
+	return &internal.SaveReply{Status: 200}, nil
 }
 
 // Get an item from the bucket
-func (s *Server) Get(ctx context.Context, in *proto.GetRequest) (*proto.GetReply, error) {
+func (s *Server) Get(ctx context.Context, in *internal.GetRequest) (*internal.GetReply, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (s *Server) Get(ctx context.Context, in *proto.GetRequest) (*proto.GetReply
 		return nil, err
 	}
 
-	r := proto.GetReply{
+	r := internal.GetReply{
 		Key:       item.ID,
 		CreatedAt: item.CreatedAt.UnixNano(),
 		Data:      item.Data,
@@ -67,7 +67,7 @@ func (s *Server) Get(ctx context.Context, in *proto.GetRequest) (*proto.GetReply
 }
 
 // Delete an item from the bucket
-func (s *Server) Delete(ctx context.Context, in *proto.DeleteRequest) (*proto.DeleteReply, error) {
+func (s *Server) Delete(ctx context.Context, in *internal.DeleteRequest) (*internal.DeleteReply, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
 		return nil, err
@@ -78,11 +78,11 @@ func (s *Server) Delete(ctx context.Context, in *proto.DeleteRequest) (*proto.De
 		return nil, err
 	}
 
-	return &proto.DeleteReply{Status: 200}, nil
+	return &internal.DeleteReply{Status: 200}, nil
 }
 
 // List the content of a bucket
-func (s *Server) List(ctx context.Context, in *proto.ListRequest) (*proto.ListReply, error) {
+func (s *Server) List(ctx context.Context, in *internal.ListRequest) (*internal.ListReply, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func (s *Server) List(ctx context.Context, in *proto.ListRequest) (*proto.ListRe
 		list[i] = items[i].Data
 	}
 
-	return &proto.ListReply{Items: list}, nil
+	return &internal.ListReply{Items: list}, nil
 }
 
 // Serve runs the RPC server
@@ -108,7 +108,7 @@ func Serve(s brazier.Store, port int) error {
 		return err
 	}
 	srv := grpc.NewServer()
-	proto.RegisterSaverServer(srv, &Server{Store: s})
-	proto.RegisterGetterServer(srv, &Server{Store: s})
+	internal.RegisterSaverServer(srv, &Server{Store: s})
+	internal.RegisterGetterServer(srv, &Server{Store: s})
 	return srv.Serve(l)
 }

@@ -22,5 +22,5 @@ test:
 testrace:
 	go test -v -race -cover `go list ./... | grep -v /vendor/`
 
-proto:
-	protoc --proto_path=./rpc/proto ./rpc/proto/*.proto --go_out=plugins=grpc:rpc/proto
+gen:
+	go generate `go list ./... | grep -v /vendor/`

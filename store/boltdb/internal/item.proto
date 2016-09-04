@@ -1,9 +1,10 @@
 syntax = "proto3";
 
-package proto;
+package internal;
 
 message Item {
   string ID = 1;
+  // @inject_tag: storm:"index"
   int64 CreatedAt = 2;
   int64 UpdatedAt = 3;
   bytes Data = 4;

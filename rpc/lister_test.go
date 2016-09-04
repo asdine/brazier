@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/asdine/brazier/mock"
-	"github.com/asdine/brazier/rpc/proto"
+	"github.com/asdine/brazier/rpc/internal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,7 +14,7 @@ func TestLister(t *testing.T) {
 	s := mock.NewStore()
 	conn, cleanup := newServer(t, s)
 	defer cleanup()
-	c := proto.NewListerClient(conn)
+	c := internal.NewListerClient(conn)
 
 	err := s.Create("bucket")
 	require.NoError(t, err)
@@ -23,7 +23,7 @@ func TestLister(t *testing.T) {
 	b := bucket.(*mock.Bucket)
 	s.BucketInvoked = false
 
-	r, err := c.List(context.Background(), &proto.ListRequest{Bucket: "bucket"})
+	r, err := c.List(context.Background(), &internal.ListRequest{Bucket: "bucket"})
 	require.NoError(t, err)
 	require.Len(t, r.Items, 0)
 	require.True(t, s.BucketInvoked)
@@ -41,7 +41,7 @@ func TestLister(t *testing.T) {
 		list = append(list, item.Data)
 	}
 
-	r, err = c.List(context.Background(), &proto.ListRequest{Bucket: "bucket"})
+	r, err = c.List(context.Background(), &internal.ListRequest{Bucket: "bucket"})
 	require.NoError(t, err)
 	require.Equal(t, list, r.Items)
 	require.True(t, s.BucketInvoked)
