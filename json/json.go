@@ -24,7 +24,7 @@ func IsValidReader(r io.Reader) (bool, []byte) {
 	return err == nil || err == io.EOF, i
 }
 
-// Clean removes unecessary white space from a JSON value
+// Clean removes unnecessary white space from a JSON value
 func Clean(data []byte) []byte {
 	to := make([]byte, len(data))
 
