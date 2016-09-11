@@ -28,9 +28,9 @@ type Store struct {
 	sessions map[string][]storm.Node
 }
 
-// Create a bucket and return its informations
-func (s *Store) Create(id string) error {
-	bucket, err := s.Bucket(id)
+// Create a bucket
+func (s *Store) Create(key string) error {
+	bucket, err := s.Bucket(key)
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (s *Store) Create(id string) error {
 }
 
 // Bucket returns the bucket associated with the given id
-func (s *Store) Bucket(id string) (brazier.Bucket, error) {
+func (s *Store) Bucket(key string) (brazier.Bucket, error) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -52,10 +52,10 @@ func (s *Store) Bucket(id string) (brazier.Bucket, error) {
 		}
 	}
 
-	node := s.DB.From(id)
-	s.sessions[id] = append(s.sessions[id], node)
+	node := s.DB.From(key)
+	s.sessions[key] = append(s.sessions[key], node)
 
-	return NewBucket(s, id, node), nil
+	return NewBucket(s, key, node), nil
 }
 
 func (s *Store) open() error {
@@ -94,22 +94,22 @@ func (s *Store) close() error {
 	return err
 }
 
-func (s *Store) closeSession(id string) error {
+func (s *Store) closeSession(key string) error {
 	s.Lock()
 	defer s.Unlock()
 
-	list, ok := s.sessions[id]
+	list, ok := s.sessions[key]
 	if !ok {
 		return errors.New("unknown session id")
 	}
 
 	if len(list) == 1 {
-		delete(s.sessions, id)
+		delete(s.sessions, key)
 		if len(s.sessions) == 0 {
 			return s.close()
 		}
 	} else {
-		s.sessions[id] = list[:len(list)-1]
+		s.sessions[key] = list[:len(list)-1]
 	}
 
 	return nil

@@ -2,7 +2,6 @@ package rpc_test
 
 import (
 	"testing"
-	"time"
 
 	"golang.org/x/net/context"
 
@@ -12,7 +11,6 @@ import (
 )
 
 func TestGetter(t *testing.T) {
-	now := time.Now()
 	s := mock.NewStore()
 	conn, cleanup := newServer(t, s)
 	defer cleanup()
@@ -31,8 +29,6 @@ func TestGetter(t *testing.T) {
 	r, err := c.Get(context.Background(), &internal.GetRequest{Bucket: "bucket", Key: "key"})
 	require.NoError(t, err)
 	require.Equal(t, "key", r.Key)
-	require.True(t, now.UnixNano() < r.CreatedAt)
-	require.Zero(t, r.UpdatedAt)
 	require.True(t, s.BucketInvoked)
 	require.True(t, b.GetInvoked)
 	require.Equal(t, item.Data, r.Data)

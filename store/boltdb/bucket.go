@@ -11,9 +11,9 @@ import (
 )
 
 // NewBucket returns a Bucket
-func NewBucket(s *Store, id string, node storm.Node) *Bucket {
+func NewBucket(s *Store, key string, node storm.Node) *Bucket {
 	return &Bucket{
-		id:    id,
+		key:   key,
 		store: s,
 		node:  node,
 	}
@@ -21,13 +21,13 @@ func NewBucket(s *Store, id string, node storm.Node) *Bucket {
 
 // Bucket is a BoltDB implementation a bucket
 type Bucket struct {
-	id    string
+	key   string
 	store *Store
 	node  storm.Node
 }
 
 // Save user data to the bucket. Returns an Iten
-func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
+func (b *Bucket) Save(key string, data []byte) (*brazier.Item, error) {
 	var i internal.Item
 
 	tx, err := b.node.Begin(true)
@@ -36,14 +36,14 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 	}
 	defer tx.Rollback()
 
-	err = tx.One("ID", id, &i)
+	err = tx.One("ID", key, &i)
 	if err != nil {
 		if err != storm.ErrNotFound {
 			return nil, err
 		}
 
 		i = internal.Item{
-			ID:        id,
+			ID:        key,
 			Data:      data,
 			CreatedAt: time.Now().UnixNano(),
 		}
@@ -58,18 +58,16 @@ func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
 	}
 
 	return &brazier.Item{
-		ID:        i.ID,
-		Data:      i.Data,
-		CreatedAt: time.Unix(0, i.CreatedAt),
-		UpdatedAt: time.Unix(0, i.UpdatedAt),
+		Key:  i.ID,
+		Data: i.Data,
 	}, tx.Commit()
 }
 
-// Get an item by id
-func (b *Bucket) Get(id string) (*brazier.Item, error) {
+// Get an item by key
+func (b *Bucket) Get(key string) (*brazier.Item, error) {
 	var i internal.Item
 
-	err := b.node.One("ID", id, &i)
+	err := b.node.One("ID", key, &i)
 	if err != nil {
 		if err == storm.ErrNotFound {
 			return nil, store.ErrNotFound
@@ -78,15 +76,13 @@ func (b *Bucket) Get(id string) (*brazier.Item, error) {
 	}
 
 	return &brazier.Item{
-		ID:        i.ID,
-		CreatedAt: time.Unix(i.CreatedAt, 0),
-		UpdatedAt: time.Unix(i.UpdatedAt, 0),
-		Data:      i.Data,
+		Key:  i.ID,
+		Data: i.Data,
 	}, nil
 }
 
 // Delete item from the bucket
-func (b *Bucket) Delete(id string) error {
+func (b *Bucket) Delete(key string) error {
 	var i internal.Item
 
 	tx, err := b.node.Begin(true)
@@ -94,7 +90,7 @@ func (b *Bucket) Delete(id string) error {
 		return errors.Wrap(err, "boltdb.bucket.Delete failed to create transaction")
 	}
 
-	err = tx.One("ID", id, &i)
+	err = tx.One("ID", key, &i)
 	if err != nil {
 		tx.Rollback()
 		if err == storm.ErrNotFound {
@@ -130,18 +126,14 @@ func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
 		skip = (page - 1) * perPage
 	}
 
-	err := b.node.AllByIndex("CreatedAt", &list, storm.Skip(skip), storm.Limit(perPage))
+	err := b.node.All(&list, storm.Skip(skip), storm.Limit(perPage))
 	if err != nil {
 		return nil, errors.Wrap(err, "boltdb.bucket.Page failed to fetch items")
 	}
 
 	items := make([]brazier.Item, len(list))
 	for i := range list {
-		items[i].ID = list[i].ID
-		items[i].CreatedAt = time.Unix(0, list[i].CreatedAt)
-		if list[i].UpdatedAt > 0 {
-			items[i].UpdatedAt = time.Unix(0, list[i].UpdatedAt)
-		}
+		items[i].Key = list[i].ID
 		items[i].Data = list[i].Data
 	}
 	return items, nil
@@ -149,5 +141,5 @@ func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
 
 // Close the bucket session
 func (b *Bucket) Close() error {
-	return b.store.closeSession(b.id)
+	return b.store.closeSession(b.key)
 }

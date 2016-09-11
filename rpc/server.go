@@ -54,13 +54,8 @@ func (s *Server) Get(ctx context.Context, in *internal.GetRequest) (*internal.Ge
 	}
 
 	r := internal.GetReply{
-		Key:       item.ID,
-		CreatedAt: item.CreatedAt.UnixNano(),
-		Data:      item.Data,
-	}
-
-	if !item.UpdatedAt.IsZero() {
-		r.UpdatedAt = item.UpdatedAt.UnixNano()
+		Key:  item.Key,
+		Data: item.Data,
 	}
 
 	return &r, nil

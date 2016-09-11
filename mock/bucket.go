@@ -1,8 +1,6 @@
 package mock
 
 import (
-	"time"
-
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 )
@@ -25,32 +23,30 @@ type Bucket struct {
 	CloseInvoked  bool
 }
 
-// Save user data to the bucket. Returns an Iten
-func (b *Bucket) Save(id string, data []byte) (*brazier.Item, error) {
+// Save user data to the bucket. Returns an Item
+func (b *Bucket) Save(key string, data []byte) (*brazier.Item, error) {
 	b.SaveInvoked = true
 
-	item, ok := b.data[id]
+	item, ok := b.data[key]
 	if !ok {
 		item = &brazier.Item{
-			ID:        id,
-			Data:      data,
-			CreatedAt: time.Now(),
+			Key:  key,
+			Data: data,
 		}
-		b.data[id] = item
+		b.data[key] = item
 		b.index = append(b.index, item)
 	} else {
 		item.Data = data
-		item.UpdatedAt = time.Now()
 	}
 
 	return item, nil
 }
 
-// Get an item by id
-func (b *Bucket) Get(id string) (*brazier.Item, error) {
+// Get an item by key
+func (b *Bucket) Get(key string) (*brazier.Item, error) {
 	b.GetInvoked = true
 
-	if item, ok := b.data[id]; ok {
+	if item, ok := b.data[key]; ok {
 		return item, nil
 	}
 
@@ -58,11 +54,11 @@ func (b *Bucket) Get(id string) (*brazier.Item, error) {
 }
 
 // Delete item from the bucket
-func (b *Bucket) Delete(id string) error {
+func (b *Bucket) Delete(key string) error {
 	b.DeleteInvoked = true
 
-	if _, ok := b.data[id]; ok {
-		delete(b.data, id)
+	if _, ok := b.data[key]; ok {
+		delete(b.data, key)
 		return nil
 	}
 

@@ -3,7 +3,6 @@ package boltdb_test
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
@@ -19,18 +18,14 @@ func TestBucketSave(t *testing.T) {
 	b, err := s.Bucket("b1")
 	require.NoError(t, err)
 
-	now := time.Now()
 	i, err := b.Save("id", []byte("Data"))
 	require.NoError(t, err)
-	require.True(t, i.CreatedAt.After(now))
-	require.Equal(t, "id", i.ID)
+	require.Equal(t, "id", i.Key)
 	require.Equal(t, []byte("Data"), i.Data)
 
 	j, err := b.Save("id", []byte("New Data"))
 	require.NoError(t, err)
-	require.Equal(t, i.CreatedAt, j.CreatedAt)
 	require.Equal(t, []byte("New Data"), j.Data)
-	require.True(t, j.UpdatedAt.After(j.CreatedAt))
 
 	err = b.Close()
 	require.NoError(t, err)
@@ -48,7 +43,7 @@ func TestBucketGet(t *testing.T) {
 	i, err := b.Save("id", []byte("Data"))
 	require.NoError(t, err)
 
-	j, err := b.Get(i.ID)
+	j, err := b.Get(i.Key)
 	require.NoError(t, err)
 	require.Equal(t, i.Data, j.Data)
 
@@ -71,13 +66,13 @@ func TestBucketDelete(t *testing.T) {
 	i, err := b.Save("id", []byte("Data"))
 	require.NoError(t, err)
 
-	_, err = b.Get(i.ID)
+	_, err = b.Get(i.Key)
 	require.NoError(t, err)
 
-	err = b.Delete(i.ID)
+	err = b.Delete(i.Key)
 	require.NoError(t, err)
 
-	err = b.Delete(i.ID)
+	err = b.Delete(i.Key)
 	require.Equal(t, store.ErrNotFound, err)
 
 	err = b.Close()
@@ -95,7 +90,7 @@ func TestBucketPage(t *testing.T) {
 	defer b.Close()
 
 	for i := 0; i < 20; i++ {
-		_, err := b.Save(fmt.Sprintf("id%d", i), []byte("Data"))
+		_, err := b.Save(fmt.Sprintf("%c", i+65), []byte("Data"))
 		require.NoError(t, err)
 	}
 
@@ -110,26 +105,26 @@ func TestBucketPage(t *testing.T) {
 	list, err = b.Page(1, 5)
 	require.NoError(t, err)
 	require.Len(t, list, 5)
-	require.Equal(t, "id0", list[0].ID)
-	require.Equal(t, "id4", list[4].ID)
+	require.Equal(t, "A", list[0].Key)
+	require.Equal(t, "E", list[4].Key)
 
 	list, err = b.Page(1, 25)
 	require.NoError(t, err)
 	require.Len(t, list, 20)
-	require.Equal(t, "id0", list[0].ID)
-	require.Equal(t, "id19", list[19].ID)
+	require.Equal(t, "A", list[0].Key)
+	require.Equal(t, "T", list[19].Key)
 
 	list, err = b.Page(2, 5)
 	require.NoError(t, err)
 	require.Len(t, list, 5)
-	require.Equal(t, "id5", list[0].ID)
-	require.Equal(t, "id9", list[4].ID)
+	require.Equal(t, "F", list[0].Key)
+	require.Equal(t, "J", list[4].Key)
 
 	list, err = b.Page(2, 15)
 	require.NoError(t, err)
 	require.Len(t, list, 5)
-	require.Equal(t, "id15", list[0].ID)
-	require.Equal(t, "id19", list[4].ID)
+	require.Equal(t, "P", list[0].Key)
+	require.Equal(t, "T", list[4].Key)
 
 	list, err = b.Page(3, 15)
 	require.NoError(t, err)
@@ -139,6 +134,6 @@ func TestBucketPage(t *testing.T) {
 	list, err = b.Page(1, -1)
 	require.NoError(t, err)
 	require.Len(t, list, 20)
-	require.Equal(t, "id0", list[0].ID)
-	require.Equal(t, "id19", list[19].ID)
+	require.Equal(t, "A", list[0].Key)
+	require.Equal(t, "T", list[19].Key)
 }

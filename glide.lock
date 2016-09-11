@@ -1,8 +1,8 @@
 hash: b117ef5a20700148aad45a3f14f500d8d37df601dea39ed69e050005e461628b
-updated: 2016-09-04T11:04:55.071792235+02:00
+updated: 2016-09-11T18:59:23.113774182+02:00
 imports:
 - name: github.com/asdine/storm
-  version: 6808e1db47f23787fc738b7741ac93504d5fe721
+  version: 8b9fcc3804149611b70c165f0ed31ecde208090a
   subpackages:
   - codec
   - codec/json
@@ -27,9 +27,9 @@ imports:
 - name: github.com/spf13/cobra
   version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
 - name: github.com/spf13/pflag
-  version: 103ce5cd2042f2fe629c1957abb64ab3e7f50235
+  version: 6fd2ff4ff8dfcdf5556fbdc0ac0284408274b1a7
 - name: golang.org/x/net
-  version: 1358eff22f0dd0c54fc521042cc607f6ff4b531a
+  version: cfe3c2a7525b50c3d707256e371c90938cfef98a
   subpackages:
   - context
   - http2
@@ -38,7 +38,7 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/sys
-  version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
+  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
   subpackages:
   - unix
 - name: google.golang.org/grpc
@@ -54,7 +54,7 @@ imports:
   - transport
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 6cf5744a041a0022271cefed95ba843f6d87fd51
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
