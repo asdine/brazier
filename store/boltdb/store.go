@@ -6,9 +6,7 @@ import (
 	"time"
 
 	"github.com/asdine/brazier"
-	"github.com/asdine/brazier/store/boltdb/internal"
 	"github.com/asdine/storm"
-	"github.com/asdine/storm/codec/protobuf"
 	"github.com/boltdb/bolt"
 )
 
@@ -34,10 +32,7 @@ func (s *Store) Create(key string) error {
 	if err != nil {
 		return err
 	}
-	defer bucket.Close()
-
-	b := bucket.(*Bucket)
-	return b.node.Init(&internal.Item{})
+	return bucket.Close()
 }
 
 // Bucket returns the bucket associated with the given id
@@ -67,7 +62,7 @@ func (s *Store) open() error {
 	s.DB, err = storm.Open(
 		s.Path,
 		storm.AutoIncrement(),
-		storm.Codec(protobuf.Codec),
+		storm.Codec(new(rawCodec)),
 		storm.BoltOptions(0644, &bolt.Options{
 			Timeout: time.Duration(50) * time.Millisecond,
 		}),

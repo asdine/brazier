@@ -1,8 +1,8 @@
 hash: b117ef5a20700148aad45a3f14f500d8d37df601dea39ed69e050005e461628b
-updated: 2016-09-11T18:59:23.113774182+02:00
+updated: 2016-09-12T01:51:08.81379914+02:00
 imports:
 - name: github.com/asdine/storm
-  version: 8b9fcc3804149611b70c165f0ed31ecde208090a
+  version: 054d308c69f9493fd5b5b09e3ecb1e51211c1f5d
   subpackages:
   - codec
   - codec/json
@@ -27,7 +27,7 @@ imports:
 - name: github.com/spf13/cobra
   version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
 - name: github.com/spf13/pflag
-  version: 6fd2ff4ff8dfcdf5556fbdc0ac0284408274b1a7
+  version: 7b17cc4658ef5ca157b986ea5c0b43af7938532b
 - name: golang.org/x/net
   version: cfe3c2a7525b50c3d707256e371c90938cfef98a
   subpackages:

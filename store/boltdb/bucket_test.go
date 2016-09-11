@@ -73,7 +73,7 @@ func TestBucketDelete(t *testing.T) {
 	require.NoError(t, err)
 
 	err = b.Delete(i.Key)
-	require.Equal(t, store.ErrNotFound, err)
+	require.NoError(t, err)
 
 	err = b.Close()
 	require.NoError(t, err)
