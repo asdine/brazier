@@ -8,12 +8,14 @@ import (
 
 // MarshalList marshals a list of items
 func MarshalList(items []brazier.Item) ([]byte, error) {
-	list := make([]map[string]*json.RawMessage, len(items))
+	list := make([]map[string]interface{}, len(items))
 
 	for i := range items {
-		d := json.RawMessage(items[i].Data)
-		list[i] = map[string]*json.RawMessage{
-			items[i].ID: &d,
+		k := items[i].ID
+		v := json.RawMessage(items[i].Data)
+		list[i] = map[string]interface{}{
+			"key":  k,
+			"data": &v,
 		}
 	}
 

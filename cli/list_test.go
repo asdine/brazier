@@ -35,11 +35,11 @@ func TestList(t *testing.T) {
 		} else {
 			first = false
 		}
-		expected.WriteString(`{"`)
-		expected.WriteString(cmds[1])
-		expected.WriteString(`":`)
+		expected.WriteString(`{"data":`)
 		expected.WriteString(output)
-		expected.WriteByte('}')
+		expected.WriteString(`,"key":"`)
+		expected.WriteString(cmds[1])
+		expected.WriteString(`"}`)
 	}
 	expected.WriteString("]\n")
 
