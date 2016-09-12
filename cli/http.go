@@ -17,8 +17,8 @@ func NewHTTPCmd(a *app) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "http",
-		Short: "Runs Brazier as an HTTP server",
-		Long:  "Runs Brazier as an HTTP server",
+		Short: "Run Brazier as an HTTP server",
+		Long:  "Run Brazier as an HTTP server",
 		RunE:  httpCmd.Serve,
 	}
 

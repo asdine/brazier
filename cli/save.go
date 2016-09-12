@@ -16,8 +16,8 @@ func NewSaveCmd(a *app) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "save",
-		Short: "Saves a value in a bucket",
-		Long:  `Saves a value in a bucket`,
+		Short: "Save a value in a bucket",
+		Long:  `Save a value in a bucket`,
 		RunE:  saveCmd.Save,
 	}
 

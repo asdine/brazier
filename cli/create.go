@@ -13,8 +13,8 @@ func NewCreateCmd(a *app) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "create",
-		Short: "Creates a bucket",
-		Long:  `Creates a bucket`,
+		Short: "Create a bucket",
+		Long:  `Create a bucket`,
 		RunE:  createCmd.Create,
 	}
 

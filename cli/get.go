@@ -13,8 +13,8 @@ func NewGetCmd(a *app) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "get",
-		Short: "Gets a value from a bucket",
-		Long:  `Gets a value in a bucket`,
+		Short: "Get a value from a bucket",
+		Long:  `Get a value in a bucket`,
 		RunE:  getCmd.Get,
 	}
 

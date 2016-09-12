@@ -17,8 +17,8 @@ func NewRPCCmd(a *app) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "rpc",
-		Short: "Runs Brazier as an RPC server",
-		Long:  "Runs Brazier as an RPC server",
+		Short: "Run Brazier as an RPC server",
+		Long:  "Run Brazier as an RPC server",
 		RunE:  rpcCmd.Serve,
 	}
 

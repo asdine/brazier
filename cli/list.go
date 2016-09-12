@@ -14,8 +14,8 @@ func NewListCmd(a *app) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "list",
-		Short: "Lists the content of a bucket",
-		Long:  `Lists the content of a bucket`,
+		Short: "List the content of a bucket",
+		Long:  `List the content of a bucket`,
 		RunE:  listCmd.List,
 	}
 
