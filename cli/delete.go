@@ -13,8 +13,8 @@ func NewDeleteCmd(a *app) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "delete",
-		Short: "Delete a value from a bucket",
-		Long:  `Delete a value from a bucket`,
+		Short: "Delete a key from a bucket",
+		Long:  `Delete a key from a bucket`,
 		RunE:  deleteCmd.Delete,
 	}
 

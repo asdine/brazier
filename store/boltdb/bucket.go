@@ -55,7 +55,21 @@ func (b *Bucket) Get(key string) (*brazier.Item, error) {
 
 // Delete item from the bucket
 func (b *Bucket) Delete(key string) error {
-	return b.node.Delete("items", key)
+	var dummy []byte
+	err := b.node.Get("items", key, &dummy)
+	if err != nil {
+		if err == storm.ErrNotFound {
+			return store.ErrNotFound
+		}
+
+		return err
+	}
+
+	err = b.node.Delete("items", key)
+	if err == storm.ErrNotFound {
+		return store.ErrNotFound
+	}
+	return err
 }
 
 // Page returns a list of items

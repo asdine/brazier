@@ -1,19 +1,16 @@
-package boltdb_test
+package mock_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/asdine/brazier/mock"
 	"github.com/asdine/brazier/store"
-	"github.com/asdine/brazier/store/boltdb"
 	"github.com/stretchr/testify/require"
 )
 
 func TestBucketSave(t *testing.T) {
-	path, cleanup := preparePath(t)
-	defer cleanup()
-
-	s := boltdb.NewStore(path)
+	s := mock.NewStore()
 
 	err := s.Create("b1")
 	require.NoError(t, err)
@@ -35,10 +32,7 @@ func TestBucketSave(t *testing.T) {
 }
 
 func TestBucketGet(t *testing.T) {
-	path, cleanup := preparePath(t)
-	defer cleanup()
-
-	s := boltdb.NewStore(path)
+	s := mock.NewStore()
 
 	err := s.Create("b1")
 	require.NoError(t, err)
@@ -61,10 +55,7 @@ func TestBucketGet(t *testing.T) {
 }
 
 func TestBucketDelete(t *testing.T) {
-	path, cleanup := preparePath(t)
-	defer cleanup()
-
-	s := boltdb.NewStore(path)
+	s := mock.NewStore()
 
 	err := s.Create("b1")
 	require.NoError(t, err)
@@ -90,10 +81,7 @@ func TestBucketDelete(t *testing.T) {
 }
 
 func TestBucketPage(t *testing.T) {
-	path, cleanup := preparePath(t)
-	defer cleanup()
-
-	s := boltdb.NewStore(path)
+	s := mock.NewStore()
 
 	err := s.Create("b1")
 	require.NoError(t, err)

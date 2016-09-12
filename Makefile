@@ -23,5 +23,8 @@ test:
 testrace:
 	go test -v -race -cover $(PACKAGES)
 
+bench:
+	go test -v -run=NONE -bench=. -benchmem $(PACKAGES)
+
 gen:
 	go generate $(PACKAGES)

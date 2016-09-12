@@ -93,8 +93,9 @@ func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
 	}
 
 	items := make([]brazier.Item, end-start)
-	for i := range b.index[start:end] {
-		items[i] = *b.index[i]
+	slice := b.index[start:end]
+	for i := range slice {
+		items[i] = *slice[i]
 	}
 	return items, nil
 }

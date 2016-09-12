@@ -15,6 +15,10 @@ func BenchmarkBucketSave(b *testing.B) {
 
 	s := boltdb.NewStore(path)
 
+	err := s.Create("b1")
+	if err != nil {
+		b.Error(err)
+	}
 	bucket, err := s.Bucket("b1")
 	if err != nil {
 		b.Error(err)
@@ -38,6 +42,10 @@ func BenchmarkBucketGet(b *testing.B) {
 
 	s := boltdb.NewStore(path)
 
+	err := s.Create("b1")
+	if err != nil {
+		b.Error(err)
+	}
 	bucket, err := s.Bucket("b1")
 	if err != nil {
 		b.Error(err)
@@ -65,6 +73,10 @@ func BenchmarkBucketPage(b *testing.B) {
 
 	s := boltdb.NewStore(path)
 
+	err := s.Create("b1")
+	if err != nil {
+		b.Error(err)
+	}
 	bucket, err := s.Bucket("b1")
 	if err != nil {
 		b.Error(err)

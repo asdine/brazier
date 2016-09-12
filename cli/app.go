@@ -35,7 +35,7 @@ func New() *cobra.Command {
 	cmd.AddCommand(NewHTTPCmd(&a))
 	cmd.AddCommand(NewRPCCmd(&a))
 
-	cmd.PersistentFlags().StringVarP(&a.ConfigPath, "config", "c", "", "config file")
+	cmd.PersistentFlags().StringVar(&a.ConfigPath, "config", "", "config file")
 	cmd.PersistentFlags().StringVar(&a.DataDir, "data-dir", "", "data directory (default $HOME/.brazier)")
 	return &cmd
 }
