@@ -44,6 +44,7 @@ func (s *Store) List() ([]string, error) {
 	i := 0
 	for k := range s.Buckets {
 		list[i] = k
+		i++
 	}
 
 	return list, nil

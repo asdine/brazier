@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/store"
 	"github.com/asdine/storm"
 	"github.com/boltdb/bolt"
 	"github.com/pkg/errors"
@@ -49,6 +50,15 @@ func (s *Store) Bucket(name string) (brazier.Bucket, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	var str []byte
+	err := s.DB.Get("buckets", name, &str)
+	if err != nil {
+		if err == storm.ErrNotFound {
+			return nil, store.ErrNotFound
+		}
+		return nil, err
 	}
 
 	node := s.DB.From(name)

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
 	"github.com/asdine/storm"
 	"github.com/stretchr/testify/require"
@@ -59,8 +60,16 @@ func TestStore(t *testing.T) {
 
 	b1, err := s.Bucket("bucket1")
 	require.NoError(t, err)
+
 	b2, err := s.Bucket("bucket2")
+	require.Equal(t, err, store.ErrNotFound)
+
+	err = s.Create("bucket2")
 	require.NoError(t, err)
+
+	b2, err = s.Bucket("bucket2")
+	require.NoError(t, err)
+
 	b1bis, err := s.Bucket("bucket1")
 	require.NoError(t, err)
 
@@ -78,5 +87,5 @@ func TestStore(t *testing.T) {
 
 	list, err := s.List()
 	require.NoError(t, err)
-	require.Len(t, list, 1)
+	require.Len(t, list, 2)
 }

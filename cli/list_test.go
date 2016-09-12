@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestList(t *testing.T) {
+func TestListItems(t *testing.T) {
 	app := testableApp(t)
 
 	out := app.Out.(*bytes.Buffer)
@@ -47,4 +47,19 @@ func TestList(t *testing.T) {
 	err := l.List(nil, []string{"bucket"})
 	require.NoError(t, err)
 	require.Equal(t, expected.String(), out.String())
+}
+
+func TestListBuckets(t *testing.T) {
+	app := testableApp(t)
+
+	err := app.Store.Create("bucket1")
+	require.NoError(t, err)
+	err = app.Store.Create("bucket2")
+	require.NoError(t, err)
+
+	out := app.Out.(*bytes.Buffer)
+	l := listCmd{App: app}
+	err = l.List(nil, nil)
+	require.NoError(t, err)
+	require.Equal(t, "bucket1\nbucket2\n", out.String())
 }
