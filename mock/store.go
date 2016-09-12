@@ -38,6 +38,17 @@ func (s *Store) Bucket(id string) (brazier.Bucket, error) {
 	return b, nil
 }
 
+// List buckets
+func (s *Store) List() ([]string, error) {
+	list := make([]string, len(s.Buckets))
+	i := 0
+	for k := range s.Buckets {
+		list[i] = k
+	}
+
+	return list, nil
+}
+
 // Close the store
 func (s *Store) Close() error {
 	s.CloseInvoked = true

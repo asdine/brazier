@@ -17,7 +17,8 @@ type Bucket interface {
 
 // A Store manages the backend of specific buckets
 type Store interface {
-	Create(key string) error
-	Bucket(key string) (Bucket, error)
+	Create(name string) error
+	Bucket(name string) (Bucket, error)
+	List() ([]string, error)
 	Close() error
 }

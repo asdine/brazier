@@ -75,4 +75,8 @@ func TestStore(t *testing.T) {
 	err = b1bis.Close()
 	require.NoError(t, err)
 	require.Nil(t, s.DB)
+
+	list, err := s.List()
+	require.NoError(t, err)
+	require.Len(t, list, 1)
 }

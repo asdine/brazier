@@ -1,13 +1,13 @@
 package boltdb
 
 import (
-	"errors"
 	"sync"
 	"time"
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/storm"
 	"github.com/boltdb/bolt"
+	"github.com/pkg/errors"
 )
 
 // NewStore returns a BoltDB store
@@ -27,16 +27,20 @@ type Store struct {
 }
 
 // Create a bucket
-func (s *Store) Create(key string) error {
-	bucket, err := s.Bucket(key)
-	if err != nil {
-		return err
+func (s *Store) Create(name string) error {
+	if len(s.sessions) == 0 {
+		err := s.open()
+		if err != nil {
+			return err
+		}
+		defer s.close()
 	}
-	return bucket.Close()
+
+	return s.DB.Set("buckets", name, nil)
 }
 
 // Bucket returns the bucket associated with the given id
-func (s *Store) Bucket(key string) (brazier.Bucket, error) {
+func (s *Store) Bucket(name string) (brazier.Bucket, error) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -47,10 +51,32 @@ func (s *Store) Bucket(key string) (brazier.Bucket, error) {
 		}
 	}
 
-	node := s.DB.From(key)
-	s.sessions[key] = append(s.sessions[key], node)
+	node := s.DB.From(name)
+	s.sessions[name] = append(s.sessions[name], node)
 
-	return NewBucket(s, key, node), nil
+	return NewBucket(s, name, node), nil
+}
+
+// List returns the list of all buckets
+func (s *Store) List() ([]string, error) {
+	if len(s.sessions) == 0 {
+		err := s.open()
+		if err != nil {
+			return nil, err
+		}
+		defer s.close()
+	}
+
+	var buckets []string
+	err := s.DB.Select().Bucket("buckets").RawEach(func(k, v []byte) error {
+		buckets = append(buckets, string(k))
+		return nil
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "boltdb.store.List failed to fetch buckets")
+	}
+
+	return buckets, nil
 }
 
 func (s *Store) open() error {
@@ -89,22 +115,22 @@ func (s *Store) close() error {
 	return err
 }
 
-func (s *Store) closeSession(key string) error {
+func (s *Store) closeSession(name string) error {
 	s.Lock()
 	defer s.Unlock()
 
-	list, ok := s.sessions[key]
+	list, ok := s.sessions[name]
 	if !ok {
 		return errors.New("unknown session id")
 	}
 
 	if len(list) == 1 {
-		delete(s.sessions, key)
+		delete(s.sessions, name)
 		if len(s.sessions) == 0 {
 			return s.close()
 		}
 	} else {
-		s.sessions[key] = list[:len(list)-1]
+		s.sessions[name] = list[:len(list)-1]
 	}
 
 	return nil
