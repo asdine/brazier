@@ -24,6 +24,7 @@ func NewServerCmd(a *app) *cobra.Command {
 		RPCServerFunc:    rpc.NewServer,
 		SocketServerFunc: rpc.NewServer,
 		useExit:          true,
+		c:                make(chan os.Signal, 1),
 	}
 
 	cmd := cobra.Command{
@@ -94,7 +95,6 @@ func (s *serverCmd) runServers(servers map[net.Listener]brazier.Server) {
 		}(l, srv)
 	}
 
-	s.c = make(chan os.Signal, 1)
 	signal.Notify(s.c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		for _ = range s.c {

@@ -46,6 +46,7 @@ func TestRunServers(t *testing.T) {
 		HTTPServerFunc:   mock.NewServer,
 		RPCServerFunc:    mock.NewServer,
 		SocketServerFunc: mock.NewServer,
+		c:                make(chan os.Signal, 1),
 	}
 
 	servers, err := s.createServers()
