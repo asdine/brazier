@@ -14,12 +14,12 @@ type Config struct {
 
 // HTTP configuration
 type HTTP struct {
-	Port int
+	Address string
 }
 
 // RPC configuration
 type RPC struct {
-	Port int
+	Address string
 }
 
 // FromFile reads the configuration from a file

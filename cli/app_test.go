@@ -11,21 +11,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testableApp(t *testing.T) *app {
-	return &app{Out: bytes.NewBuffer([]byte("")), Store: mock.NewStore()}
-}
-
-func TestAppDataDir(t *testing.T) {
+func testableApp(t *testing.T) (*app, func()) {
 	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
 	require.NoError(t, err)
 
-	defer os.RemoveAll(dir)
+	return &app{Out: bytes.NewBuffer([]byte("")), Store: mock.NewStore(), DataDir: dir}, func() {
+		os.RemoveAll(dir)
+	}
+}
 
-	app := testableApp(t)
+func TestAppDataDir(t *testing.T) {
+	app, cleanup := testableApp(t)
+	defer cleanup()
+
+	dir := app.DataDir
+	app.DataDir = ""
 
 	// using HOME directory
 	os.Setenv("HOME", dir)
-	err = app.initDataDir()
+	err := app.initDataDir()
 	require.NoError(t, err)
 	require.Equal(t, filepath.Join(dir, ".brazier"), app.DataDir)
 	fi, err := os.Stat(app.DataDir)

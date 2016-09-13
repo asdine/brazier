@@ -32,8 +32,7 @@ func New() *cobra.Command {
 	cmd.AddCommand(NewGetCmd(&a))
 	cmd.AddCommand(NewDeleteCmd(&a))
 	cmd.AddCommand(NewListCmd(&a))
-	cmd.AddCommand(NewHTTPCmd(&a))
-	cmd.AddCommand(NewRPCCmd(&a))
+	cmd.AddCommand(NewServerCmd(&a))
 
 	cmd.PersistentFlags().StringVar(&a.ConfigPath, "config", "", "config file")
 	cmd.PersistentFlags().StringVar(&a.DataDir, "data-dir", "", "data directory (default $HOME/.brazier)")

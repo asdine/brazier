@@ -8,7 +8,8 @@ import (
 )
 
 func TestListItems(t *testing.T) {
-	app := testableApp(t)
+	app, cleanup := testableApp(t)
+	defer cleanup()
 
 	out := app.Out.(*bytes.Buffer)
 
@@ -50,7 +51,8 @@ func TestListItems(t *testing.T) {
 }
 
 func TestListBuckets(t *testing.T) {
-	app := testableApp(t)
+	app, cleanup := testableApp(t)
+	defer cleanup()
 
 	err := app.Store.Create("bucket1")
 	require.NoError(t, err)

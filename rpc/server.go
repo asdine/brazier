@@ -1,8 +1,8 @@
 package rpc
 
 import (
-	"fmt"
 	"net"
+	"time"
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/rpc/internal"
@@ -10,6 +10,29 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
+
+// NewServer returns a configured gRPC server
+func NewServer(s brazier.Store) brazier.Server {
+	g := grpc.NewServer()
+	srv := Server{Store: s}
+	internal.RegisterSaverServer(g, &srv)
+	internal.RegisterGetterServer(g, &srv)
+	internal.RegisterListerServer(g, &srv)
+	internal.RegisterDeleterServer(g, &srv)
+	return &serverWrapper{srv: g}
+}
+
+type serverWrapper struct {
+	srv *grpc.Server
+}
+
+func (s *serverWrapper) Serve(l net.Listener) error {
+	return s.srv.Serve(l)
+}
+
+func (s *serverWrapper) Stop(time.Duration) {
+	s.srv.GracefulStop()
+}
 
 // Server is the Brazier gRPC server
 type Server struct {
@@ -94,16 +117,4 @@ func (s *Server) List(ctx context.Context, in *internal.ListRequest) (*internal.
 	}
 
 	return &internal.ListReply{Items: list}, nil
-}
-
-// Serve runs the RPC server
-func Serve(s brazier.Store, port int) error {
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		return err
-	}
-	srv := grpc.NewServer()
-	internal.RegisterSaverServer(srv, &Server{Store: s})
-	internal.RegisterGetterServer(srv, &Server{Store: s})
-	return srv.Serve(l)
 }

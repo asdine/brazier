@@ -2,20 +2,25 @@ package http
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
+
+	graceful "gopkg.in/tylerb/graceful.v1"
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/json"
 	"github.com/asdine/brazier/store"
 )
 
-// Serve runs the HTTP server
-func Serve(s brazier.Store, port int) error {
+// NewServer returns a configured HTTP server
+func NewServer(s brazier.Store) brazier.Server {
 	http.Handle("/", &Handler{Store: s})
-	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	srv := graceful.Server{
+		Server: &http.Server{},
+	}
+
+	return &srv
 }
 
 // Handler is the main http handler

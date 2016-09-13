@@ -1,5 +1,5 @@
 hash: b117ef5a20700148aad45a3f14f500d8d37df601dea39ed69e050005e461628b
-updated: 2016-09-13T16:38:18.085478269+02:00
+updated: 2016-09-13T23:03:50.582610854+02:00
 imports:
 - name: github.com/asdine/storm
   version: 6c51b369d4c64cc81592ca2473cb2448ecbf8969
@@ -53,6 +53,8 @@ imports:
   - naming
   - peer
   - transport
+- name: gopkg.in/tylerb/graceful.v1
+  version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9

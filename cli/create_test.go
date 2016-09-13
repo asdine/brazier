@@ -8,7 +8,8 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-	app := testableApp(t)
+	app, cleanup := testableApp(t)
+	defer cleanup()
 
 	out := app.Out.(*bytes.Buffer)
 
