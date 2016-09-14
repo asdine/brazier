@@ -102,5 +102,5 @@ func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
 
 // Close the bucket session
 func (b *Bucket) Close() error {
-	return b.store.closeSession(b.key)
+	return nil
 }

@@ -12,6 +12,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	defaultDBName     = "brazier.db"
+	defaultDataDir    = ".brazier"
+	defaultSocketName = "brazier.sock"
+)
+
 // New returns a configured Cobra command
 func New() *cobra.Command {
 	a := app{Out: os.Stdout}
@@ -65,7 +71,12 @@ func (a *app) PreRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	a.Store = boltdb.NewStore(filepath.Join(a.DataDir, "brazier.db"))
+	if !a.serverIsLaunched() {
+		a.Store, err = boltdb.NewStore(filepath.Join(a.DataDir, defaultDBName))
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -81,9 +92,9 @@ func (a *app) initConfig() error {
 func (a *app) initDataDir() error {
 	if a.DataDir == "" {
 		// check in the local directory
-		fi, err := os.Stat(".brazier")
+		fi, err := os.Stat(defaultDataDir)
 		if err == nil && fi.Mode().IsDir() {
-			a.DataDir = ".brazier"
+			a.DataDir = defaultDataDir
 			return nil
 		}
 
@@ -92,7 +103,7 @@ func (a *app) initDataDir() error {
 		if home == "" {
 			return errors.New("Can't find $HOME directory")
 		}
-		a.DataDir = filepath.Join(home, ".brazier")
+		a.DataDir = filepath.Join(home, defaultDataDir)
 	}
 
 	fi, err := os.Stat(a.DataDir)
@@ -105,4 +116,9 @@ func (a *app) initDataDir() error {
 	}
 
 	return nil
+}
+
+func (a *app) serverIsLaunched() bool {
+	_, err := os.Stat(filepath.Join(defaultDataDir, defaultSocketName))
+	return err == nil
 }

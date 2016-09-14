@@ -44,9 +44,10 @@ func TestStore(t *testing.T) {
 	path, cleanup := preparePath(t)
 	defer cleanup()
 
-	s := boltdb.NewStore(path)
+	s, err := boltdb.NewStore(path)
+	require.NoError(t, err)
 
-	err := s.Create("bucket1")
+	err = s.Create("bucket1")
 	require.NoError(t, err)
 
 	bucket, err := s.Bucket("bucket1")
@@ -56,7 +57,6 @@ func TestStore(t *testing.T) {
 
 	err = bucket.Close()
 	require.NoError(t, err)
-	require.Nil(t, s.DB)
 
 	b1, err := s.Bucket("bucket1")
 	require.NoError(t, err)
@@ -75,15 +75,12 @@ func TestStore(t *testing.T) {
 
 	err = b1.Close()
 	require.NoError(t, err)
-	require.NotNil(t, s.DB)
 
 	err = b2.Close()
 	require.NoError(t, err)
-	require.NotNil(t, s.DB)
 
 	err = b1bis.Close()
 	require.NoError(t, err)
-	require.Nil(t, s.DB)
 
 	list, err := s.List()
 	require.NoError(t, err)
