@@ -39,6 +39,14 @@ type Store struct {
 
 // Create a bucket
 func (s *Store) Create(name string) error {
+	_, err := s.Bucket(name)
+	if err == nil {
+		return store.ErrAlreadyExists
+	}
+	if err != store.ErrNotFound {
+		return err
+	}
+
 	return s.DB.Set("buckets", name, nil)
 }
 

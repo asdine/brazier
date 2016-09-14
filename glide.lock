@@ -1,5 +1,5 @@
 hash: b117ef5a20700148aad45a3f14f500d8d37df601dea39ed69e050005e461628b
-updated: 2016-09-13T23:03:50.582610854+02:00
+updated: 2016-09-14T20:53:54.71174515+02:00
 imports:
 - name: github.com/asdine/storm
   version: 6c51b369d4c64cc81592ca2473cb2448ecbf8969
@@ -29,7 +29,7 @@ imports:
 - name: github.com/spf13/pflag
   version: 7b17cc4658ef5ca157b986ea5c0b43af7938532b
 - name: golang.org/x/net
-  version: 749a502dd1eaf3e5bfd4f8956748c502357c0bbe
+  version: de35ec43e7a9aabd6a9c54d2898220ea7e44de7d
   subpackages:
   - context
   - http2

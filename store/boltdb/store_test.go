@@ -50,6 +50,10 @@ func TestStore(t *testing.T) {
 	err = s.Create("bucket1")
 	require.NoError(t, err)
 
+	err = s.Create("bucket1")
+	require.Error(t, err)
+	require.Equal(t, store.ErrAlreadyExists, err)
+
 	bucket, err := s.Bucket("bucket1")
 	require.NoError(t, err)
 	require.NotNil(t, bucket)
