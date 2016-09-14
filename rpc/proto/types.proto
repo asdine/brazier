@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package proto;
+
+// Empty Response
+message Empty {}
+
+// The request message containing the name of the bucket.
+message NewBucket {
+  string name = 1;
+}
+
+// Item sent to be saved in the bucket
+message NewItem {
+  string bucket = 1;
+  string key = 2;
+  bytes data = 3;
+}
+
+// Select a bucket
+message BucketSelector {
+  string bucket = 1;
+}
+
+// Select a key
+message KeySelector {
+  string bucket = 1;
+  string key = 2;
+}
+
+// Item informations
+message Item {
+  string key = 1;
+  bytes data = 2;
+}
+
+// List of items
+message Items {
+  repeated Item items = 1;
+}

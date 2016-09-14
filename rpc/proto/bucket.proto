@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package proto;
+
+import "types.proto";
+
+// The Creator service definition.
+service Bucket {
+  // Create a bucket
+  rpc Create (NewBucket) returns (Empty) {}
+  // Saves user data
+  rpc Save (NewItem) returns (Empty) {}
+  // List the bucket content
+  rpc List (BucketSelector) returns (Items) {}
+  // Get an item
+  rpc Get (KeySelector) returns (Item) {}
+  // Delete an item
+  rpc Delete (KeySelector) returns (Empty) {}
+}

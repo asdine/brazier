@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/asdine/brazier"
-	"github.com/asdine/brazier/rpc/internal"
+	"github.com/asdine/brazier/rpc/proto"
 	"github.com/asdine/brazier/store"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -15,10 +15,7 @@ import (
 func NewServer(s brazier.Store) brazier.Server {
 	g := grpc.NewServer()
 	srv := Server{Store: s}
-	internal.RegisterSaverServer(g, &srv)
-	internal.RegisterGetterServer(g, &srv)
-	internal.RegisterListerServer(g, &srv)
-	internal.RegisterDeleterServer(g, &srv)
+	proto.RegisterBucketServer(g, &srv)
 	return &serverWrapper{srv: g}
 }
 
@@ -39,8 +36,18 @@ type Server struct {
 	Store brazier.Store
 }
 
+// Create a bucket
+func (s *Server) Create(ctx context.Context, in *proto.NewBucket) (*proto.Empty, error) {
+	err := s.Store.Create(in.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto.Empty{}, nil
+}
+
 // Save an item to the bucket
-func (s *Server) Save(ctx context.Context, in *internal.SaveRequest) (*internal.SaveReply, error) {
+func (s *Server) Save(ctx context.Context, in *proto.NewItem) (*proto.Empty, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
 		if err != store.ErrNotFound {
@@ -61,11 +68,11 @@ func (s *Server) Save(ctx context.Context, in *internal.SaveRequest) (*internal.
 		return nil, err
 	}
 
-	return &internal.SaveReply{Status: 200}, nil
+	return &proto.Empty{}, nil
 }
 
 // Get an item from the bucket
-func (s *Server) Get(ctx context.Context, in *internal.GetRequest) (*internal.GetReply, error) {
+func (s *Server) Get(ctx context.Context, in *proto.KeySelector) (*proto.Item, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
 		return nil, err
@@ -76,7 +83,7 @@ func (s *Server) Get(ctx context.Context, in *internal.GetRequest) (*internal.Ge
 		return nil, err
 	}
 
-	r := internal.GetReply{
+	r := proto.Item{
 		Key:  item.Key,
 		Data: item.Data,
 	}
@@ -85,7 +92,7 @@ func (s *Server) Get(ctx context.Context, in *internal.GetRequest) (*internal.Ge
 }
 
 // Delete an item from the bucket
-func (s *Server) Delete(ctx context.Context, in *internal.DeleteRequest) (*internal.DeleteReply, error) {
+func (s *Server) Delete(ctx context.Context, in *proto.KeySelector) (*proto.Empty, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
 		return nil, err
@@ -96,11 +103,11 @@ func (s *Server) Delete(ctx context.Context, in *internal.DeleteRequest) (*inter
 		return nil, err
 	}
 
-	return &internal.DeleteReply{Status: 200}, nil
+	return &proto.Empty{}, nil
 }
 
 // List the content of a bucket
-func (s *Server) List(ctx context.Context, in *internal.ListRequest) (*internal.ListReply, error) {
+func (s *Server) List(ctx context.Context, in *proto.BucketSelector) (*proto.Items, error) {
 	b, err := s.Store.Bucket(in.Bucket)
 	if err != nil {
 		return nil, err
@@ -111,10 +118,13 @@ func (s *Server) List(ctx context.Context, in *internal.ListRequest) (*internal.
 		return nil, err
 	}
 
-	list := make([][]byte, len(items))
+	list := make([]*proto.Item, len(items))
 	for i := range items {
-		list[i] = items[i].Data
+		list[i] = &proto.Item{
+			Key:  items[i].Key,
+			Data: items[i].Data,
+		}
 	}
 
-	return &internal.ListReply{Items: list}, nil
+	return &proto.Items{Items: list}, nil
 }
