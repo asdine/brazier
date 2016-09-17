@@ -3,11 +3,16 @@ package cli
 import (
 	"errors"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
+	"time"
+
+	"google.golang.org/grpc"
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/config"
+	"github.com/asdine/brazier/rpc/proto"
 	"github.com/asdine/brazier/store/boltdb"
 	"github.com/spf13/cobra"
 )
@@ -18,39 +23,14 @@ const (
 	defaultSocketName = "brazier.sock"
 )
 
-// New returns a configured Cobra command
-func New() *cobra.Command {
-	a := app{Out: os.Stdout}
-
-	cmd := cobra.Command{
-		Use:               "brazier",
-		Short:             "Brazier",
-		Long:              `Brazier`,
-		Run:               a.Run,
-		SilenceErrors:     true,
-		SilenceUsage:      true,
-		PersistentPreRunE: a.PreRun,
-	}
-
-	cmd.SetOutput(os.Stdout)
-	cmd.AddCommand(NewCreateCmd(&a))
-	cmd.AddCommand(NewSaveCmd(&a))
-	cmd.AddCommand(NewGetCmd(&a))
-	cmd.AddCommand(NewDeleteCmd(&a))
-	cmd.AddCommand(NewListCmd(&a))
-	cmd.AddCommand(NewServerCmd(&a))
-
-	cmd.PersistentFlags().StringVar(&a.ConfigPath, "config", "", "config file")
-	cmd.PersistentFlags().StringVar(&a.DataDir, "data-dir", "", "data directory (default $HOME/.brazier)")
-	return &cmd
-}
-
 // App is the main cli application
 type app struct {
 	Out        io.Writer
+	Cli        Cli
 	Store      brazier.Store
 	ConfigPath string
 	DataDir    string
+	SocketPath string
 	Config     config.Config
 }
 
@@ -71,12 +51,27 @@ func (a *app) PreRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if !a.serverIsLaunched() {
-		a.Store, err = boltdb.NewStore(filepath.Join(a.DataDir, defaultDBName))
+	a.SocketPath = filepath.Join(a.DataDir, defaultSocketName)
+
+	if a.serverIsLaunched() {
+		client, err := a.rpcClient()
 		if err != nil {
 			return err
 		}
+
+		a.Cli = &rpcCli{
+			App:    a,
+			Client: client,
+		}
+		return nil
 	}
+
+	a.Store, err = boltdb.NewStore(filepath.Join(a.DataDir, defaultDBName))
+	if err != nil {
+		return err
+	}
+	a.Cli = &cli{App: a}
+
 	return nil
 }
 
@@ -119,6 +114,21 @@ func (a *app) initDataDir() error {
 }
 
 func (a *app) serverIsLaunched() bool {
-	_, err := os.Stat(filepath.Join(defaultDataDir, defaultSocketName))
+	_, err := os.Stat(a.SocketPath)
 	return err == nil
+}
+
+func (a *app) rpcClient() (proto.BucketClient, error) {
+	conn, err := grpc.Dial("",
+		grpc.WithInsecure(),
+		grpc.WithDialer(func(addr string, timeout time.Duration) (net.Conn, error) {
+			sock, err := net.DialTimeout("unix", a.SocketPath, timeout)
+			return sock, err
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return proto.NewBucketClient(conn), nil
 }

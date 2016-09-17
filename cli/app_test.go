@@ -15,7 +15,15 @@ func testableApp(t *testing.T) (*app, func()) {
 	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
 	require.NoError(t, err)
 
-	return &app{Out: bytes.NewBuffer([]byte("")), Store: mock.NewStore(), DataDir: dir}, func() {
+	a := app{
+		Out:     bytes.NewBuffer([]byte("")),
+		Store:   mock.NewStore(),
+		DataDir: dir,
+	}
+
+	a.Cli = &cli{App: &a}
+
+	return &a, func() {
 		os.RemoveAll(dir)
 	}
 }

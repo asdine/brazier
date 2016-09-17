@@ -53,6 +53,28 @@ func TestCreator(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestBuckets(t *testing.T) {
+	s := mock.NewStore()
+	conn, cleanup := newServer(t, s)
+	defer cleanup()
+
+	c := proto.NewBucketClient(conn)
+
+	list, err := c.Buckets(context.Background(), &proto.Empty{})
+	require.NoError(t, err)
+	require.True(t, s.ListInvoked)
+	require.Len(t, list.Buckets, 0)
+
+	s.Create("bucket1")
+	s.Create("bucket2")
+
+	list, err = c.Buckets(context.Background(), &proto.Empty{})
+	require.NoError(t, err)
+	require.True(t, s.ListInvoked)
+	require.Len(t, list.Buckets, 2)
+	require.NoError(t, err)
+}
+
 func TestSaver(t *testing.T) {
 	s := mock.NewStore()
 	conn, cleanup := newServer(t, s)
@@ -71,7 +93,7 @@ func TestSaver(t *testing.T) {
 
 	item, err := b.Get("key")
 	require.NoError(t, err)
-	require.Equal(t, []byte("data"), item.Data)
+	require.Equal(t, []byte(`"data"`), item.Data)
 }
 
 func TestLister(t *testing.T) {

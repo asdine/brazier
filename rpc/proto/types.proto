@@ -10,6 +10,16 @@ message NewBucket {
   string name = 1;
 }
 
+// Bucket informations
+message BucketInfo {
+  string name = 1;
+}
+
+// List of buckets
+message BucketInfos {
+  repeated BucketInfo buckets = 1;
+}
+
 // Item sent to be saved in the bucket
 message NewItem {
   string bucket = 1;

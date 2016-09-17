@@ -61,23 +61,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
-	bucket, err := h.Store.Bucket(bucketName)
+	bucket, err := store.GetBucketOrCreate(h.Store, bucketName)
 	if err != nil {
-		if err != store.ErrNotFound {
-			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		err = h.Store.Create(bucketName)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		bucket, err = h.Store.Bucket(bucketName)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		log.Print(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	defer bucket.Close()
 
@@ -96,18 +84,7 @@ func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName st
 		return
 	}
 
-	data := buffer.Bytes()
-	if !json.IsValid(data) {
-		var b bytes.Buffer
-		b.Grow(len(data) + 2)
-		b.WriteByte('"')
-		b.Write(data)
-		b.WriteByte('"')
-		data = b.Bytes()
-	} else {
-		data = json.Clean(data)
-	}
-
+	data := json.ToValidJSON(buffer.Bytes())
 	_, err = bucket.Save(key, data)
 	if err != nil {
 		log.Print(err)

@@ -1,6 +1,7 @@
 package json
 
 import (
+	"bytes"
 	"encoding/json"
 
 	"github.com/asdine/brazier"
@@ -20,4 +21,17 @@ func MarshalList(items []brazier.Item) ([]byte, error) {
 	}
 
 	return json.Marshal(list)
+}
+
+// ToValidJSON converts data to a valid JSON payload
+func ToValidJSON(data []byte) []byte {
+	if IsValid(data) {
+		return Clean(data)
+	}
+	var buffer bytes.Buffer
+	buffer.Grow(len(data) + 2)
+	buffer.WriteByte('"')
+	buffer.Write(data)
+	buffer.WriteByte('"')
+	return buffer.Bytes()
 }

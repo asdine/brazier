@@ -16,4 +16,6 @@ service Bucket {
   rpc Get (KeySelector) returns (Item) {}
   // Delete an item
   rpc Delete (KeySelector) returns (Empty) {}
+  // List the buckets
+  rpc Buckets(Empty) returns (BucketInfos) {}
 }

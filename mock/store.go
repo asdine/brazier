@@ -19,6 +19,7 @@ type Store struct {
 	CreateInvoked bool
 	BucketInvoked bool
 	CloseInvoked  bool
+	ListInvoked   bool
 }
 
 // Create a bucket
@@ -42,6 +43,7 @@ func (s *Store) Bucket(id string) (brazier.Bucket, error) {
 
 // List buckets
 func (s *Store) List() ([]string, error) {
+	s.ListInvoked = true
 	return s.index, nil
 }
 

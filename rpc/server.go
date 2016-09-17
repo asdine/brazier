@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/json"
 	"github.com/asdine/brazier/rpc/proto"
 	"github.com/asdine/brazier/store"
 	"golang.org/x/net/context"
@@ -46,24 +47,33 @@ func (s *Server) Create(ctx context.Context, in *proto.NewBucket) (*proto.Empty,
 	return &proto.Empty{}, nil
 }
 
-// Save an item to the bucket
-func (s *Server) Save(ctx context.Context, in *proto.NewItem) (*proto.Empty, error) {
-	b, err := s.Store.Bucket(in.Bucket)
+// Buckets returns the list of existing buckets
+func (s *Server) Buckets(ctx context.Context, in *proto.Empty) (*proto.BucketInfos, error) {
+	list, err := s.Store.List()
 	if err != nil {
-		if err != store.ErrNotFound {
-			return nil, err
-		}
-		err = s.Store.Create(in.Bucket)
-		if err != nil {
-			return nil, err
-		}
-		b, err = s.Store.Bucket(in.Bucket)
-		if err != nil {
-			return nil, err
+		return nil, err
+	}
+
+	var infos proto.BucketInfos
+	infos.Buckets = make([]*proto.BucketInfo, len(list))
+	for i, name := range list {
+		infos.Buckets[i] = &proto.BucketInfo{
+			Name: name,
 		}
 	}
 
-	_, err = b.Save(in.Key, in.Data)
+	return &infos, nil
+}
+
+// Save an item to the bucket
+func (s *Server) Save(ctx context.Context, in *proto.NewItem) (*proto.Empty, error) {
+	bucket, err := store.GetBucketOrCreate(s.Store, in.Bucket)
+	if err != nil {
+		return nil, err
+	}
+
+	data := json.ToValidJSON(in.Data)
+	_, err = bucket.Save(in.Key, data)
 	if err != nil {
 		return nil, err
 	}
