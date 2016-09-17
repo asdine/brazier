@@ -15,13 +15,14 @@ func New() *cobra.Command {
 	}
 
 	cmd := cobra.Command{
-		Use:               "brazier",
-		Short:             "Brazier",
-		Long:              `Brazier`,
-		Run:               a.Run,
-		SilenceErrors:     true,
-		SilenceUsage:      true,
-		PersistentPreRunE: a.PreRun,
+		Use:                "brazier",
+		Short:              "Brazier",
+		Long:               `Brazier`,
+		Run:                a.Run,
+		SilenceErrors:      true,
+		SilenceUsage:       true,
+		PersistentPreRunE:  a.PreRun,
+		PersistentPostRunE: a.PostRun,
 	}
 
 	cmd.SetOutput(os.Stdout)

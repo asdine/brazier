@@ -32,6 +32,7 @@ type app struct {
 	DataDir    string
 	SocketPath string
 	Config     config.Config
+	conn       *grpc.ClientConn
 }
 
 // Run runs the root command
@@ -72,6 +73,13 @@ func (a *app) PreRun(cmd *cobra.Command, args []string) error {
 	}
 	a.Cli = &cli{App: a}
 
+	return nil
+}
+
+func (a *app) PostRun(cmd *cobra.Command, args []string) error {
+	if a.conn != nil {
+		return a.conn.Close()
+	}
 	return nil
 }
 
@@ -130,5 +138,6 @@ func (a *app) rpcClient() (proto.BucketClient, error) {
 		return nil, err
 	}
 
+	a.conn = conn
 	return proto.NewBucketClient(conn), nil
 }

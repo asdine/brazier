@@ -1,7 +1,6 @@
 package rpc_test
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"testing"
@@ -13,6 +12,7 @@ import (
 	"github.com/asdine/brazier/rpc/proto"
 	"github.com/asdine/brazier/store"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/asdine/brazier/store"
 	"github.com/stretchr/testify/require"
 )
 
@@ -51,42 +50,42 @@ func TestCliDelete(t *testing.T) {
 }
 
 func TestCliRPCCreate(t *testing.T) {
-	app, cleanup := testableApp(t)
+	app, cleanup := testableAppRPC(t)
 	defer cleanup()
 
 	testCreate(t, app)
 }
 
 func TestCliRPCSave(t *testing.T) {
-	app, cleanup := testableApp(t)
+	app, cleanup := testableAppRPC(t)
 	defer cleanup()
 
 	testSave(t, app)
 }
 
 func TestCliRPCGet(t *testing.T) {
-	app, cleanup := testableApp(t)
+	app, cleanup := testableAppRPC(t)
 	defer cleanup()
 
 	testGet(t, app)
 }
 
 func TestCliRPCListItems(t *testing.T) {
-	app, cleanup := testableApp(t)
+	app, cleanup := testableAppRPC(t)
 	defer cleanup()
 
 	testListItems(t, app)
 }
 
 func TestCliRPCListBuckets(t *testing.T) {
-	app, cleanup := testableApp(t)
+	app, cleanup := testableAppRPC(t)
 	defer cleanup()
 
 	testListBuckets(t, app)
 }
 
 func TestCliRPCDelete(t *testing.T) {
-	app, cleanup := testableApp(t)
+	app, cleanup := testableAppRPC(t)
 	defer cleanup()
 
 	testDelete(t, app)
@@ -213,5 +212,4 @@ func testDelete(t *testing.T, app *app) {
 
 	err = d.RunE(nil, []string{"my bucket", "my key"})
 	require.Error(t, err)
-	require.Equal(t, store.ErrNotFound, err)
 }

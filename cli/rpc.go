@@ -31,7 +31,7 @@ func (r *rpcCli) Get(bucket, key string) ([]byte, error) {
 		return nil, err
 	}
 
-	return item.Data, nil
+	return append(item.Data, '\n'), nil
 }
 
 func (r *rpcCli) List(bucket string) ([]byte, error) {
@@ -46,7 +46,12 @@ func (r *rpcCli) List(bucket string) ([]byte, error) {
 		items[i].Data = item.Data
 	}
 
-	return json.MarshalList(items)
+	data, err := json.MarshalList(items)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(data, '\n'), nil
 }
 
 func (r *rpcCli) ListBuckets() ([]byte, error) {

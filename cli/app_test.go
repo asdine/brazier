@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/asdine/brazier/mock"
+	"github.com/asdine/brazier/rpc"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,15 +18,50 @@ func testableApp(t *testing.T) (*app, func()) {
 	require.NoError(t, err)
 
 	a := app{
-		Out:     bytes.NewBuffer([]byte("")),
-		Store:   mock.NewStore(),
-		DataDir: dir,
+		Out:        bytes.NewBuffer([]byte("")),
+		Store:      mock.NewStore(),
+		DataDir:    dir,
+		SocketPath: filepath.Join(dir, defaultSocketName),
 	}
 
 	a.Cli = &cli{App: &a}
 
 	return &a, func() {
 		os.RemoveAll(dir)
+	}
+}
+
+func testableAppRPC(t *testing.T) (*app, func()) {
+	app, cleanup := testableApp(t)
+
+	app.Config.HTTP.Address = ":"
+	app.Config.RPC.Address = ":"
+
+	s := serverCmd{
+		App:              app,
+		HTTPServerFunc:   mock.NewServer,
+		RPCServerFunc:    mock.NewServer,
+		SocketServerFunc: rpc.NewServer,
+		c:                make(chan os.Signal, 1),
+	}
+
+	servers, err := s.createServers()
+	require.NoError(t, err)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		s.runServers(servers)
+	}()
+
+	app.PreRun(nil, nil)
+
+	return app, func() {
+		app.conn.Close()
+		s.c <- os.Interrupt
+		wg.Wait()
+		cleanup()
 	}
 }
 
