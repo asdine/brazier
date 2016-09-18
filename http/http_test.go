@@ -12,6 +12,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestCreateItemInValid(t *testing.T) {
+	var h brazierHttp.Handler
+
+	s := mock.NewStore()
+	h.Store = s
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("PUT", "/a/b", bytes.NewReader([]byte(nil)))
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusBadRequest, w.Code)
+}
+
 func TestCreateItemValidJSON(t *testing.T) {
 	var h brazierHttp.Handler
 
@@ -78,9 +90,13 @@ func TestGetItem(t *testing.T) {
 	require.Equal(t, http.StatusOK, w.Code)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 	require.Equal(t, item.Data, w.Body.Bytes())
-
 	require.True(t, b.GetInvoked)
 	require.True(t, b.CloseInvoked)
+
+	w = httptest.NewRecorder()
+	r, _ = http.NewRequest("GET", "/a/c", nil)
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestDeleteItem(t *testing.T) {
@@ -108,6 +124,11 @@ func TestDeleteItem(t *testing.T) {
 
 	w = httptest.NewRecorder()
 	r, _ = http.NewRequest("DELETE", "/a/b", nil)
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusNotFound, w.Code)
+
+	w = httptest.NewRecorder()
+	r, _ = http.NewRequest("DELETE", "/b/a", nil)
 	h.ServeHTTP(w, r)
 	require.Equal(t, http.StatusNotFound, w.Code)
 }

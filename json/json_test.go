@@ -49,3 +49,17 @@ func TestClean(t *testing.T) {
 
 		`)))
 }
+
+func BenchmarkClean(b *testing.B) {
+	data := []byte(`
+
+		{
+								"the name"       : "  &éà"      , "another     key"   : [ 1,  		10,9, "    str  " ]   }
+
+
+		`)
+
+	for i := 0; i < b.N; i++ {
+		json.Clean(data)
+	}
+}

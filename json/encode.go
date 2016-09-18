@@ -28,10 +28,20 @@ func ToValidJSON(data []byte) []byte {
 	if IsValid(data) {
 		return Clean(data)
 	}
-	var buffer bytes.Buffer
-	buffer.Grow(len(data) + 2)
-	buffer.WriteByte('"')
-	buffer.Write(data)
-	buffer.WriteByte('"')
-	return buffer.Bytes()
+
+	count := bytes.Count(data, []byte(`"`))
+	out := make([]byte, len(data)+count+2)
+
+	out[0] = '"'
+	j := 1
+	for _, b := range data {
+		if b == '"' {
+			out[j] = '\\'
+			j++
+		}
+		out[j] = b
+		j++
+	}
+	out[j] = '"'
+	return out
 }
