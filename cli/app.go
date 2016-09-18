@@ -67,19 +67,34 @@ func (a *app) PreRun(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	a.Store, err = boltdb.NewStore(filepath.Join(a.DataDir, defaultDBName))
-	if err != nil {
-		return err
+	if a.Store == nil {
+		a.Store, err = boltdb.NewStore(filepath.Join(a.DataDir, defaultDBName))
+		if err != nil {
+			return err
+		}
 	}
+
 	a.Cli = &cli{App: a}
 
 	return nil
 }
 
 func (a *app) PostRun(cmd *cobra.Command, args []string) error {
+	var err error
+
 	if a.conn != nil {
-		return a.conn.Close()
+		err = a.conn.Close()
+		if err != nil {
+			return err
+		}
 	}
+	if a.Store != nil {
+		err = a.Store.Close()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

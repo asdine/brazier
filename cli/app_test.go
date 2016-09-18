@@ -24,9 +24,10 @@ func testableApp(t *testing.T) (*app, func()) {
 		SocketPath: filepath.Join(dir, defaultSocketName),
 	}
 
-	a.Cli = &cli{App: &a}
+	a.PreRun(nil, nil)
 
 	return &a, func() {
+		a.PostRun(nil, nil)
 		os.RemoveAll(dir)
 	}
 }
@@ -58,10 +59,9 @@ func testableAppRPC(t *testing.T) (*app, func()) {
 	app.PreRun(nil, nil)
 
 	return app, func() {
-		app.conn.Close()
+		cleanup()
 		s.c <- os.Interrupt
 		wg.Wait()
-		cleanup()
 	}
 }
 
