@@ -14,6 +14,7 @@ import (
 	"github.com/asdine/brazier/config"
 	"github.com/asdine/brazier/rpc/proto"
 	"github.com/asdine/brazier/store/boltdb"
+	"github.com/asdine/storm"
 	"github.com/spf13/cobra"
 )
 
@@ -155,4 +156,8 @@ func (a *app) rpcClient() (proto.BucketClient, error) {
 
 	a.conn = conn
 	return proto.NewBucketClient(conn), nil
+}
+
+func (a *app) settingsDB() (*storm.DB, error) {
+	return storm.Open(filepath.Join(a.DataDir, "settings.db"))
 }

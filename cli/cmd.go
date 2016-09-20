@@ -33,6 +33,7 @@ func New() *cobra.Command {
 	cmd.AddCommand(NewDeleteCmd(&a))
 	cmd.AddCommand(NewListCmd(&a))
 	cmd.AddCommand(NewServerCmd(&a))
+	cmd.AddCommand(NewUseCmd(&a))
 
 	cmd.PersistentFlags().StringVar(&a.ConfigPath, "config", "", "config file")
 	cmd.PersistentFlags().StringVar(&a.DataDir, "data-dir", "", "data directory (default $HOME/.brazier)")
@@ -175,6 +176,47 @@ func NewDeleteCmd(a *app) *cobra.Command {
 
 			fmt.Fprintf(a.Out, "Item \"%s\" successfully deleted.\n", args[1])
 			return nil
+		},
+	}
+
+	return &cmd
+}
+
+// NewUseCmd creates a "Use" cli command
+func NewUseCmd(a *app) *cobra.Command {
+	cmd := cobra.Command{
+		Use:   "use",
+		Short: "Set a bucket as default",
+		Long:  `Set a bucket as default`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return errors.New("Bucket name is missing")
+			}
+
+			names, err := a.Cli.ListBuckets()
+			if err != nil {
+				return err
+			}
+
+			var found bool
+			for _, name := range names {
+				if name == args[0] {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				return fmt.Errorf("Bucket \"%s\" not found.\n", args[0])
+			}
+
+			db, err := a.settingsDB()
+			if err != nil {
+				return err
+			}
+			defer db.Close()
+
+			return db.Set("buckets", "default", args[0])
 		},
 	}
 

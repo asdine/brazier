@@ -91,6 +91,34 @@ func TestCliRPCDelete(t *testing.T) {
 	testDelete(t, app)
 }
 
+func TestCliUse(t *testing.T) {
+	app, cleanup := testableApp(t)
+	defer cleanup()
+
+	c := NewUseCmd(app)
+
+	err := c.RunE(nil, nil)
+	require.Error(t, err)
+	require.EqualError(t, err, "Bucket name is missing")
+
+	err = c.RunE(nil, []string{"my bucket"})
+	require.Error(t, err)
+	require.EqualError(t, err, "Bucket \"my bucket\" not found.\n")
+
+	err = app.Store.Create("my bucket")
+	require.NoError(t, err)
+
+	err = c.RunE(nil, []string{"my bucket"})
+	require.NoError(t, err)
+
+	db, err := app.settingsDB()
+	defer db.Close()
+	var to string
+	err = db.Get("buckets", "default", &to)
+	require.NoError(t, err)
+	require.Equal(t, "my bucket", to)
+}
+
 func testCreate(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
