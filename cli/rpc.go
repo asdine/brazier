@@ -1,12 +1,9 @@
 package cli
 
 import (
-	"bytes"
-
 	"golang.org/x/net/context"
 
 	"github.com/asdine/brazier"
-	"github.com/asdine/brazier/json"
 	"github.com/asdine/brazier/rpc/proto"
 )
 
@@ -34,7 +31,7 @@ func (r *rpcCli) Get(bucket, key string) ([]byte, error) {
 	return append(item.Data, '\n'), nil
 }
 
-func (r *rpcCli) List(bucket string) ([]byte, error) {
+func (r *rpcCli) List(bucket string) ([]brazier.Item, error) {
 	resp, err := r.Client.List(context.Background(), &proto.BucketSelector{Bucket: bucket})
 	if err != nil {
 		return nil, err
@@ -46,27 +43,21 @@ func (r *rpcCli) List(bucket string) ([]byte, error) {
 		items[i].Data = item.Data
 	}
 
-	data, err := json.MarshalList(items)
-	if err != nil {
-		return nil, err
-	}
-
-	return append(data, '\n'), nil
+	return items, nil
 }
 
-func (r *rpcCli) ListBuckets() ([]byte, error) {
+func (r *rpcCli) ListBuckets() ([]string, error) {
 	resp, err := r.Client.Buckets(context.Background(), &proto.Empty{})
 	if err != nil {
 		return nil, err
 	}
 
-	var buffer bytes.Buffer
+	names := make([]string, len(resp.Buckets))
 	for i := range resp.Buckets {
-		buffer.WriteString(resp.Buckets[i].Name)
-		buffer.WriteByte('\n')
+		names[i] = resp.Buckets[i].Name
 	}
 
-	return buffer.Bytes(), nil
+	return names, nil
 }
 
 func (r *rpcCli) Delete(bucket, key string) error {

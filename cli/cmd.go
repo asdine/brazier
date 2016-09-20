@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/asdine/brazier/json"
 	"github.com/spf13/cobra"
 )
 
@@ -121,21 +122,35 @@ func NewListCmd(a *app) *cobra.Command {
 				return errors.New("Wrong number of arguments")
 			}
 
-			var out []byte
-			var err error
-
 			if len(args) == 0 {
-				out, err = a.Cli.ListBuckets()
-			} else {
-				out, err = a.Cli.List(args[0])
+				list, err := a.Cli.ListBuckets()
+				if err != nil {
+					return err
+				}
+
+				for i := range list {
+					_, err = a.Out.Write([]byte(list[i]))
+					if err != nil {
+						return err
+					}
+					a.Out.Write([]byte("\n"))
+				}
+				return nil
 			}
 
+			items, err := a.Cli.List(args[0])
 			if err != nil {
 				return err
 			}
 
-			_, err = a.Out.Write(out)
-			return err
+			data, err := json.MarshalList(items)
+			if err != nil {
+				return err
+			}
+
+			a.Out.Write(data)
+			a.Out.Write([]byte("\n"))
+			return nil
 		},
 	}
 

@@ -1,8 +1,7 @@
 package cli
 
 import (
-	"bytes"
-
+	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/json"
 	"github.com/asdine/brazier/store"
 )
@@ -12,8 +11,8 @@ type Cli interface {
 	Create(name string) error
 	Save(bucket, key string, data []byte) error
 	Get(bucket, key string) ([]byte, error)
-	List(bucket string) ([]byte, error)
-	ListBuckets() ([]byte, error)
+	List(bucket string) ([]brazier.Item, error)
+	ListBuckets() ([]string, error)
 	Delete(bucket, key string) error
 }
 
@@ -53,39 +52,18 @@ func (c *cli) Get(bucket, key string) ([]byte, error) {
 	return append(item.Data, '\n'), nil
 }
 
-func (c *cli) List(bucket string) ([]byte, error) {
+func (c *cli) List(bucket string) ([]brazier.Item, error) {
 	b, err := c.App.Store.Bucket(bucket)
 	if err != nil {
 		return nil, err
 	}
 	defer b.Close()
 
-	items, err := b.Page(1, -1)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := json.MarshalList(items)
-	if err != nil {
-		return nil, err
-	}
-
-	return append(data, '\n'), nil
+	return b.Page(1, -1)
 }
 
-func (c *cli) ListBuckets() ([]byte, error) {
-	list, err := c.App.Store.List()
-	if err != nil {
-		return nil, err
-	}
-
-	var buffer bytes.Buffer
-	for i := range list {
-		buffer.WriteString(list[i])
-		buffer.WriteByte('\n')
-	}
-
-	return buffer.Bytes(), nil
+func (c *cli) ListBuckets() ([]string, error) {
+	return c.App.Store.List()
 }
 
 func (c *cli) Delete(bucket, key string) error {
