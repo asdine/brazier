@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/asdine/brazier/json"
-	"github.com/asdine/storm"
 	"github.com/spf13/cobra"
 )
 
@@ -57,12 +56,11 @@ func NewCreateCmd(a *app) *cobra.Command {
 				return err
 			}
 
-			_, err = a.defaultBucket()
+			name, err := a.defaultBucket()
 			if err != nil {
-				if err != storm.ErrNotFound {
-					return err
-				}
-
+				return err
+			}
+			if name == "" {
 				db, err := a.settingsDB()
 				if err != nil {
 					return err
@@ -148,10 +146,15 @@ func NewListCmd(a *app) *cobra.Command {
 					return err
 				}
 
+				deflt, err := a.defaultBucket()
+				if err != nil {
+					return err
+				}
+
 				for i := range list {
-					_, err = a.Out.Write([]byte(list[i]))
-					if err != nil {
-						return err
+					a.Out.Write([]byte(list[i]))
+					if list[i] == deflt {
+						a.Out.Write([]byte(" - default"))
 					}
 					a.Out.Write([]byte("\n"))
 				}

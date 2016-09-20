@@ -171,5 +171,9 @@ func (a *app) defaultBucket() (string, error) {
 
 	var name string
 	err = db.Get("buckets", "default", &name)
-	return name, err
+	if err != nil && err != storm.ErrNotFound {
+		return "", err
+	}
+
+	return name, nil
 }

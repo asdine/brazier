@@ -224,11 +224,15 @@ func testListBuckets(t *testing.T, app *app) {
 	err = app.Store.Create("bucket2")
 	require.NoError(t, err)
 
+	c := NewUseCmd(app)
+	err = c.RunE(nil, []string{"bucket1"})
+	require.NoError(t, err)
+
 	out := app.Out.(*bytes.Buffer)
 	l := NewListCmd(app)
 	err = l.RunE(nil, nil)
 	require.NoError(t, err)
-	require.Equal(t, "bucket1\nbucket2\n", out.String())
+	require.Equal(t, "bucket1 - default\nbucket2\n", out.String())
 }
 
 func testDelete(t *testing.T, app *app) {
