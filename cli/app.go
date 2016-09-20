@@ -8,20 +8,20 @@ import (
 	"path/filepath"
 	"time"
 
-	"google.golang.org/grpc"
-
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/config"
 	"github.com/asdine/brazier/rpc/proto"
 	"github.com/asdine/brazier/store/boltdb"
 	"github.com/asdine/storm"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
 )
 
 const (
 	defaultDBName     = "brazier.db"
 	defaultDataDir    = ".brazier"
 	defaultSocketName = "brazier.sock"
+	settingsDB        = "settings.db"
 )
 
 // App is the main cli application
@@ -159,5 +159,17 @@ func (a *app) rpcClient() (proto.BucketClient, error) {
 }
 
 func (a *app) settingsDB() (*storm.DB, error) {
-	return storm.Open(filepath.Join(a.DataDir, "settings.db"))
+	return storm.Open(filepath.Join(a.DataDir, settingsDB))
+}
+
+func (a *app) defaultBucket() (string, error) {
+	db, err := a.settingsDB()
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+
+	var name string
+	err = db.Get("buckets", "default", &name)
+	return name, err
 }

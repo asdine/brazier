@@ -131,6 +131,13 @@ func testCreate(t *testing.T, app *app) {
 	err = c.RunE(nil, []string{"my bucket"})
 	require.NoError(t, err)
 	require.Equal(t, "Bucket \"my bucket\" successfully created.\n", out.String())
+
+	db, err := app.settingsDB()
+	defer db.Close()
+	var to string
+	err = db.Get("buckets", "default", &to)
+	require.NoError(t, err)
+	require.Equal(t, "my bucket", to)
 }
 
 func testSave(t *testing.T, app *app) {

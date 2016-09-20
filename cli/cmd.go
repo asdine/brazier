@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/asdine/brazier/json"
+	"github.com/asdine/storm"
 	"github.com/spf13/cobra"
 )
 
@@ -54,6 +55,24 @@ func NewCreateCmd(a *app) *cobra.Command {
 			err := a.Cli.Create(args[0])
 			if err != nil {
 				return err
+			}
+
+			_, err = a.defaultBucket()
+			if err != nil {
+				if err != storm.ErrNotFound {
+					return err
+				}
+
+				db, err := a.settingsDB()
+				if err != nil {
+					return err
+				}
+				defer db.Close()
+
+				err = db.Set("buckets", "default", args[0])
+				if err != nil {
+					return err
+				}
 			}
 
 			fmt.Fprintf(a.Out, "Bucket \"%s\" successfully created.\n", args[0])
