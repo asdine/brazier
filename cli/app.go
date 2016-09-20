@@ -21,6 +21,7 @@ const (
 	defaultDBName     = "brazier.db"
 	defaultDataDir    = ".brazier"
 	defaultSocketName = "brazier.sock"
+	defaultBucket     = "default"
 	settingsDB        = "settings.db"
 )
 
@@ -173,6 +174,10 @@ func (a *app) defaultBucket() (string, error) {
 	err = db.Get("buckets", "default", &name)
 	if err != nil && err != storm.ErrNotFound {
 		return "", err
+	}
+
+	if name == "" {
+		name = defaultBucket
 	}
 
 	return name, nil

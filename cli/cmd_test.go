@@ -105,18 +105,22 @@ func TestCliUse(t *testing.T) {
 	require.Error(t, err)
 	require.EqualError(t, err, "Bucket \"my bucket\" not found.\n")
 
+	err = c.RunE(nil, []string{defaultBucket})
+	require.NoError(t, err)
+
+	name, err := app.defaultBucket()
+	require.NoError(t, err)
+	require.Equal(t, defaultBucket, name)
+
 	err = app.Store.Create("my bucket")
 	require.NoError(t, err)
 
 	err = c.RunE(nil, []string{"my bucket"})
 	require.NoError(t, err)
 
-	db, err := app.settingsDB()
-	defer db.Close()
-	var to string
-	err = db.Get("buckets", "default", &to)
+	name, err = app.defaultBucket()
 	require.NoError(t, err)
-	require.Equal(t, "my bucket", to)
+	require.Equal(t, "my bucket", name)
 }
 
 func testCreate(t *testing.T, app *app) {
@@ -131,13 +135,6 @@ func testCreate(t *testing.T, app *app) {
 	err = c.RunE(nil, []string{"my bucket"})
 	require.NoError(t, err)
 	require.Equal(t, "Bucket \"my bucket\" successfully created.\n", out.String())
-
-	db, err := app.settingsDB()
-	defer db.Close()
-	var to string
-	err = db.Get("buckets", "default", &to)
-	require.NoError(t, err)
-	require.Equal(t, "my bucket", to)
 }
 
 func testSave(t *testing.T, app *app) {
@@ -148,7 +145,7 @@ func testSave(t *testing.T, app *app) {
 	err := s.RunE(nil, nil)
 	require.EqualError(t, err, "Wrong number of arguments")
 
-	err = s.RunE(nil, []string{"my bucket", "my key", "my value"})
+	err = s.RunE(nil, []string{"my key", "my value"})
 	require.NoError(t, err)
 	require.Equal(t, "Item \"my key\" successfully saved.\n", out.String())
 }
@@ -160,18 +157,18 @@ func testGet(t *testing.T, app *app) {
 	g := NewGetCmd(app)
 
 	tests := map[string][]string{
-		"\"abc\"\n":                  []string{"bucket", "string", "abc"},
-		"\"bcd\"\n":                  []string{"bucket", "json string", "\"bcd\""},
-		"10\n":                       []string{"bucket", "number", "10"},
-		"{\"a\":\"b\"}\n":            []string{"bucket", "object", `{"a": "b"}`},
-		"[\"a\",10,{\"c\":\"d\"}]\n": []string{"bucket", "array", `["a", 10, {"c": "d"}]`},
+		"\"abc\"\n":                  []string{"string", "abc"},
+		"\"bcd\"\n":                  []string{"json string", "\"bcd\""},
+		"10\n":                       []string{"number", "10"},
+		"{\"a\":\"b\"}\n":            []string{"object", `{"a": "b"}`},
+		"[\"a\",10,{\"c\":\"d\"}]\n": []string{"array", `["a", 10, {"c": "d"}]`},
 	}
 
 	for expected, cmds := range tests {
 		err := s.RunE(nil, cmds)
 		require.NoError(t, err)
 		out.Reset()
-		err = g.RunE(nil, cmds[:2])
+		err = g.RunE(nil, cmds[:1])
 		require.NoError(t, err)
 		require.Equal(t, expected, out.String())
 		out.Reset()
@@ -185,11 +182,11 @@ func testListItems(t *testing.T, app *app) {
 	l := NewListCmd(app)
 
 	tests := map[string][]string{
-		"\"abc\"":                  []string{"bucket", "string", "abc"},
-		"\"bcd\"":                  []string{"bucket", "json string", "\"bcd\""},
-		"10":                       []string{"bucket", "number", "10"},
-		"{\"a\":\"b\"}":            []string{"bucket", "object", `{"a": "b"}`},
-		"[\"a\",10,{\"c\":\"d\"}]": []string{"bucket", "array", `["a", 10, {"c": "d"}]`},
+		"\"abc\"":                  []string{"string", "abc"},
+		"\"bcd\"":                  []string{"json string", "\"bcd\""},
+		"10":                       []string{"number", "10"},
+		"{\"a\":\"b\"}":            []string{"object", `{"a": "b"}`},
+		"[\"a\",10,{\"c\":\"d\"}]": []string{"array", `["a", 10, {"c": "d"}]`},
 	}
 
 	var expected bytes.Buffer
@@ -207,13 +204,13 @@ func testListItems(t *testing.T, app *app) {
 		expected.WriteString(`{"data":`)
 		expected.WriteString(output)
 		expected.WriteString(`,"key":"`)
-		expected.WriteString(cmds[1])
+		expected.WriteString(cmds[0])
 		expected.WriteString(`"}`)
 	}
 	expected.WriteString("]\n")
 
 	out.Reset()
-	err := l.RunE(nil, []string{"bucket"})
+	err := l.RunE(nil, []string{defaultBucket})
 	require.NoError(t, err)
 	require.Equal(t, expected.String(), out.String())
 }
@@ -232,7 +229,7 @@ func testListBuckets(t *testing.T, app *app) {
 	l := NewListCmd(app)
 	err = l.RunE(nil, nil)
 	require.NoError(t, err)
-	require.Equal(t, "bucket1 - default\nbucket2\n", out.String())
+	require.Equal(t, "bucket1 *\nbucket2\n", out.String())
 }
 
 func testDelete(t *testing.T, app *app) {
@@ -241,14 +238,14 @@ func testDelete(t *testing.T, app *app) {
 	s := NewSaveCmd(app)
 	d := NewDeleteCmd(app)
 
-	err := s.RunE(nil, []string{"my bucket", "my key", "my value"})
+	err := s.RunE(nil, []string{"my key", "my value"})
 	require.NoError(t, err)
 	out.Reset()
 
-	err = d.RunE(nil, []string{"my bucket", "my key"})
+	err = d.RunE(nil, []string{"my key"})
 	require.NoError(t, err)
 	require.Equal(t, "Item \"my key\" successfully deleted.\n", out.String())
 
-	err = d.RunE(nil, []string{"my bucket", "my key"})
+	err = d.RunE(nil, []string{"my key"})
 	require.Error(t, err)
 }
