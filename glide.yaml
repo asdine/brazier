@@ -1,24 +1,25 @@
 package: github.com/asdine/brazier
 import:
 - package: github.com/asdine/storm
-  subpackages:
-  - codec/protobuf
+  version: ~0.5.0
 - package: github.com/boltdb/bolt
-  version: ^1.3.0
+  version: ~1.3.0
 - package: github.com/ghodss/yaml
 - package: github.com/golang/protobuf
   subpackages:
   - proto
 - package: github.com/pkg/errors
-  version: ^0.7.1
+  version: ~0.7.1
 - package: github.com/spf13/cobra
 - package: golang.org/x/net
   subpackages:
   - context
 - package: google.golang.org/grpc
-  version: ^1.0.1-GA
+  version: ~1.0.1-GA
+- package: gopkg.in/tylerb/graceful.v1
+  version: ~1.2.13
 testImport:
 - package: github.com/stretchr/testify
-  version: ^1.1.3
+  version: ~1.1.3
   subpackages:
   - require

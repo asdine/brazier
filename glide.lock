@@ -1,12 +1,11 @@
-hash: b117ef5a20700148aad45a3f14f500d8d37df601dea39ed69e050005e461628b
-updated: 2016-09-14T20:53:54.71174515+02:00
+hash: 620513a4dde81a6f7eb4ba86be5941e15dc065b67890671af671291a4cf58708
+updated: 2016-10-03T20:39:13.296995941+02:00
 imports:
 - name: github.com/asdine/storm
-  version: 6c51b369d4c64cc81592ca2473cb2448ecbf8969
+  version: 924e80fbfeb827c4a225da0757b16916a62de96b
   subpackages:
   - codec
   - codec/json
-  - codec/protobuf
   - index
   - internal
   - q
@@ -17,7 +16,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: aa0c862057666179de291b67d9f093d12b5a8473
 - name: github.com/golang/protobuf
-  version: 1f49d83d9aa00e6ce4fc8258c71cc7786aec968a
+  version: df1d3ca07d2d07bba352d5b73c4313b4e2a6203e
   subpackages:
   - proto
 - name: github.com/inconshreveable/mousetrap
@@ -27,9 +26,9 @@ imports:
 - name: github.com/spf13/cobra
   version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
 - name: github.com/spf13/pflag
-  version: 7b17cc4658ef5ca157b986ea5c0b43af7938532b
+  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
 - name: golang.org/x/net
-  version: de35ec43e7a9aabd6a9c54d2898220ea7e44de7d
+  version: 0f2be02c5ddfa7c7936000ad519b04c6c795eab3
   subpackages:
   - context
   - http2
@@ -39,11 +38,11 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/sys
-  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
   - unix
 - name: google.golang.org/grpc
-  version: 0032a855ba5c8a3c8e0d71c2deef354b70af1584
+  version: b1a2821ca5a4fd6b6e48ddfbb7d6d7584d839d21
   subpackages:
   - codes
   - credentials
@@ -65,7 +64,7 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: f390dcf405f7b83c997eac1b06768bb9f44dec18
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
   - assert
   - require
