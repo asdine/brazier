@@ -27,7 +27,6 @@ func New() *cobra.Command {
 	}
 
 	cmd.SetOutput(os.Stdout)
-	cmd.AddCommand(NewCreateCmd(&a))
 	cmd.AddCommand(NewSaveCmd(&a))
 	cmd.AddCommand(NewGetCmd(&a))
 	cmd.AddCommand(NewDeleteCmd(&a))
@@ -52,6 +51,8 @@ func NewBucketCmds(a *app) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.AddCommand(NewCreateCmd(a))
 
 	return &cmd
 }
