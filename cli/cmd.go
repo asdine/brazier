@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/asdine/brazier/json"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +29,6 @@ func New() *cobra.Command {
 	cmd.AddCommand(NewSaveCmd(&a))
 	cmd.AddCommand(NewGetCmd(&a))
 	cmd.AddCommand(NewDeleteCmd(&a))
-	cmd.AddCommand(NewListCmd(&a))
 	cmd.AddCommand(NewServerCmd(&a))
 	cmd.AddCommand(NewUseCmd(&a))
 	cmd.AddCommand(NewBucketCmds(&a))
@@ -53,6 +51,7 @@ func NewBucketCmds(a *app) *cobra.Command {
 	}
 
 	cmd.AddCommand(NewCreateCmd(a))
+	cmd.AddCommand(NewListCmd(a))
 
 	return &cmd
 }
@@ -143,46 +142,26 @@ func NewGetCmd(a *app) *cobra.Command {
 func NewListCmd(a *app) *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "list",
-		Short: "List buckets or bucket content",
-		Long:  "Lists all the buckets.\nIf a bucket name is specified, lists the content of the bucket instead.",
+		Short: "List buckets",
+		Long:  "Lists all the buckets.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) > 1 {
-				return errors.New("Wrong number of arguments")
-			}
-
-			if len(args) == 0 {
-				list, err := a.Cli.ListBuckets()
-				if err != nil {
-					return err
-				}
-
-				deflt, err := a.defaultBucket()
-				if err != nil {
-					return err
-				}
-
-				for i := range list {
-					a.Out.Write([]byte(list[i]))
-					if list[i] == deflt {
-						a.Out.Write([]byte(" *"))
-					}
-					a.Out.Write([]byte("\n"))
-				}
-				return nil
-			}
-
-			items, err := a.Cli.List(args[0])
+			list, err := a.Cli.ListBuckets()
 			if err != nil {
 				return err
 			}
 
-			data, err := json.MarshalList(items)
+			deflt, err := a.defaultBucket()
 			if err != nil {
 				return err
 			}
 
-			a.Out.Write(data)
-			a.Out.Write([]byte("\n"))
+			for i := range list {
+				a.Out.Write([]byte(list[i]))
+				if list[i] == deflt {
+					a.Out.Write([]byte(" *"))
+				}
+				a.Out.Write([]byte("\n"))
+			}
 			return nil
 		},
 	}
