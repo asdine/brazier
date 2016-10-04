@@ -34,9 +34,25 @@ func New() *cobra.Command {
 	cmd.AddCommand(NewListCmd(&a))
 	cmd.AddCommand(NewServerCmd(&a))
 	cmd.AddCommand(NewUseCmd(&a))
+	cmd.AddCommand(NewBucketCmds(&a))
 
 	cmd.PersistentFlags().StringVar(&a.ConfigPath, "config", "", "config file")
 	cmd.PersistentFlags().StringVar(&a.DataDir, "data-dir", "", "data directory (default $HOME/.brazier)")
+	return &cmd
+}
+
+// NewBucketCmds creates a bunch of commands to manage a bucket
+func NewBucketCmds(a *app) *cobra.Command {
+	cmd := cobra.Command{
+		Use:   "bucket",
+		Short: "Manage a bucket",
+		Long:  "Manage a bucket",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cmd.Usage()
+			return nil
+		},
+	}
+
 	return &cmd
 }
 
