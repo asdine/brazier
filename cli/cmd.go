@@ -30,7 +30,6 @@ func New() *cobra.Command {
 	cmd.AddCommand(NewGetCmd(&a))
 	cmd.AddCommand(NewDeleteCmd(&a))
 	cmd.AddCommand(NewServerCmd(&a))
-	cmd.AddCommand(NewUseCmd(&a))
 	cmd.AddCommand(NewBucketCmds(&a))
 
 	cmd.PersistentFlags().StringVar(&a.ConfigPath, "config", "", "config file")
@@ -52,6 +51,7 @@ func NewBucketCmds(a *app) *cobra.Command {
 
 	cmd.AddCommand(NewCreateCmd(a))
 	cmd.AddCommand(NewListCmd(a))
+	cmd.AddCommand(NewUseCmd(a))
 
 	return &cmd
 }
