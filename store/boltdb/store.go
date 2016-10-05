@@ -6,6 +6,7 @@ import (
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/storm"
+	"github.com/asdine/storm/codec/protobuf"
 	"github.com/boltdb/bolt"
 	"github.com/pkg/errors"
 )
@@ -17,7 +18,7 @@ func NewStore(path string) (*Store, error) {
 	db, err := storm.Open(
 		path,
 		storm.AutoIncrement(),
-		storm.Codec(new(rawCodec)),
+		storm.Codec(protobuf.Codec),
 		storm.BoltOptions(0644, &bolt.Options{
 			Timeout: time.Duration(50) * time.Millisecond,
 		}),
@@ -47,13 +48,13 @@ func (s *Store) Create(name string) error {
 		return err
 	}
 
-	return s.DB.Set("buckets", name, nil)
+	return s.DB.Set("bucket", name, "")
 }
 
 // Bucket returns the bucket associated with the given id
 func (s *Store) Bucket(name string) (brazier.Bucket, error) {
 	var str []byte
-	err := s.DB.Get("buckets", name, &str)
+	err := s.DB.Get("bucket", name, &str)
 	if err != nil {
 		if err == storm.ErrNotFound {
 			return nil, store.ErrNotFound
@@ -67,7 +68,7 @@ func (s *Store) Bucket(name string) (brazier.Bucket, error) {
 // List returns the list of all buckets
 func (s *Store) List() ([]string, error) {
 	var buckets []string
-	err := s.DB.Select().Bucket("buckets").RawEach(func(k, v []byte) error {
+	err := s.DB.Select().Bucket("bucket").RawEach(func(k, v []byte) error {
 		buckets = append(buckets, string(k))
 		return nil
 	})

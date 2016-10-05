@@ -107,7 +107,7 @@ func TestBucketPage(t *testing.T) {
 	defer b.Close()
 
 	for i := 0; i < 20; i++ {
-		_, err := b.Save(fmt.Sprintf("%c", i+65), []byte("Data"))
+		_, err := b.Save(fmt.Sprintf("%d", i), []byte("Data"))
 		require.NoError(t, err)
 	}
 
@@ -122,26 +122,26 @@ func TestBucketPage(t *testing.T) {
 	list, err = b.Page(1, 5)
 	require.NoError(t, err)
 	require.Len(t, list, 5)
-	require.Equal(t, "A", list[0].Key)
-	require.Equal(t, "E", list[4].Key)
+	require.Equal(t, "0", list[0].Key)
+	require.Equal(t, "4", list[4].Key)
 
 	list, err = b.Page(1, 25)
 	require.NoError(t, err)
 	require.Len(t, list, 20)
-	require.Equal(t, "A", list[0].Key)
-	require.Equal(t, "T", list[19].Key)
+	require.Equal(t, "0", list[0].Key)
+	require.Equal(t, "19", list[19].Key)
 
 	list, err = b.Page(2, 5)
 	require.NoError(t, err)
 	require.Len(t, list, 5)
-	require.Equal(t, "F", list[0].Key)
-	require.Equal(t, "J", list[4].Key)
+	require.Equal(t, "5", list[0].Key)
+	require.Equal(t, "9", list[4].Key)
 
 	list, err = b.Page(2, 15)
 	require.NoError(t, err)
 	require.Len(t, list, 5)
-	require.Equal(t, "P", list[0].Key)
-	require.Equal(t, "T", list[4].Key)
+	require.Equal(t, "15", list[0].Key)
+	require.Equal(t, "19", list[4].Key)
 
 	list, err = b.Page(3, 15)
 	require.NoError(t, err)
@@ -151,6 +151,6 @@ func TestBucketPage(t *testing.T) {
 	list, err = b.Page(1, -1)
 	require.NoError(t, err)
 	require.Len(t, list, 20)
-	require.Equal(t, "A", list[0].Key)
-	require.Equal(t, "T", list[19].Key)
+	require.Equal(t, "0", list[0].Key)
+	require.Equal(t, "19", list[19].Key)
 }
