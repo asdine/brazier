@@ -19,6 +19,18 @@ type Bucket interface {
 type Store interface {
 	Create(name string) error
 	Bucket(name string) (Bucket, error)
+	Close() error
+}
+
+// BucketInfo contains a bucket informations
+type BucketInfo struct {
+	Name string
+}
+
+// A Registry holds bucket informations
+type Registry interface {
+	Create(name string) error
+	Bucket(name string) (*BucketInfo, error)
 	List() ([]string, error)
 	Close() error
 }

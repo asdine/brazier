@@ -65,20 +65,6 @@ func (s *Store) Bucket(name string) (brazier.Bucket, error) {
 	return NewBucket(s, name, s.DB.From(name)), nil
 }
 
-// List returns the list of all buckets
-func (s *Store) List() ([]string, error) {
-	var buckets []string
-	err := s.DB.Select().Bucket("bucket").RawEach(func(k, v []byte) error {
-		buckets = append(buckets, string(k))
-		return nil
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "boltdb.store.List failed to fetch buckets")
-	}
-
-	return buckets, nil
-}
-
 // Close BoltDB connection
 func (s *Store) Close() error {
 	return s.DB.Close()
