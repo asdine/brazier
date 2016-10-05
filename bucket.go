@@ -30,7 +30,7 @@ type BucketInfo struct {
 // A Registry holds bucket informations
 type Registry interface {
 	Create(name string) error
-	Bucket(name string) (*BucketInfo, error)
+	BucketInfo(name string) (*BucketInfo, error)
 	List() ([]string, error)
 	Close() error
 }

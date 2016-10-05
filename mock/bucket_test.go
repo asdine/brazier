@@ -10,9 +10,22 @@ import (
 )
 
 func TestBucketSave(t *testing.T) {
+	r := mock.NewRegistry()
 	s := mock.NewStore()
 
-	err := s.Create("b1")
+	err := r.Create("b1")
+	require.NoError(t, err)
+	defer r.Close()
+
+	info, err := r.BucketInfo("b1")
+	require.NoError(t, err)
+
+	names, err := r.List()
+	require.NoError(t, err)
+	require.Len(t, names, 1)
+	require.Equal(t, "b1", names[0])
+
+	err = s.Create(info.Name)
 	require.NoError(t, err)
 
 	b, err := s.Bucket("b1")

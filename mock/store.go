@@ -15,36 +15,27 @@ func NewStore() *Store {
 // Store is a BoltDB store
 type Store struct {
 	Buckets       map[string]brazier.Bucket
-	index         []string
 	CreateInvoked bool
 	BucketInvoked bool
 	CloseInvoked  bool
-	ListInvoked   bool
 }
 
 // Create a bucket
-func (s *Store) Create(id string) error {
+func (s *Store) Create(name string) error {
 	s.CreateInvoked = true
-	s.Buckets[id] = NewBucket()
-	s.index = append(s.index, id)
+	s.Buckets[name] = NewBucket()
 	return nil
 }
 
-// Bucket returns the bucket associated with the given id
-func (s *Store) Bucket(id string) (brazier.Bucket, error) {
+// Bucket returns the bucket associated with the given name
+func (s *Store) Bucket(name string) (brazier.Bucket, error) {
 	s.BucketInvoked = true
-	b, ok := s.Buckets[id]
+	b, ok := s.Buckets[name]
 	if !ok {
 		return nil, store.ErrNotFound
 	}
 
 	return b, nil
-}
-
-// List buckets
-func (s *Store) List() ([]string, error) {
-	s.ListInvoked = true
-	return s.index, nil
 }
 
 // Close the store

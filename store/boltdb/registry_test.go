@@ -22,18 +22,18 @@ func TestRegistry(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, store.ErrAlreadyExists, err)
 
-	info1, err := r.Bucket("bucket1")
+	info1, err := r.BucketInfo("bucket1")
 	require.NoError(t, err)
 	require.NotNil(t, info1)
 	require.Equal(t, "bucket1", info1.Name)
 
-	_, err = r.Bucket("bucket2")
+	_, err = r.BucketInfo("bucket2")
 	require.Equal(t, err, store.ErrNotFound)
 
 	err = r.Create("bucket2")
 	require.NoError(t, err)
 
-	info2, err := r.Bucket("bucket2")
+	info2, err := r.BucketInfo("bucket2")
 	require.NoError(t, err)
 	require.Equal(t, "bucket2", info2.Name)
 

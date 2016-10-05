@@ -52,8 +52,8 @@ func (r *Registry) Create(name string) error {
 	return err
 }
 
-// Bucket returns the bucket associated with the given id
-func (r *Registry) Bucket(name string) (*brazier.BucketInfo, error) {
+// BucketInfo returns the bucket informations associated with the given name
+func (r *Registry) BucketInfo(name string) (*brazier.BucketInfo, error) {
 	var b internal.Bucket
 	err := r.DB.One("Name", name, &b)
 	if err != nil {
