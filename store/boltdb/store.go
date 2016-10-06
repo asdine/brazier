@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/asdine/brazier"
-	"github.com/asdine/brazier/store"
 	"github.com/asdine/storm"
 	"github.com/asdine/storm/codec/protobuf"
 	"github.com/boltdb/bolt"
@@ -38,30 +37,8 @@ type Store struct {
 	DB *storm.DB
 }
 
-// Create a bucket
-func (s *Store) Create(name string) error {
-	_, err := s.Bucket(name)
-	if err == nil {
-		return store.ErrAlreadyExists
-	}
-	if err != store.ErrNotFound {
-		return err
-	}
-
-	return s.DB.Set("bucket", name, "")
-}
-
 // Bucket returns the bucket associated with the given id
 func (s *Store) Bucket(name string) (brazier.Bucket, error) {
-	var str []byte
-	err := s.DB.Get("bucket", name, &str)
-	if err != nil {
-		if err == storm.ErrNotFound {
-			return nil, store.ErrNotFound
-		}
-		return nil, err
-	}
-
 	return NewBucket(s, name, s.DB.From(name)), nil
 }
 

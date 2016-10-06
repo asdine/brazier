@@ -15,8 +15,8 @@ import (
 func TestCreateItemInValid(t *testing.T) {
 	var h brazierHttp.Handler
 
-	s := mock.NewStore()
-	h.Store = s
+	h.Registry = mock.NewRegistry()
+	h.Store = mock.NewStore()
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/a/b", bytes.NewReader([]byte(nil)))
@@ -27,15 +27,15 @@ func TestCreateItemInValid(t *testing.T) {
 func TestCreateItemValidJSON(t *testing.T) {
 	var h brazierHttp.Handler
 
-	s := mock.NewStore()
-	h.Store = s
+	h.Registry = mock.NewRegistry()
+	h.Store = mock.NewStore()
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/a/b", bytes.NewReader([]byte(` {    " the  key" :   [ 1, "hi" , 45.6    ] }`)))
 	h.ServeHTTP(w, r)
 	require.Equal(t, http.StatusOK, w.Code)
 
-	bucket, err := s.Bucket("a")
+	bucket, err := h.Store.Bucket("a")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)
 
@@ -49,15 +49,15 @@ func TestCreateItemValidJSON(t *testing.T) {
 func TestCreateItemInvalidJSON(t *testing.T) {
 	var h brazierHttp.Handler
 
-	s := mock.NewStore()
-	h.Store = s
+	h.Registry = mock.NewRegistry()
+	h.Store = mock.NewStore()
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("PUT", "/a/b", bytes.NewReader([]byte(`my value`)))
 	h.ServeHTTP(w, r)
 	require.Equal(t, http.StatusOK, w.Code)
 
-	bucket, err := s.Bucket("a")
+	bucket, err := h.Store.Bucket("a")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)
 
@@ -71,13 +71,13 @@ func TestCreateItemInvalidJSON(t *testing.T) {
 func TestGetItem(t *testing.T) {
 	var h brazierHttp.Handler
 
-	s := mock.NewStore()
-	h.Store = s
+	h.Registry = mock.NewRegistry()
+	h.Store = mock.NewStore()
 
-	err := s.Create("a")
+	err := h.Registry.Create("a")
 	require.NoError(t, err)
 
-	bucket, err := s.Bucket("a")
+	bucket, err := h.Store.Bucket("a")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)
 
@@ -102,13 +102,13 @@ func TestGetItem(t *testing.T) {
 func TestDeleteItem(t *testing.T) {
 	var h brazierHttp.Handler
 
-	s := mock.NewStore()
-	h.Store = s
+	h.Registry = mock.NewRegistry()
+	h.Store = mock.NewStore()
 
-	err := s.Create("a")
+	err := h.Registry.Create("a")
 	require.NoError(t, err)
 
-	bucket, err := s.Bucket("a")
+	bucket, err := h.Store.Bucket("a")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)
 
@@ -133,15 +133,15 @@ func TestDeleteItem(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, w.Code)
 }
 
-func TestListItem(t *testing.T) {
+func TestListItems(t *testing.T) {
 	var h brazierHttp.Handler
 
-	s := mock.NewStore()
-	h.Store = s
+	h.Registry = mock.NewRegistry()
+	h.Store = mock.NewStore()
 
-	err := s.Create("a")
+	err := h.Registry.Create("a")
 	require.NoError(t, err)
-	bucket, err := s.Bucket("a")
+	bucket, err := h.Store.Bucket("a")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)
 
@@ -167,8 +167,8 @@ func TestListItem(t *testing.T) {
 func TestBadRequests(t *testing.T) {
 	var h brazierHttp.Handler
 
-	s := mock.NewStore()
-	h.Store = s
+	h.Registry = mock.NewRegistry()
+	h.Store = mock.NewStore()
 
 	w := httptest.NewRecorder()
 	r, _ := http.NewRequest("GET", "/a/b", nil)

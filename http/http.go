@@ -14,8 +14,8 @@ import (
 )
 
 // NewServer returns a configured HTTP server
-func NewServer(s brazier.Store) brazier.Server {
-	http.Handle("/", &Handler{Store: s})
+func NewServer(r brazier.Registry, s brazier.Store) brazier.Server {
+	http.Handle("/", &Handler{Registry: r, Store: s})
 	srv := graceful.Server{
 		Server: &http.Server{},
 	}
@@ -25,7 +25,8 @@ func NewServer(s brazier.Store) brazier.Server {
 
 // Handler is the main http handler
 type Handler struct {
-	Store brazier.Store
+	Registry brazier.Registry
+	Store    brazier.Store
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +62,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
-	bucket, err := store.GetBucketOrCreate(h.Store, bucketName)
+	bucket, err := store.GetBucketOrCreate(h.Registry, h.Store, bucketName)
 	if err != nil {
 		log.Print(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -96,7 +97,7 @@ func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName st
 }
 
 func (h *Handler) getItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
-	bucket, err := h.Store.Bucket(bucketName)
+	info, err := h.Registry.BucketInfo(bucketName)
 	if err != nil {
 		if err != store.ErrNotFound {
 			log.Print(err)
@@ -104,6 +105,13 @@ func (h *Handler) getItem(w http.ResponseWriter, r *http.Request, bucketName str
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	bucket, err := h.Store.Bucket(info.Name)
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	defer bucket.Close()
@@ -124,7 +132,7 @@ func (h *Handler) getItem(w http.ResponseWriter, r *http.Request, bucketName str
 }
 
 func (h *Handler) deleteItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
-	bucket, err := h.Store.Bucket(bucketName)
+	info, err := h.Registry.BucketInfo(bucketName)
 	if err != nil {
 		if err != store.ErrNotFound {
 			log.Print(err)
@@ -132,6 +140,12 @@ func (h *Handler) deleteItem(w http.ResponseWriter, r *http.Request, bucketName 
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	bucket, err := h.Store.Bucket(info.Name)
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	defer bucket.Close()
@@ -151,7 +165,7 @@ func (h *Handler) deleteItem(w http.ResponseWriter, r *http.Request, bucketName 
 }
 
 func (h *Handler) listBucket(w http.ResponseWriter, r *http.Request, bucketName string) {
-	bucket, err := h.Store.Bucket(bucketName)
+	info, err := h.Registry.BucketInfo(bucketName)
 	if err != nil {
 		if err != store.ErrNotFound {
 			log.Print(err)
@@ -159,6 +173,12 @@ func (h *Handler) listBucket(w http.ResponseWriter, r *http.Request, bucketName 
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	bucket, err := h.Store.Bucket(info.Name)
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	defer bucket.Close()

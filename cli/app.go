@@ -23,12 +23,14 @@ const (
 	defaultSocketName = "brazier.sock"
 	defaultBucket     = "default"
 	settingsDB        = "settings.db"
+	registryDB        = "registry.db"
 )
 
 // App is the main cli application
 type app struct {
 	Out        io.Writer
 	Cli        Cli
+	Registry   brazier.Registry
 	Store      brazier.Store
 	ConfigPath string
 	DataDir    string
@@ -69,6 +71,13 @@ func (a *app) PreRun(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
+	if a.Registry == nil {
+		a.Registry, err = boltdb.NewRegistry(filepath.Join(a.DataDir, registryDB))
+		if err != nil {
+			return err
+		}
+	}
+
 	if a.Store == nil {
 		a.Store, err = boltdb.NewStore(filepath.Join(a.DataDir, defaultDBName))
 		if err != nil {
@@ -90,6 +99,14 @@ func (a *app) PostRun(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
+
+	if a.Registry == nil {
+		err = a.Registry.Close()
+		if err != nil {
+			return err
+		}
+	}
+
 	if a.Store != nil {
 		err = a.Store.Close()
 		if err != nil {

@@ -43,9 +43,9 @@ type serverCmd struct {
 	App              *app
 	c                chan os.Signal
 	useExit          bool
-	HTTPServerFunc   func(brazier.Store) brazier.Server
-	RPCServerFunc    func(brazier.Store) brazier.Server
-	SocketServerFunc func(brazier.Store) brazier.Server
+	HTTPServerFunc   func(brazier.Registry, brazier.Store) brazier.Server
+	RPCServerFunc    func(brazier.Registry, brazier.Store) brazier.Server
+	SocketServerFunc func(brazier.Registry, brazier.Store) brazier.Server
 }
 
 func (s *serverCmd) Serve(cmd *cobra.Command, args []string) error {
@@ -67,19 +67,19 @@ func (s *serverCmd) createServers() (map[net.Listener]brazier.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	servers[httpListener] = s.HTTPServerFunc(s.App.Store)
+	servers[httpListener] = s.HTTPServerFunc(s.App.Registry, s.App.Store)
 
 	rpcListener, err := net.Listen("tcp", s.App.Config.RPC.Address)
 	if err != nil {
 		return nil, err
 	}
-	servers[rpcListener] = s.RPCServerFunc(s.App.Store)
+	servers[rpcListener] = s.RPCServerFunc(s.App.Registry, s.App.Store)
 
 	socketListener, err := net.Listen("unix", filepath.Join(s.App.DataDir, "brazier.sock"))
 	if err != nil {
 		return nil, err
 	}
-	servers[socketListener] = s.SocketServerFunc(s.App.Store)
+	servers[socketListener] = s.SocketServerFunc(s.App.Registry, s.App.Store)
 
 	return servers, nil
 }

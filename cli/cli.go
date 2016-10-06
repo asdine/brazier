@@ -21,30 +21,34 @@ type cli struct {
 }
 
 func (c *cli) Create(name string) error {
-	return c.App.Store.Create(name)
+	return c.App.Registry.Create(name)
 }
 
-func (c *cli) Save(bucket, key string, data []byte) error {
-	b, err := store.GetBucketOrCreate(c.App.Store, bucket)
+func (c *cli) Save(bucketName, key string, data []byte) error {
+	bucket, err := store.GetBucketOrCreate(c.App.Registry, c.App.Store, bucketName)
 	if err != nil {
 		return err
 	}
-	defer b.Close()
+	defer bucket.Close()
 
 	data = json.ToValidJSON(data)
 
-	_, err = b.Save(key, data)
+	_, err = bucket.Save(key, data)
 	return err
 }
 
-func (c *cli) Get(bucket, key string) ([]byte, error) {
-	b, err := c.App.Store.Bucket(bucket)
+func (c *cli) Get(bucketName, key string) ([]byte, error) {
+	info, err := c.App.Registry.BucketInfo(bucketName)
 	if err != nil {
 		return nil, err
 	}
-	defer b.Close()
+	bucket, err := c.App.Store.Bucket(info.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer bucket.Close()
 
-	item, err := b.Get(key)
+	item, err := bucket.Get(key)
 	if err != nil {
 		return nil, err
 	}
@@ -52,18 +56,22 @@ func (c *cli) Get(bucket, key string) ([]byte, error) {
 	return append(item.Data, '\n'), nil
 }
 
-func (c *cli) List(bucket string) ([]brazier.Item, error) {
-	b, err := c.App.Store.Bucket(bucket)
+func (c *cli) List(bucketName string) ([]brazier.Item, error) {
+	info, err := c.App.Registry.BucketInfo(bucketName)
 	if err != nil {
 		return nil, err
 	}
-	defer b.Close()
+	bucket, err := c.App.Store.Bucket(info.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer bucket.Close()
 
-	return b.Page(1, -1)
+	return bucket.Page(1, -1)
 }
 
 func (c *cli) ListBuckets() ([]string, error) {
-	return c.App.Store.List()
+	return c.App.Registry.List()
 }
 
 func (c *cli) Delete(bucket, key string) error {

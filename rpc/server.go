@@ -13,9 +13,9 @@ import (
 )
 
 // NewServer returns a configured gRPC server
-func NewServer(s brazier.Store) brazier.Server {
+func NewServer(r brazier.Registry, s brazier.Store) brazier.Server {
 	g := grpc.NewServer()
-	srv := Server{Store: s}
+	srv := Server{Registry: r, Store: s}
 	proto.RegisterBucketServer(g, &srv)
 	return &serverWrapper{srv: g}
 }
@@ -34,12 +34,13 @@ func (s *serverWrapper) Stop(time.Duration) {
 
 // Server is the Brazier gRPC server
 type Server struct {
-	Store brazier.Store
+	Registry brazier.Registry
+	Store    brazier.Store
 }
 
 // Create a bucket
 func (s *Server) Create(ctx context.Context, in *proto.NewBucket) (*proto.Empty, error) {
-	err := s.Store.Create(in.Name)
+	err := s.Registry.Create(in.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +50,7 @@ func (s *Server) Create(ctx context.Context, in *proto.NewBucket) (*proto.Empty,
 
 // Buckets returns the list of existing buckets
 func (s *Server) Buckets(ctx context.Context, in *proto.Empty) (*proto.BucketInfos, error) {
-	list, err := s.Store.List()
+	list, err := s.Registry.List()
 	if err != nil {
 		return nil, err
 	}
@@ -67,10 +68,11 @@ func (s *Server) Buckets(ctx context.Context, in *proto.Empty) (*proto.BucketInf
 
 // Save an item to the bucket
 func (s *Server) Save(ctx context.Context, in *proto.NewItem) (*proto.Empty, error) {
-	bucket, err := store.GetBucketOrCreate(s.Store, in.Bucket)
+	bucket, err := store.GetBucketOrCreate(s.Registry, s.Store, in.Bucket)
 	if err != nil {
 		return nil, err
 	}
+	defer bucket.Close()
 
 	data := json.ToValidJSON(in.Data)
 	_, err = bucket.Save(in.Key, data)
@@ -83,12 +85,17 @@ func (s *Server) Save(ctx context.Context, in *proto.NewItem) (*proto.Empty, err
 
 // Get an item from the bucket
 func (s *Server) Get(ctx context.Context, in *proto.KeySelector) (*proto.Item, error) {
-	b, err := s.Store.Bucket(in.Bucket)
+	info, err := s.Registry.BucketInfo(in.Bucket)
 	if err != nil {
 		return nil, err
 	}
+	bucket, err := s.Store.Bucket(info.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer bucket.Close()
 
-	item, err := b.Get(in.Key)
+	item, err := bucket.Get(in.Key)
 	if err != nil {
 		return nil, err
 	}
@@ -103,12 +110,17 @@ func (s *Server) Get(ctx context.Context, in *proto.KeySelector) (*proto.Item, e
 
 // Delete an item from the bucket
 func (s *Server) Delete(ctx context.Context, in *proto.KeySelector) (*proto.Empty, error) {
-	b, err := s.Store.Bucket(in.Bucket)
+	info, err := s.Registry.BucketInfo(in.Bucket)
 	if err != nil {
 		return nil, err
 	}
+	bucket, err := s.Store.Bucket(info.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer bucket.Close()
 
-	err = b.Delete(in.Key)
+	err = bucket.Delete(in.Key)
 	if err != nil {
 		return nil, err
 	}
@@ -118,12 +130,17 @@ func (s *Server) Delete(ctx context.Context, in *proto.KeySelector) (*proto.Empt
 
 // List the content of a bucket
 func (s *Server) List(ctx context.Context, in *proto.BucketSelector) (*proto.Items, error) {
-	b, err := s.Store.Bucket(in.Bucket)
+	info, err := s.Registry.BucketInfo(in.Bucket)
 	if err != nil {
 		return nil, err
 	}
+	bucket, err := s.Store.Bucket(info.Name)
+	if err != nil {
+		return nil, err
+	}
+	defer bucket.Close()
 
-	items, err := b.Page(1, -1)
+	items, err := bucket.Page(1, -1)
 	if err != nil {
 		return nil, err
 	}

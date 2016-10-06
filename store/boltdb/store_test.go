@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
 	"github.com/asdine/storm"
 	"github.com/stretchr/testify/require"
@@ -47,13 +46,6 @@ func TestStore(t *testing.T) {
 	s, err := boltdb.NewStore(path)
 	require.NoError(t, err)
 
-	err = s.Create("bucket1")
-	require.NoError(t, err)
-
-	err = s.Create("bucket1")
-	require.Error(t, err)
-	require.Equal(t, store.ErrAlreadyExists, err)
-
 	bucket, err := s.Bucket("bucket1")
 	require.NoError(t, err)
 	require.NotNil(t, bucket)
@@ -66,12 +58,6 @@ func TestStore(t *testing.T) {
 	require.NoError(t, err)
 
 	b2, err := s.Bucket("bucket2")
-	require.Equal(t, err, store.ErrNotFound)
-
-	err = s.Create("bucket2")
-	require.NoError(t, err)
-
-	b2, err = s.Bucket("bucket2")
 	require.NoError(t, err)
 
 	b1bis, err := s.Bucket("bucket1")

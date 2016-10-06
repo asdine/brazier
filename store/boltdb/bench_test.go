@@ -18,10 +18,6 @@ func BenchmarkBucketSave(b *testing.B) {
 		b.Error(err)
 	}
 
-	err = s.Create("b1")
-	if err != nil {
-		b.Error(err)
-	}
 	bucket, err := s.Bucket("b1")
 	if err != nil {
 		b.Error(err)
@@ -48,10 +44,6 @@ func BenchmarkBucketGet(b *testing.B) {
 		b.Error(err)
 	}
 
-	err = s.Create("b1")
-	if err != nil {
-		b.Error(err)
-	}
 	bucket, err := s.Bucket("b1")
 	if err != nil {
 		b.Error(err)
@@ -82,10 +74,6 @@ func BenchmarkBucketPage(b *testing.B) {
 		b.Error(err)
 	}
 
-	err = s.Create("b1")
-	if err != nil {
-		b.Error(err)
-	}
 	bucket, err := s.Bucket("b1")
 	if err != nil {
 		b.Error(err)

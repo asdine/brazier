@@ -11,11 +11,13 @@ import (
 
 func TestBucketSave(t *testing.T) {
 	r := mock.NewRegistry()
+	defer r.Close()
+
 	s := mock.NewStore()
+	defer s.Close()
 
 	err := r.Create("b1")
 	require.NoError(t, err)
-	defer r.Close()
 
 	info, err := r.BucketInfo("b1")
 	require.NoError(t, err)
@@ -25,10 +27,7 @@ func TestBucketSave(t *testing.T) {
 	require.Len(t, names, 1)
 	require.Equal(t, "b1", names[0])
 
-	err = s.Create(info.Name)
-	require.NoError(t, err)
-
-	b, err := s.Bucket("b1")
+	b, err := s.Bucket(info.Name)
 	require.NoError(t, err)
 
 	i, err := b.Save("id", []byte("Data"))
@@ -45,12 +44,20 @@ func TestBucketSave(t *testing.T) {
 }
 
 func TestBucketGet(t *testing.T) {
-	s := mock.NewStore()
+	r := mock.NewRegistry()
+	defer r.Close()
 
-	err := s.Create("b1")
+	s := mock.NewStore()
+	defer s.Close()
+
+	err := r.Create("b1")
+	require.NoError(t, err)
+	defer r.Close()
+
+	info, err := r.BucketInfo("b1")
 	require.NoError(t, err)
 
-	b, err := s.Bucket("b1")
+	b, err := s.Bucket(info.Name)
 	require.NoError(t, err)
 
 	i, err := b.Save("id", []byte("Data"))
@@ -68,12 +75,20 @@ func TestBucketGet(t *testing.T) {
 }
 
 func TestBucketDelete(t *testing.T) {
-	s := mock.NewStore()
+	r := mock.NewRegistry()
+	defer r.Close()
 
-	err := s.Create("b1")
+	s := mock.NewStore()
+	defer s.Close()
+
+	err := r.Create("b1")
+	require.NoError(t, err)
+	defer r.Close()
+
+	info, err := r.BucketInfo("b1")
 	require.NoError(t, err)
 
-	b, err := s.Bucket("b1")
+	b, err := s.Bucket(info.Name)
 	require.NoError(t, err)
 
 	i, err := b.Save("id", []byte("Data"))
@@ -94,12 +109,20 @@ func TestBucketDelete(t *testing.T) {
 }
 
 func TestBucketPage(t *testing.T) {
-	s := mock.NewStore()
+	r := mock.NewRegistry()
+	defer r.Close()
 
-	err := s.Create("b1")
+	s := mock.NewStore()
+	defer s.Close()
+
+	err := r.Create("b1")
+	require.NoError(t, err)
+	defer r.Close()
+
+	info, err := r.BucketInfo("b1")
 	require.NoError(t, err)
 
-	b, err := s.Bucket("b1")
+	b, err := s.Bucket(info.Name)
 	require.NoError(t, err)
 	defer b.Close()
 

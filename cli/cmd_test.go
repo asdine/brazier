@@ -112,7 +112,7 @@ func TestCliUse(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, defaultBucket, name)
 
-	err = app.Store.Create("my bucket")
+	err = app.Registry.Create("my bucket")
 	require.NoError(t, err)
 
 	err = c.RunE(nil, []string{"my bucket"})
@@ -216,9 +216,9 @@ func testListItems(t *testing.T, app *app) {
 }
 
 func testListBuckets(t *testing.T, app *app) {
-	err := app.Store.Create("bucket1")
+	err := app.Registry.Create("bucket1")
 	require.NoError(t, err)
-	err = app.Store.Create("bucket2")
+	err = app.Registry.Create("bucket2")
 	require.NoError(t, err)
 
 	c := NewUseCmd(app)
