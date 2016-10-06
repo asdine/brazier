@@ -5,11 +5,11 @@ import (
 	"time"
 )
 
-// A Server serves incoming requests
+// A Server serves incoming requests.
 type Server interface {
-	// Serve incoming requests. Must block
+	// Serve incoming requests. Must block.
 	Serve(net.Listener) error
 
-	// Stop gracefully stops the server
+	// Stop gracefully stops the server.
 	Stop(time.Duration)
 }

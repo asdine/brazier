@@ -38,11 +38,7 @@ func (c *cli) Save(bucketName, key string, data []byte) error {
 }
 
 func (c *cli) Get(bucketName, key string) ([]byte, error) {
-	info, err := c.App.Registry.BucketInfo(bucketName)
-	if err != nil {
-		return nil, err
-	}
-	bucket, err := c.App.Store.Bucket(info.Name)
+	bucket, err := c.App.Registry.Bucket(bucketName)
 	if err != nil {
 		return nil, err
 	}
@@ -57,11 +53,7 @@ func (c *cli) Get(bucketName, key string) ([]byte, error) {
 }
 
 func (c *cli) List(bucketName string) ([]brazier.Item, error) {
-	info, err := c.App.Registry.BucketInfo(bucketName)
-	if err != nil {
-		return nil, err
-	}
-	bucket, err := c.App.Store.Bucket(info.Name)
+	bucket, err := c.App.Registry.Bucket(bucketName)
 	if err != nil {
 		return nil, err
 	}

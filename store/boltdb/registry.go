@@ -54,8 +54,8 @@ func (r *Registry) Create(name string) error {
 	return err
 }
 
-// BucketInfo returns the bucket informations associated with the given name
-func (r *Registry) BucketInfo(name string) (*brazier.BucketInfo, error) {
+// BucketConfig returns the bucket informations associated with the given name
+func (r *Registry) BucketConfig(name string) (*brazier.BucketConfig, error) {
 	var b internal.Bucket
 	err := r.DB.One("Name", name, &b)
 	if err != nil {
@@ -65,14 +65,14 @@ func (r *Registry) BucketInfo(name string) (*brazier.BucketInfo, error) {
 		return nil, errors.Wrap(err, "boltdb.registry.Bucket failed to fetch bucket")
 	}
 
-	return &brazier.BucketInfo{
+	return &brazier.BucketConfig{
 		Name: b.Name,
 	}, nil
 }
 
 // Bucket returns the selected bucket from the Store
 func (r *Registry) Bucket(name string) (brazier.Bucket, error) {
-	info, err := r.BucketInfo(name)
+	info, err := r.BucketConfig(name)
 	if err != nil {
 		return nil, err
 	}

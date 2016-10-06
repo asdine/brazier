@@ -19,7 +19,7 @@ func TestBucketSave(t *testing.T) {
 	err := r.Create("b1")
 	require.NoError(t, err)
 
-	info, err := r.BucketInfo("b1")
+	info, err := r.BucketConfig("b1")
 	require.NoError(t, err)
 
 	names, err := r.List()
@@ -54,7 +54,7 @@ func TestBucketGet(t *testing.T) {
 	require.NoError(t, err)
 	defer r.Close()
 
-	info, err := r.BucketInfo("b1")
+	info, err := r.BucketConfig("b1")
 	require.NoError(t, err)
 
 	b, err := s.Bucket(info.Name)
@@ -85,7 +85,7 @@ func TestBucketDelete(t *testing.T) {
 	require.NoError(t, err)
 	defer r.Close()
 
-	info, err := r.BucketInfo("b1")
+	info, err := r.BucketConfig("b1")
 	require.NoError(t, err)
 
 	b, err := s.Bucket(info.Name)
@@ -119,7 +119,7 @@ func TestBucketPage(t *testing.T) {
 	require.NoError(t, err)
 	defer r.Close()
 
-	info, err := r.BucketInfo("b1")
+	info, err := r.BucketConfig("b1")
 	require.NoError(t, err)
 
 	b, err := s.Bucket(info.Name)
