@@ -16,11 +16,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-func newServer(t *testing.T, r brazier.Registry, s brazier.Store) (*grpc.ClientConn, func()) {
+func newServer(t *testing.T, r brazier.Registry) (*grpc.ClientConn, func()) {
 	l, err := net.Listen("tcp", ":")
 	require.NoError(t, err)
 
-	srv := rpc.NewServer(r, s)
+	srv := rpc.NewServer(r)
 
 	go func() {
 		srv.Serve(l)
@@ -37,9 +37,8 @@ func newServer(t *testing.T, r brazier.Registry, s brazier.Store) (*grpc.ClientC
 }
 
 func TestCreator(t *testing.T) {
-	r := mock.NewRegistry()
-	s := mock.NewStore()
-	conn, cleanup := newServer(t, r, s)
+	r := mock.NewRegistry(mock.NewStore())
+	conn, cleanup := newServer(t, r)
 	defer cleanup()
 
 	c := proto.NewBucketClient(conn)
@@ -48,14 +47,13 @@ func TestCreator(t *testing.T) {
 	require.NoError(t, err)
 
 	require.True(t, r.CreateInvoked)
-	_, err = s.Bucket("bucket")
+	_, err = r.Bucket("bucket")
 	require.NoError(t, err)
 }
 
 func TestBuckets(t *testing.T) {
-	r := mock.NewRegistry()
-	s := mock.NewStore()
-	conn, cleanup := newServer(t, r, s)
+	r := mock.NewRegistry(mock.NewStore())
+	conn, cleanup := newServer(t, r)
 	defer cleanup()
 
 	c := proto.NewBucketClient(conn)
@@ -76,9 +74,8 @@ func TestBuckets(t *testing.T) {
 }
 
 func TestSaver(t *testing.T) {
-	r := mock.NewRegistry()
-	s := mock.NewStore()
-	conn, cleanup := newServer(t, r, s)
+	r := mock.NewRegistry(mock.NewStore())
+	conn, cleanup := newServer(t, r)
 	defer cleanup()
 
 	c := proto.NewBucketClient(conn)
@@ -86,8 +83,8 @@ func TestSaver(t *testing.T) {
 	_, err := c.Save(context.Background(), &proto.NewItem{Bucket: "bucket", Key: "key", Data: []byte("data")})
 	require.NoError(t, err)
 
-	require.True(t, s.BucketInvoked)
-	bucket, err := s.Bucket("bucket")
+	require.True(t, r.BucketInvoked)
+	bucket, err := r.Bucket("bucket")
 	b := bucket.(*mock.Bucket)
 	require.NoError(t, err)
 	require.True(t, b.SaveInvoked)
@@ -98,27 +95,26 @@ func TestSaver(t *testing.T) {
 }
 
 func TestLister(t *testing.T) {
-	r := mock.NewRegistry()
-	s := mock.NewStore()
-	conn, cleanup := newServer(t, r, s)
+	r := mock.NewRegistry(mock.NewStore())
+	conn, cleanup := newServer(t, r)
 	defer cleanup()
 
 	c := proto.NewBucketClient(conn)
 
 	err := r.Create("bucket")
 	require.NoError(t, err)
-	bucket, err := s.Bucket("bucket")
+	bucket, err := r.Bucket("bucket")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)
-	s.BucketInvoked = false
+	r.BucketInvoked = false
 
 	resp, err := c.List(context.Background(), &proto.BucketSelector{Bucket: "bucket"})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 0)
-	require.True(t, s.BucketInvoked)
+	require.True(t, r.BucketInvoked)
 	require.True(t, b.PageInvoked)
 
-	s.BucketInvoked = false
+	r.BucketInvoked = false
 	b.PageInvoked = false
 
 	var list [][]byte
@@ -135,24 +131,23 @@ func TestLister(t *testing.T) {
 	for i := 0; i < 20; i++ {
 		require.Equal(t, list[i], resp.Items[i].Data)
 	}
-	require.True(t, s.BucketInvoked)
+	require.True(t, r.BucketInvoked)
 	require.True(t, b.PageInvoked)
 }
 
 func TestGetter(t *testing.T) {
-	r := mock.NewRegistry()
-	s := mock.NewStore()
-	conn, cleanup := newServer(t, r, s)
+	r := mock.NewRegistry(mock.NewStore())
+	conn, cleanup := newServer(t, r)
 	defer cleanup()
 
 	c := proto.NewBucketClient(conn)
 
 	err := r.Create("bucket")
 	require.NoError(t, err)
-	bucket, err := s.Bucket("bucket")
+	bucket, err := r.Bucket("bucket")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)
-	s.BucketInvoked = false
+	r.BucketInvoked = false
 	item, err := b.Save("key", []byte("data"))
 	require.NoError(t, err)
 	b.SaveInvoked = false
@@ -160,7 +155,7 @@ func TestGetter(t *testing.T) {
 	resp, err := c.Get(context.Background(), &proto.KeySelector{Bucket: "bucket", Key: "key"})
 	require.NoError(t, err)
 	require.Equal(t, "key", resp.Key)
-	require.True(t, s.BucketInvoked)
+	require.True(t, r.BucketInvoked)
 	require.True(t, b.GetInvoked)
 	require.Equal(t, item.Data, resp.Data)
 
@@ -169,26 +164,25 @@ func TestGetter(t *testing.T) {
 }
 
 func TestDeleter(t *testing.T) {
-	r := mock.NewRegistry()
-	s := mock.NewStore()
-	conn, cleanup := newServer(t, r, s)
+	r := mock.NewRegistry(mock.NewStore())
+	conn, cleanup := newServer(t, r)
 	defer cleanup()
 
 	c := proto.NewBucketClient(conn)
 
 	err := r.Create("bucket")
 	require.NoError(t, err)
-	bucket, err := s.Bucket("bucket")
+	bucket, err := r.Bucket("bucket")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)
-	s.BucketInvoked = false
+	r.BucketInvoked = false
 	_, err = b.Save("key", []byte("data"))
 	require.NoError(t, err)
 	b.SaveInvoked = false
 
 	_, err = c.Delete(context.Background(), &proto.KeySelector{Bucket: "bucket", Key: "key"})
 	require.NoError(t, err)
-	require.True(t, s.BucketInvoked)
+	require.True(t, r.BucketInvoked)
 	require.True(t, b.DeleteInvoked)
 
 	_, err = b.Get("key")

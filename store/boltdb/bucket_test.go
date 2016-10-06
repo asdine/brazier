@@ -10,7 +10,7 @@ import (
 )
 
 func TestBucketSave(t *testing.T) {
-	path, cleanup := preparePath(t)
+	path, cleanup := preparePath(t, "store.db")
 	defer cleanup()
 
 	s, err := boltdb.NewStore(path)
@@ -33,7 +33,7 @@ func TestBucketSave(t *testing.T) {
 }
 
 func TestBucketGet(t *testing.T) {
-	path, cleanup := preparePath(t)
+	path, cleanup := preparePath(t, "store.db")
 	defer cleanup()
 
 	s, err := boltdb.NewStore(path)
@@ -57,7 +57,7 @@ func TestBucketGet(t *testing.T) {
 }
 
 func TestBucketDelete(t *testing.T) {
-	path, cleanup := preparePath(t)
+	path, cleanup := preparePath(t, "store.db")
 	defer cleanup()
 
 	s, err := boltdb.NewStore(path)
@@ -84,7 +84,7 @@ func TestBucketDelete(t *testing.T) {
 }
 
 func TestBucketPage(t *testing.T) {
-	path, cleanup := preparePath(t)
+	path, cleanup := preparePath(t, "store.db")
 	defer cleanup()
 
 	s, err := boltdb.NewStore(path)

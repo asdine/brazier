@@ -6,17 +6,20 @@ import (
 )
 
 // NewRegistry returns a BoltDB Registry
-func NewRegistry() *Registry {
+func NewRegistry(s brazier.Store) *Registry {
 	return &Registry{
 		Buckets: make(map[string]brazier.BucketInfo),
+		Store:   s,
 	}
 }
 
 // Registry is a BoltDB store
 type Registry struct {
 	Buckets           map[string]brazier.BucketInfo
+	Store             brazier.Store
 	index             []string
 	CreateInvoked     bool
+	BucketInvoked     bool
 	BucketInfoInvoked bool
 	CloseInvoked      bool
 	ListInvoked       bool
@@ -41,6 +44,17 @@ func (r *Registry) BucketInfo(name string) (*brazier.BucketInfo, error) {
 	}
 
 	return &b, nil
+}
+
+// Bucket returns the bucket associated with the given name
+func (r *Registry) Bucket(name string) (brazier.Bucket, error) {
+	r.BucketInvoked = true
+	_, ok := r.Buckets[name]
+	if !ok {
+		return nil, store.ErrNotFound
+	}
+
+	return r.Store.Bucket(name)
 }
 
 // List buckets

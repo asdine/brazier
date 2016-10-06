@@ -25,7 +25,7 @@ func (c *cli) Create(name string) error {
 }
 
 func (c *cli) Save(bucketName, key string, data []byte) error {
-	bucket, err := store.GetBucketOrCreate(c.App.Registry, c.App.Store, bucketName)
+	bucket, err := store.GetBucketOrCreate(c.App.Registry, bucketName)
 	if err != nil {
 		return err
 	}

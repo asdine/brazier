@@ -15,22 +15,22 @@ type errorHandler interface {
 	Error(args ...interface{})
 }
 
-func preparePath(t errorHandler) (string, func()) {
+func preparePath(t errorHandler, dbName string) (string, func()) {
 	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
 	if err != nil {
 		t.Error(err)
 	}
 
-	return filepath.Join(dir, "brazier.db"), func() {
+	return filepath.Join(dir, dbName), func() {
 		os.RemoveAll(dir)
 	}
 }
 
-func prepareDB(t *testing.T, opts ...func(*storm.DB) error) (*storm.DB, func()) {
+func prepareDB(t *testing.T, dbName string, opts ...func(*storm.DB) error) (*storm.DB, func()) {
 	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
 	require.NoError(t, err)
 
-	db, err := storm.Open(filepath.Join(dir, "brazier.db"), opts...)
+	db, err := storm.Open(filepath.Join(dir, dbName), opts...)
 	require.NoError(t, err)
 
 	return db, func() {
@@ -40,7 +40,7 @@ func prepareDB(t *testing.T, opts ...func(*storm.DB) error) (*storm.DB, func()) 
 }
 
 func TestStore(t *testing.T) {
-	path, cleanup := preparePath(t)
+	path, cleanup := preparePath(t, "store.db")
 	defer cleanup()
 
 	s, err := boltdb.NewStore(path)

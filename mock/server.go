@@ -8,7 +8,7 @@ import (
 )
 
 // NewServer allocates a new Mock Server
-func NewServer(r brazier.Registry, s brazier.Store) brazier.Server {
+func NewServer(r brazier.Registry) brazier.Server {
 	return &Server{
 		quit: make(chan struct{}),
 	}

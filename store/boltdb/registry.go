@@ -13,7 +13,7 @@ import (
 )
 
 // NewRegistry returns a BoltDB Registry
-func NewRegistry(path string) (*Registry, error) {
+func NewRegistry(path string, s brazier.Store) (*Registry, error) {
 	var err error
 
 	db, err := storm.Open(
@@ -30,13 +30,15 @@ func NewRegistry(path string) (*Registry, error) {
 	}
 
 	return &Registry{
-		DB: db,
+		DB:    db,
+		Store: s,
 	}, nil
 }
 
 // Registry is a BoltDB store
 type Registry struct {
-	DB *storm.DB
+	DB    *storm.DB
+	Store brazier.Store
 }
 
 // Create a bucket
@@ -66,6 +68,15 @@ func (r *Registry) BucketInfo(name string) (*brazier.BucketInfo, error) {
 	return &brazier.BucketInfo{
 		Name: b.Name,
 	}, nil
+}
+
+// Bucket returns the selected bucket from the Store
+func (r *Registry) Bucket(name string) (brazier.Bucket, error) {
+	info, err := r.BucketInfo(name)
+	if err != nil {
+		return nil, err
+	}
+	return r.Store.Bucket(info.Name)
 }
 
 // List returns the list of all buckets

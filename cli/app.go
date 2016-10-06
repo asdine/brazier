@@ -71,15 +71,15 @@ func (a *app) PreRun(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	if a.Registry == nil {
-		a.Registry, err = boltdb.NewRegistry(filepath.Join(a.DataDir, registryDB))
+	if a.Store == nil {
+		a.Store, err = boltdb.NewStore(filepath.Join(a.DataDir, defaultDBName))
 		if err != nil {
 			return err
 		}
 	}
 
-	if a.Store == nil {
-		a.Store, err = boltdb.NewStore(filepath.Join(a.DataDir, defaultDBName))
+	if a.Registry == nil {
+		a.Registry, err = boltdb.NewRegistry(filepath.Join(a.DataDir, registryDB), a.Store)
 		if err != nil {
 			return err
 		}
@@ -100,7 +100,7 @@ func (a *app) PostRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if a.Registry == nil {
+	if a.Registry != nil {
 		err = a.Registry.Close()
 		if err != nil {
 			return err

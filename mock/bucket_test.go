@@ -10,11 +10,11 @@ import (
 )
 
 func TestBucketSave(t *testing.T) {
-	r := mock.NewRegistry()
-	defer r.Close()
-
 	s := mock.NewStore()
 	defer s.Close()
+
+	r := mock.NewRegistry(s)
+	defer r.Close()
 
 	err := r.Create("b1")
 	require.NoError(t, err)
@@ -44,11 +44,11 @@ func TestBucketSave(t *testing.T) {
 }
 
 func TestBucketGet(t *testing.T) {
-	r := mock.NewRegistry()
-	defer r.Close()
-
 	s := mock.NewStore()
 	defer s.Close()
+
+	r := mock.NewRegistry(s)
+	defer r.Close()
 
 	err := r.Create("b1")
 	require.NoError(t, err)
@@ -75,11 +75,11 @@ func TestBucketGet(t *testing.T) {
 }
 
 func TestBucketDelete(t *testing.T) {
-	r := mock.NewRegistry()
-	defer r.Close()
-
 	s := mock.NewStore()
 	defer s.Close()
+
+	r := mock.NewRegistry(s)
+	defer r.Close()
 
 	err := r.Create("b1")
 	require.NoError(t, err)
@@ -109,11 +109,11 @@ func TestBucketDelete(t *testing.T) {
 }
 
 func TestBucketPage(t *testing.T) {
-	r := mock.NewRegistry()
-	defer r.Close()
-
 	s := mock.NewStore()
 	defer s.Close()
+
+	r := mock.NewRegistry(s)
+	defer r.Close()
 
 	err := r.Create("b1")
 	require.NoError(t, err)

@@ -10,7 +10,7 @@ import (
 )
 
 func BenchmarkBucketSave(b *testing.B) {
-	path, cleanup := preparePath(b)
+	path, cleanup := preparePath(b, "store.db")
 	defer cleanup()
 
 	s, err := boltdb.NewStore(path)
@@ -36,7 +36,7 @@ func BenchmarkBucketSave(b *testing.B) {
 }
 
 func BenchmarkBucketGet(b *testing.B) {
-	path, cleanup := preparePath(b)
+	path, cleanup := preparePath(b, "store.db")
 	defer cleanup()
 
 	s, err := boltdb.NewStore(path)
@@ -66,7 +66,7 @@ func BenchmarkBucketGet(b *testing.B) {
 }
 
 func BenchmarkBucketPage(b *testing.B) {
-	path, cleanup := preparePath(b)
+	path, cleanup := preparePath(b, "store.db")
 	defer cleanup()
 
 	s, err := boltdb.NewStore(path)

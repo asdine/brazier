@@ -9,10 +9,15 @@ import (
 )
 
 func TestRegistry(t *testing.T) {
-	path, cleanup := preparePath(t)
-	defer cleanup()
+	pathStore, cleanupStore := preparePath(t, "store.db")
+	defer cleanupStore()
+	pathReg, cleanupReg := preparePath(t, "reg.db")
+	defer cleanupReg()
 
-	r, err := boltdb.NewRegistry(path)
+	s, err := boltdb.NewStore(pathStore)
+	require.NoError(t, err)
+
+	r, err := boltdb.NewRegistry(pathReg, s)
 	require.NoError(t, err)
 
 	err = r.Create("bucket1")
@@ -26,6 +31,11 @@ func TestRegistry(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, info1)
 	require.Equal(t, "bucket1", info1.Name)
+
+	b1, err := r.Bucket(info1.Name)
+	require.NoError(t, err)
+	require.NotNil(t, b1)
+	defer b1.Close()
 
 	_, err = r.BucketInfo("bucket2")
 	require.Equal(t, err, store.ErrNotFound)
