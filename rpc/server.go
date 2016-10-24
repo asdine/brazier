@@ -124,7 +124,10 @@ func (s *Server) Delete(ctx context.Context, in *proto.KeySelector) (*proto.Empt
 func (s *Server) List(ctx context.Context, in *proto.BucketSelector) (*proto.Items, error) {
 	bucket, err := s.Registry.Bucket(in.Bucket)
 	if err != nil {
-		return nil, err
+		if err != store.ErrNotFound {
+			return nil, err
+		}
+		return &proto.Items{}, nil
 	}
 	defer bucket.Close()
 

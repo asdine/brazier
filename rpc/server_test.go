@@ -133,6 +133,10 @@ func TestLister(t *testing.T) {
 	}
 	require.True(t, r.BucketInvoked)
 	require.True(t, b.PageInvoked)
+
+	resp, err = c.List(context.Background(), &proto.BucketSelector{Bucket: "something"})
+	require.NoError(t, err)
+	require.Len(t, resp.Items, 0)
 }
 
 func TestGetter(t *testing.T) {

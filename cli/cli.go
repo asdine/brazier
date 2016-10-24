@@ -55,7 +55,10 @@ func (c *cli) Get(bucketName, key string) ([]byte, error) {
 func (c *cli) List(bucketName string) ([]brazier.Item, error) {
 	bucket, err := c.App.Registry.Bucket(bucketName)
 	if err != nil {
-		return nil, err
+		if err != store.ErrNotFound {
+			return nil, err
+		}
+		return nil, nil
 	}
 	defer bucket.Close()
 

@@ -157,7 +157,11 @@ func (h *Handler) listBucket(w http.ResponseWriter, r *http.Request, bucketName 
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusNotFound)
+		// Returning an empty list if the bucket doesn't exit.
+		// TODO: the user should be able to enable/disable this behaviour
+		// in the configuration.
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte("[]"))
 		return
 	}
 	defer bucket.Close()

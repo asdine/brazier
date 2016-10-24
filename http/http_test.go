@@ -155,7 +155,9 @@ func TestListItems(t *testing.T) {
 	w = httptest.NewRecorder()
 	r, _ = http.NewRequest("GET", "/z", nil)
 	h.ServeHTTP(w, r)
-	require.Equal(t, http.StatusNotFound, w.Code)
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "[]", w.Body.String())
+	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 }
 
 func TestBadRequests(t *testing.T) {

@@ -213,6 +213,11 @@ func testListItems(t *testing.T, app *app) {
 	err := l.RunE(nil, []string{defaultBucket})
 	require.NoError(t, err)
 	require.Equal(t, expected.String(), out.String())
+
+	out.Reset()
+	err = l.RunE(nil, []string{"some bucket"})
+	require.NoError(t, err)
+	require.Equal(t, "[]\n", out.String())
 }
 
 func testListBuckets(t *testing.T, app *app) {
