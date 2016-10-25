@@ -1,6 +1,7 @@
 package boltdb
 
 import (
+	"strings"
 	"time"
 
 	"github.com/asdine/brazier"
@@ -42,9 +43,9 @@ type Registry struct {
 }
 
 // Create a bucket
-func (r *Registry) Create(name string) error {
+func (r *Registry) Create(path ...string) error {
 	err := r.DB.Save(&internal.Bucket{
-		Name: name,
+		Name: strings.Join(path, "/"),
 	})
 
 	if err == storm.ErrAlreadyExists {
@@ -55,9 +56,9 @@ func (r *Registry) Create(name string) error {
 }
 
 // BucketConfig returns the bucket informations associated with the given name
-func (r *Registry) BucketConfig(name string) (*brazier.BucketConfig, error) {
+func (r *Registry) BucketConfig(path ...string) (*brazier.BucketConfig, error) {
 	var b internal.Bucket
-	err := r.DB.One("Name", name, &b)
+	err := r.DB.One("Name", strings.Join(path, "/"), &b)
 	if err != nil {
 		if err == storm.ErrNotFound {
 			return nil, store.ErrNotFound
@@ -66,17 +67,17 @@ func (r *Registry) BucketConfig(name string) (*brazier.BucketConfig, error) {
 	}
 
 	return &brazier.BucketConfig{
-		Name: b.Name,
+		Path: path,
 	}, nil
 }
 
 // Bucket returns the selected bucket from the Store
-func (r *Registry) Bucket(name string) (brazier.Bucket, error) {
-	info, err := r.BucketConfig(name)
+func (r *Registry) Bucket(path ...string) (brazier.Bucket, error) {
+	info, err := r.BucketConfig(path...)
 	if err != nil {
 		return nil, err
 	}
-	return r.Store.Bucket(info.Name)
+	return r.Store.Bucket(info.Path...)
 }
 
 // List returns the list of all buckets

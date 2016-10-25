@@ -38,8 +38,8 @@ type Store struct {
 }
 
 // Bucket returns the bucket associated with the given id
-func (s *Store) Bucket(name string) (brazier.Bucket, error) {
-	return NewBucket(s, name, s.DB.From(name)), nil
+func (s *Store) Bucket(path ...string) (brazier.Bucket, error) {
+	return NewBucket(s, s.DB.From(path...), path...), nil
 }
 
 // Close BoltDB connection

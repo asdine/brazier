@@ -23,7 +23,7 @@ type Bucket interface {
 // A Store manages the backend of specific buckets.
 type Store interface {
 	// Get a Bucket instance of this Store
-	Bucket(name string) (Bucket, error)
+	Bucket(path ...string) (Bucket, error)
 	// Close the Store connexion.
 	Close() error
 }
@@ -31,17 +31,17 @@ type Store interface {
 // BucketConfig contains a bucket's configuration.
 type BucketConfig struct {
 	// Name of the bucket.
-	Name string
+	Path []string
 }
 
 // A Registry manages the buckets, their configuration and their associated Store.
 type Registry interface {
 	// Create a bucket and registers it to the Registry.
-	Create(name string) error
+	Create(path ...string) error
 	// Fetch a bucket directly from the associated Store.
-	Bucket(name string) (Bucket, error)
+	Bucket(path ...string) (Bucket, error)
 	// Get a bucket's configuration.
-	BucketConfig(name string) (*BucketConfig, error)
+	BucketConfig(path ...string) (*BucketConfig, error)
 	// List all the buckets.
 	List() ([]string, error)
 	// Close the registry database.

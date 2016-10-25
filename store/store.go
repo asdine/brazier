@@ -3,17 +3,17 @@ package store
 import "github.com/asdine/brazier"
 
 // GetBucketOrCreate returns an existing bucket or creates it if it doesn't exist.
-func GetBucketOrCreate(r brazier.Registry, name string) (brazier.Bucket, error) {
-	bucket, err := r.Bucket(name)
+func GetBucketOrCreate(r brazier.Registry, path ...string) (brazier.Bucket, error) {
+	bucket, err := r.Bucket(path...)
 	if err != nil {
 		if err != ErrNotFound {
 			return nil, err
 		}
-		err = r.Create(name)
+		err = r.Create(path...)
 		if err != nil {
 			return nil, err
 		}
-		bucket, err = r.Bucket(name)
+		bucket, err = r.Bucket(path...)
 		if err != nil {
 			return nil, err
 		}

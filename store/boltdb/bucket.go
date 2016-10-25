@@ -9,9 +9,9 @@ import (
 )
 
 // NewBucket returns a Bucket
-func NewBucket(s *Store, key string, node storm.Node) *Bucket {
+func NewBucket(s *Store, node storm.Node, path ...string) *Bucket {
 	return &Bucket{
-		key:   key,
+		path:  path,
 		store: s,
 		node:  node,
 	}
@@ -19,7 +19,7 @@ func NewBucket(s *Store, key string, node storm.Node) *Bucket {
 
 // Bucket is a BoltDB implementation a bucket
 type Bucket struct {
-	key   string
+	path  []string
 	store *Store
 	node  storm.Node
 }

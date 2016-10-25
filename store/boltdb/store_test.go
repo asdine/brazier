@@ -45,6 +45,7 @@ func TestStore(t *testing.T) {
 
 	s, err := boltdb.NewStore(path)
 	require.NoError(t, err)
+	defer s.Close()
 
 	bucket, err := s.Bucket("bucket1")
 	require.NoError(t, err)
