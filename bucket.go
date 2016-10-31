@@ -20,11 +20,11 @@ type Bucket interface {
 	Close() error
 }
 
-// A Store manages the backend of specific buckets.
-type Store interface {
-	// Get a Bucket instance of this Store
+// A Backend manages the backend of specific buckets.
+type Backend interface {
+	// Get a Bucket instance of this Backend
 	Bucket(path ...string) (Bucket, error)
-	// Close the Store connexion.
+	// Close the Backend connexion.
 	Close() error
 }
 
