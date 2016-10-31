@@ -1,22 +1,24 @@
 package mock
 
 import (
+	"strings"
+
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 )
 
-// NewRegistry returns a BoltDB Registry
-func NewRegistry(s brazier.Store) *Registry {
+// NewRegistry returns a mock Registry.
+func NewRegistry(b brazier.Backend) *Registry {
 	return &Registry{
 		Buckets: make(map[string]brazier.BucketConfig),
-		Store:   s,
+		Backend: b,
 	}
 }
 
-// Registry is a BoltDB store
+// Registry is a mock Registry.
 type Registry struct {
 	Buckets           map[string]brazier.BucketConfig
-	Store             brazier.Store
+	Backend           brazier.Backend
 	index             []string
 	CreateInvoked     bool
 	BucketInvoked     bool
@@ -25,19 +27,26 @@ type Registry struct {
 	ListInvoked       bool
 }
 
-// Create a bucket
-func (r *Registry) Create(name string) error {
+// Create a bucket.
+func (r *Registry) Create(path ...string) error {
 	r.CreateInvoked = true
+	name := strings.Join(path, "/")
+
+	if _, ok := r.Buckets[name]; ok {
+		return store.ErrAlreadyExists
+	}
+
 	r.Buckets[name] = brazier.BucketConfig{
-		Name: name,
+		Path: path,
 	}
 	r.index = append(r.index, name)
 	return nil
 }
 
-// BucketConfig returns the bucket informations associated with the given name
-func (r *Registry) BucketConfig(name string) (*brazier.BucketConfig, error) {
+// BucketConfig returns the bucket informations associated with the given name.
+func (r *Registry) BucketConfig(path ...string) (*brazier.BucketConfig, error) {
 	r.BucketInfoInvoked = true
+	name := strings.Join(path, "/")
 	b, ok := r.Buckets[name]
 	if !ok {
 		return nil, store.ErrNotFound
@@ -46,24 +55,25 @@ func (r *Registry) BucketConfig(name string) (*brazier.BucketConfig, error) {
 	return &b, nil
 }
 
-// Bucket returns the bucket associated with the given name
-func (r *Registry) Bucket(name string) (brazier.Bucket, error) {
+// Bucket returns the bucket associated with the given name.
+func (r *Registry) Bucket(path ...string) (brazier.Bucket, error) {
 	r.BucketInvoked = true
+	name := strings.Join(path, "/")
 	_, ok := r.Buckets[name]
 	if !ok {
 		return nil, store.ErrNotFound
 	}
 
-	return r.Store.Bucket(name)
+	return r.Backend.Bucket(name)
 }
 
-// List buckets
+// List buckets.
 func (r *Registry) List() ([]string, error) {
 	r.ListInvoked = true
 	return r.index, nil
 }
 
-// Close the store
+// Close the Registry.
 func (r *Registry) Close() error {
 	r.CloseInvoked = true
 	return nil
