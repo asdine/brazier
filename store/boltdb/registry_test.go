@@ -9,10 +9,10 @@ import (
 )
 
 func TestRegistry(t *testing.T) {
-	pathStore, cleanupStore := preparePath(t, "store.db")
+	pathStore, cleanupStore := preparePath(t, "backend.db")
 	defer cleanupStore()
 
-	s, err := boltdb.NewStore(pathStore)
+	s, err := boltdb.NewBackend(pathStore)
 	require.NoError(t, err)
 	defer s.Close()
 

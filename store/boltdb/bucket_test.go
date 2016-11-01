@@ -13,7 +13,7 @@ func TestBucketSave(t *testing.T) {
 	path, cleanup := preparePath(t, "store.db")
 	defer cleanup()
 
-	s, err := boltdb.NewStore(path)
+	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
 
 	b, err := s.Bucket("b1")
@@ -36,7 +36,7 @@ func TestBucketGet(t *testing.T) {
 	path, cleanup := preparePath(t, "store.db")
 	defer cleanup()
 
-	s, err := boltdb.NewStore(path)
+	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
 
 	b, err := s.Bucket("b1")
@@ -60,7 +60,7 @@ func TestBucketDelete(t *testing.T) {
 	path, cleanup := preparePath(t, "store.db")
 	defer cleanup()
 
-	s, err := boltdb.NewStore(path)
+	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
 
 	b, err := s.Bucket("b1")
@@ -87,7 +87,7 @@ func TestBucketPage(t *testing.T) {
 	path, cleanup := preparePath(t, "store.db")
 	defer cleanup()
 
-	s, err := boltdb.NewStore(path)
+	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
 
 	b, err := s.Bucket("b1")

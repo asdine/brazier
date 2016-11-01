@@ -9,19 +9,17 @@ import (
 )
 
 // NewBucket returns a Bucket
-func NewBucket(s *Store, node storm.Node, path ...string) *Bucket {
+func NewBucket(node storm.Node, path ...string) *Bucket {
 	return &Bucket{
-		path:  path,
-		store: s,
-		node:  node,
+		path: path,
+		node: node,
 	}
 }
 
 // Bucket is a BoltDB implementation a bucket
 type Bucket struct {
-	path  []string
-	store *Store
-	node  storm.Node
+	path []string
+	node storm.Node
 }
 
 // Save user data to the bucket. Returns an Iten
