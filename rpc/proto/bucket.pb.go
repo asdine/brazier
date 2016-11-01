@@ -11,12 +11,9 @@ It is generated from these files:
 
 It has these top-level messages:
 	Empty
+	Selector
 	NewBucket
-	BucketInfo
-	BucketInfos
 	NewItem
-	BucketSelector
-	KeySelector
 	Item
 	Items
 */
@@ -54,17 +51,15 @@ const _ = grpc.SupportPackageIsVersion3
 
 type BucketClient interface {
 	// Create a bucket
-	Create(ctx context.Context, in *NewBucket, opts ...grpc.CallOption) (*Empty, error)
+	Create(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Empty, error)
 	// Saves user data
 	Save(ctx context.Context, in *NewItem, opts ...grpc.CallOption) (*Empty, error)
 	// List the bucket content
-	List(ctx context.Context, in *BucketSelector, opts ...grpc.CallOption) (*Items, error)
+	List(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Items, error)
 	// Get an item
-	Get(ctx context.Context, in *KeySelector, opts ...grpc.CallOption) (*Item, error)
+	Get(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Item, error)
 	// Delete an item
-	Delete(ctx context.Context, in *KeySelector, opts ...grpc.CallOption) (*Empty, error)
-	// List the buckets
-	Buckets(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*BucketInfos, error)
+	Delete(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type bucketClient struct {
@@ -75,7 +70,7 @@ func NewBucketClient(cc *grpc.ClientConn) BucketClient {
 	return &bucketClient{cc}
 }
 
-func (c *bucketClient) Create(ctx context.Context, in *NewBucket, opts ...grpc.CallOption) (*Empty, error) {
+func (c *bucketClient) Create(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := grpc.Invoke(ctx, "/proto.Bucket/Create", in, out, c.cc, opts...)
 	if err != nil {
@@ -93,7 +88,7 @@ func (c *bucketClient) Save(ctx context.Context, in *NewItem, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *bucketClient) List(ctx context.Context, in *BucketSelector, opts ...grpc.CallOption) (*Items, error) {
+func (c *bucketClient) List(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Items, error) {
 	out := new(Items)
 	err := grpc.Invoke(ctx, "/proto.Bucket/List", in, out, c.cc, opts...)
 	if err != nil {
@@ -102,7 +97,7 @@ func (c *bucketClient) List(ctx context.Context, in *BucketSelector, opts ...grp
 	return out, nil
 }
 
-func (c *bucketClient) Get(ctx context.Context, in *KeySelector, opts ...grpc.CallOption) (*Item, error) {
+func (c *bucketClient) Get(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Item, error) {
 	out := new(Item)
 	err := grpc.Invoke(ctx, "/proto.Bucket/Get", in, out, c.cc, opts...)
 	if err != nil {
@@ -111,18 +106,9 @@ func (c *bucketClient) Get(ctx context.Context, in *KeySelector, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *bucketClient) Delete(ctx context.Context, in *KeySelector, opts ...grpc.CallOption) (*Empty, error) {
+func (c *bucketClient) Delete(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := grpc.Invoke(ctx, "/proto.Bucket/Delete", in, out, c.cc, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *bucketClient) Buckets(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*BucketInfos, error) {
-	out := new(BucketInfos)
-	err := grpc.Invoke(ctx, "/proto.Bucket/Buckets", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -133,17 +119,15 @@ func (c *bucketClient) Buckets(ctx context.Context, in *Empty, opts ...grpc.Call
 
 type BucketServer interface {
 	// Create a bucket
-	Create(context.Context, *NewBucket) (*Empty, error)
+	Create(context.Context, *Selector) (*Empty, error)
 	// Saves user data
 	Save(context.Context, *NewItem) (*Empty, error)
 	// List the bucket content
-	List(context.Context, *BucketSelector) (*Items, error)
+	List(context.Context, *Selector) (*Items, error)
 	// Get an item
-	Get(context.Context, *KeySelector) (*Item, error)
+	Get(context.Context, *Selector) (*Item, error)
 	// Delete an item
-	Delete(context.Context, *KeySelector) (*Empty, error)
-	// List the buckets
-	Buckets(context.Context, *Empty) (*BucketInfos, error)
+	Delete(context.Context, *Selector) (*Empty, error)
 }
 
 func RegisterBucketServer(s *grpc.Server, srv BucketServer) {
@@ -151,7 +135,7 @@ func RegisterBucketServer(s *grpc.Server, srv BucketServer) {
 }
 
 func _Bucket_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NewBucket)
+	in := new(Selector)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -163,7 +147,7 @@ func _Bucket_Create_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/proto.Bucket/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BucketServer).Create(ctx, req.(*NewBucket))
+		return srv.(BucketServer).Create(ctx, req.(*Selector))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -187,7 +171,7 @@ func _Bucket_Save_Handler(srv interface{}, ctx context.Context, dec func(interfa
 }
 
 func _Bucket_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BucketSelector)
+	in := new(Selector)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -199,13 +183,13 @@ func _Bucket_List_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		FullMethod: "/proto.Bucket/List",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BucketServer).List(ctx, req.(*BucketSelector))
+		return srv.(BucketServer).List(ctx, req.(*Selector))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Bucket_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(KeySelector)
+	in := new(Selector)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -217,13 +201,13 @@ func _Bucket_Get_Handler(srv interface{}, ctx context.Context, dec func(interfac
 		FullMethod: "/proto.Bucket/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BucketServer).Get(ctx, req.(*KeySelector))
+		return srv.(BucketServer).Get(ctx, req.(*Selector))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Bucket_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(KeySelector)
+	in := new(Selector)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -235,25 +219,7 @@ func _Bucket_Delete_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/proto.Bucket/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BucketServer).Delete(ctx, req.(*KeySelector))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Bucket_Buckets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(BucketServer).Buckets(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Bucket/Buckets",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BucketServer).Buckets(ctx, req.(*Empty))
+		return srv.(BucketServer).Delete(ctx, req.(*Selector))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -282,10 +248,6 @@ var _Bucket_serviceDesc = grpc.ServiceDesc{
 			MethodName: "Delete",
 			Handler:    _Bucket_Delete_Handler,
 		},
-		{
-			MethodName: "Buckets",
-			Handler:    _Bucket_Buckets_Handler,
-		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: fileDescriptor0,
@@ -294,18 +256,15 @@ var _Bucket_serviceDesc = grpc.ServiceDesc{
 func init() { proto1.RegisterFile("bucket.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 194 bytes of a gzipped FileDescriptorProto
+	// 155 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0xe2, 0x49, 0x2a, 0x4d, 0xce,
 	0x4e, 0x2d, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x05, 0x53, 0x52, 0xdc, 0x25, 0x95,
-	0x05, 0xa9, 0xc5, 0x10, 0x31, 0xa3, 0x49, 0x4c, 0x5c, 0x6c, 0x4e, 0x60, 0x45, 0x42, 0x5a, 0x5c,
-	0x6c, 0xce, 0x45, 0xa9, 0x89, 0x25, 0xa9, 0x42, 0x02, 0x10, 0x49, 0x3d, 0xbf, 0xd4, 0x72, 0x88,
-	0x9c, 0x14, 0x0f, 0x54, 0xc4, 0x35, 0xb7, 0xa0, 0xa4, 0x52, 0x89, 0x41, 0x48, 0x8d, 0x8b, 0x25,
-	0x38, 0xb1, 0x2c, 0x55, 0x88, 0x0f, 0xa1, 0xd2, 0xb3, 0x24, 0x35, 0x17, 0x43, 0x9d, 0x2e, 0x17,
-	0x8b, 0x4f, 0x66, 0x71, 0x89, 0x90, 0x28, 0x54, 0x1c, 0x62, 0x5c, 0x70, 0x6a, 0x4e, 0x6a, 0x72,
-	0x49, 0x7e, 0x11, 0x5c, 0x39, 0x48, 0x6f, 0xb1, 0x12, 0x83, 0x90, 0x06, 0x17, 0xb3, 0x7b, 0x6a,
-	0x89, 0x90, 0x10, 0x54, 0xd8, 0x3b, 0xb5, 0x12, 0xae, 0x94, 0x1b, 0x49, 0xa9, 0x12, 0x83, 0x90,
-	0x0e, 0x17, 0x9b, 0x4b, 0x6a, 0x4e, 0x6a, 0x49, 0x2a, 0x56, 0xc5, 0x98, 0xce, 0x60, 0x87, 0xd8,
-	0x5c, 0x2c, 0x84, 0x22, 0x25, 0x25, 0x84, 0xe2, 0x2e, 0xcf, 0xbc, 0xb4, 0xfc, 0x62, 0x25, 0x86,
-	0x24, 0x36, 0xb0, 0xa0, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0xce, 0x40, 0xf7, 0xd1, 0x3f, 0x01,
-	0x00, 0x00,
+	0x05, 0xa9, 0xc5, 0x10, 0x31, 0xa3, 0x6b, 0x8c, 0x5c, 0x6c, 0x4e, 0x60, 0x45, 0x42, 0x9a, 0x5c,
+	0x6c, 0xce, 0x45, 0xa9, 0x89, 0x25, 0xa9, 0x42, 0xfc, 0x10, 0x49, 0xbd, 0xe0, 0xd4, 0x9c, 0xd4,
+	0xe4, 0x92, 0xfc, 0x22, 0x29, 0x1e, 0xa8, 0x80, 0x6b, 0x6e, 0x41, 0x49, 0xa5, 0x12, 0x83, 0x90,
+	0x1a, 0x17, 0x4b, 0x70, 0x62, 0x59, 0xaa, 0x10, 0x1f, 0x54, 0xdc, 0x2f, 0xb5, 0xdc, 0xb3, 0x24,
+	0x35, 0x17, 0x43, 0x9d, 0x3a, 0x17, 0x8b, 0x4f, 0x66, 0x71, 0x09, 0x6e, 0x03, 0x41, 0xba, 0x8a,
+	0x95, 0x18, 0x84, 0x54, 0xb9, 0x98, 0xdd, 0x53, 0xb1, 0xa8, 0xe3, 0x46, 0x52, 0xa7, 0xc4, 0x00,
+	0x72, 0xa2, 0x4b, 0x6a, 0x4e, 0x2a, 0x11, 0x4e, 0x4c, 0x62, 0x03, 0x73, 0x8d, 0x01, 0x01, 0x00,
+	0x00, 0xff, 0xff, 0x10, 0x11, 0xae, 0xc4, 0x03, 0x01, 0x00, 0x00,
 }

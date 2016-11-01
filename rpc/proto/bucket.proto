@@ -7,15 +7,13 @@ import "types.proto";
 // The Creator service definition.
 service Bucket {
   // Create a bucket
-  rpc Create (NewBucket) returns (Empty) {}
+  rpc Create (Selector) returns (Empty) {}
   // Saves user data
   rpc Save (NewItem) returns (Empty) {}
   // List the bucket content
-  rpc List (BucketSelector) returns (Items) {}
+  rpc List (Selector) returns (Items) {}
   // Get an item
-  rpc Get (KeySelector) returns (Item) {}
+  rpc Get (Selector) returns (Item) {}
   // Delete an item
-  rpc Delete (KeySelector) returns (Empty) {}
-  // List the buckets
-  rpc Buckets(Empty) returns (BucketInfos) {}
+  rpc Delete (Selector) returns (Empty) {}
 }
