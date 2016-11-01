@@ -23,72 +23,53 @@ func TestRegistry(t *testing.T) {
 		require.NoError(t, err)
 		defer r.Close()
 
-		err = r.Create("bucket1")
+		err = r.Create("a")
 		require.NoError(t, err)
 
-		err = r.Create("bucket1")
+		err = r.Create("a")
 		require.Equal(t, store.ErrAlreadyExists, err)
 
-		err = r.Create("bucket1", "bucket2")
+		err = r.Create("a", "b")
 		require.NoError(t, err)
 
-		err = r.Create("bucket1", "bucket2")
+		err = r.Create("a", "b")
+		require.Equal(t, store.ErrAlreadyExists, err)
+
+		err = r.Create("e", "f", "g", "h")
+		require.NoError(t, err)
+
+		err = r.Create("e", "f")
 		require.Equal(t, store.ErrAlreadyExists, err)
 	})
 
-	t.Run("bucketConfig", func(t *testing.T) {
+	t.Run("bucket", func(t *testing.T) {
 		pathReg, cleanupReg := preparePath(t, "reg.db")
 		defer cleanupReg()
 		r, err := boltdb.NewRegistry(pathReg, s)
 		require.NoError(t, err)
 		defer r.Close()
 
-		err = r.Create("bucket1", "bucket2")
+		b, err := r.Bucket("a")
+		require.Equal(t, store.ErrNotFound, err)
+
+		b, err = r.Bucket("a", "b")
+		require.Equal(t, store.ErrNotFound, err)
+
+		err = r.Create("a")
 		require.NoError(t, err)
 
-		info1, err := r.BucketConfig("bucket1", "bucket2")
+		b, err = r.Bucket("a")
 		require.NoError(t, err)
-		require.NotNil(t, info1)
-		require.Equal(t, []string{"bucket1", "bucket2"}, info1.Path)
+		require.NotNil(t, b)
 
-		b1, err := r.Bucket(info1.Path...)
-		require.NoError(t, err)
-		require.NotNil(t, b1)
-		defer b1.Close()
+		b, err = r.Bucket("a", "b")
+		require.Equal(t, store.ErrNotFound, err)
 
-		_, err = r.BucketConfig("bucket2")
-		require.Equal(t, err, store.ErrNotFound)
-
-		err = r.Create("bucket2")
+		err = r.Create("a", "b")
 		require.NoError(t, err)
 
-		info2, err := r.BucketConfig("bucket2")
+		b, err = r.Bucket("a", "b")
 		require.NoError(t, err)
-		require.Equal(t, []string{"bucket2"}, info2.Path)
-	})
-
-	t.Run("list", func(t *testing.T) {
-		pathReg, cleanupReg := preparePath(t, "reg.db")
-		defer cleanupReg()
-		r, err := boltdb.NewRegistry(pathReg, s)
-		require.NoError(t, err)
-		defer r.Close()
-
-		list, err := r.List()
-		require.NoError(t, err)
-		require.Len(t, list, 0)
-
-		err = r.Create("bucket1")
-		require.NoError(t, err)
-
-		err = r.Create("bucket1", "bucket2")
-		require.NoError(t, err)
-
-		err = r.Create("bucket2", "bucket1")
-		require.NoError(t, err)
-
-		list, err = r.List()
-		require.NoError(t, err)
-		require.Len(t, list, 3)
+		require.NotNil(t, b)
 	})
 }
