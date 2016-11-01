@@ -9,17 +9,17 @@ import (
 )
 
 // NewBucket returns a Bucket
-func NewBucket(node storm.Node, path ...string) *Bucket {
+func NewBucket(node storm.Node, nodes ...string) *Bucket {
 	return &Bucket{
-		path: path,
-		node: node,
+		nodes: nodes,
+		node:  node,
 	}
 }
 
 // Bucket is a BoltDB implementation a bucket
 type Bucket struct {
-	path []string
-	node storm.Node
+	nodes []string
+	node  storm.Node
 }
 
 // Save user data to the bucket. Returns an Iten
@@ -66,7 +66,7 @@ func (b *Bucket) Get(key string) (*brazier.Item, error) {
 		if err == storm.ErrNotFound {
 			return nil, store.ErrNotFound
 		}
-		return nil, errors.Wrap(err, "boltdb.bucket.Get failed to fetch item")
+		return nil, errors.Wrap(err, "failed to fetch item")
 	}
 
 	return &brazier.Item{
@@ -81,7 +81,7 @@ func (b *Bucket) Delete(key string) error {
 
 	tx, err := b.node.Begin(true)
 	if err != nil {
-		return errors.Wrap(err, "boltdb.bucket.Delete failed to create transaction")
+		return errors.Wrap(err, "failed to create transaction")
 	}
 	defer tx.Rollback()
 
@@ -90,17 +90,17 @@ func (b *Bucket) Delete(key string) error {
 		if err == storm.ErrNotFound {
 			return store.ErrNotFound
 		}
-		return errors.Wrap(err, "boltdb.bucket.Delete failed to fetch item")
+		return errors.Wrap(err, "failed to fetch item")
 	}
 
 	err = tx.DeleteStruct(&i)
 	if err != nil {
-		return errors.Wrap(err, "boltdb.bucket.Delete failed to delete item")
+		return errors.Wrap(err, "failed to delete item")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "boltdb.bucket.Delete failed to commit")
+		return errors.Wrap(err, "failed to commit")
 	}
 
 	return nil

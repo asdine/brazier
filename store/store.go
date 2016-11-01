@@ -1,7 +1,6 @@
 package store
 
 import (
-	"fmt"
 	"path"
 	"strings"
 
@@ -9,21 +8,21 @@ import (
 )
 
 // GetBucketOrCreate returns an existing bucket or creates it if it doesn't exist.
-func GetBucketOrCreate(r brazier.Registry, path ...string) (brazier.Bucket, error) {
-	if len(path) == 0 {
+func GetBucketOrCreate(r brazier.Registry, nodes ...string) (brazier.Bucket, error) {
+	if len(nodes) == 0 {
 		return nil, ErrForbidden
 	}
 
-	bucket, err := r.Bucket(path...)
+	bucket, err := r.Bucket(nodes...)
 	if err != nil {
 		if err != ErrNotFound {
 			return nil, err
 		}
-		err = r.Create(path...)
+		err = r.Create(nodes...)
 		if err != nil {
 			return nil, err
 		}
-		bucket, err = r.Bucket(path...)
+		bucket, err = r.Bucket(nodes...)
 		if err != nil {
 			return nil, err
 		}
@@ -61,13 +60,13 @@ func splitPath(rawPath string) []string {
 // NewStore instantiates a new Store with the given Registry.
 func NewStore(r brazier.Registry) *Store {
 	return &Store{
-		r: r,
+		Registry: r,
 	}
 }
 
 // A Store manages items from various backends.
 type Store struct {
-	r brazier.Registry
+	Registry brazier.Registry
 }
 
 // CreateBucket creates a bucket at the given path.
@@ -77,27 +76,31 @@ func (s *Store) CreateBucket(rawPath string) error {
 		return ErrAlreadyExists
 	}
 
-	fmt.Printf("`%s`: `%v`", rawPath, nodes)
-	return s.r.Create(nodes...)
+	return s.Registry.Create(nodes...)
 }
 
 // Save the value at the given path.
 func (s *Store) Save(rawPath string, value []byte) (*brazier.Item, error) {
-	path, key := SplitPathKey(rawPath)
-	bucket, err := GetBucketOrCreate(s.r, path...)
+	nodes := splitPath(rawPath)
+	_, err := s.Registry.Bucket(nodes...)
+	if err == nil {
+		return nil, ErrAlreadyExists
+	}
+
+	bucket, err := GetBucketOrCreate(s.Registry, nodes[:len(nodes)-1]...)
 	if err != nil {
 		return nil, err
 	}
 
-	i, err := bucket.Save(key, value)
+	i, err := bucket.Save(nodes[len(nodes)-1], value)
 	bucket.Close()
 	return i, err
 }
 
 // Get returns the item saved at the given path.
 func (s *Store) Get(rawPath string) (*brazier.Item, error) {
-	path, key := SplitPathKey(rawPath)
-	bucket, err := s.r.Bucket(path...)
+	nodes, key := SplitPathKey(rawPath)
+	bucket, err := s.Registry.Bucket(nodes...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +113,7 @@ func (s *Store) Get(rawPath string) (*brazier.Item, error) {
 // List the content of the bucket.
 func (s *Store) List(rawPath string, page int, perPage int) ([]brazier.Item, error) {
 	nodes := splitPath(rawPath)
-	bucket, err := s.r.Bucket(nodes...)
+	bucket, err := s.Registry.Bucket(nodes...)
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +125,8 @@ func (s *Store) List(rawPath string, page int, perPage int) ([]brazier.Item, err
 
 // Delete the key from the bucket.
 func (s *Store) Delete(rawPath string) error {
-	path, key := SplitPathKey(rawPath)
-	bucket, err := s.r.Bucket(path...)
+	nodes, key := SplitPathKey(rawPath)
+	bucket, err := s.Registry.Bucket(nodes...)
 	if err != nil {
 		return err
 	}

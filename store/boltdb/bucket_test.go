@@ -16,7 +16,7 @@ func TestBucketSave(t *testing.T) {
 	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
 
-	b, err := s.Bucket("b1")
+	b, err := s.Bucket("a", "b", "c")
 	require.NoError(t, err)
 
 	i, err := b.Save("id", []byte("Data"))
@@ -39,7 +39,7 @@ func TestBucketGet(t *testing.T) {
 	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
 
-	b, err := s.Bucket("b1")
+	b, err := s.Bucket("a", "b", "c")
 	require.NoError(t, err)
 
 	i, err := b.Save("id", []byte("Data"))
@@ -63,7 +63,7 @@ func TestBucketDelete(t *testing.T) {
 	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
 
-	b, err := s.Bucket("b1")
+	b, err := s.Bucket("a", "b", "c")
 	require.NoError(t, err)
 
 	i, err := b.Save("id", []byte("Data"))
@@ -90,7 +90,7 @@ func TestBucketPage(t *testing.T) {
 	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
 
-	b, err := s.Bucket("b1")
+	b, err := s.Bucket("a", "b", "c")
 	require.NoError(t, err)
 	defer b.Close()
 
