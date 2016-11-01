@@ -16,18 +16,10 @@ func TestBucketSave(t *testing.T) {
 	r := mock.NewRegistry(s)
 	defer r.Close()
 
-	err := r.Create("b1")
+	err := r.Create("a", "b", "c", "d")
 	require.NoError(t, err)
 
-	info, err := r.BucketConfig("b1")
-	require.NoError(t, err)
-
-	names, err := r.List()
-	require.NoError(t, err)
-	require.Len(t, names, 1)
-	require.Equal(t, "b1", names[0])
-
-	b, err := s.Bucket(info.Path...)
+	b, err := s.Bucket("a", "b")
 	require.NoError(t, err)
 
 	i, err := b.Save("id", []byte("Data"))
@@ -50,14 +42,11 @@ func TestBucketGet(t *testing.T) {
 	r := mock.NewRegistry(s)
 	defer r.Close()
 
-	err := r.Create("b1")
+	err := r.Create("a", "b", "c", "d")
 	require.NoError(t, err)
 	defer r.Close()
 
-	info, err := r.BucketConfig("b1")
-	require.NoError(t, err)
-
-	b, err := s.Bucket(info.Path...)
+	b, err := s.Bucket("a", "b")
 	require.NoError(t, err)
 
 	i, err := b.Save("id", []byte("Data"))
@@ -81,14 +70,11 @@ func TestBucketDelete(t *testing.T) {
 	r := mock.NewRegistry(s)
 	defer r.Close()
 
-	err := r.Create("b1")
+	err := r.Create("a", "b", "c", "d")
 	require.NoError(t, err)
 	defer r.Close()
 
-	info, err := r.BucketConfig("b1")
-	require.NoError(t, err)
-
-	b, err := s.Bucket(info.Path...)
+	b, err := s.Bucket("a", "b", "c")
 	require.NoError(t, err)
 
 	i, err := b.Save("id", []byte("Data"))
@@ -115,14 +101,11 @@ func TestBucketPage(t *testing.T) {
 	r := mock.NewRegistry(s)
 	defer r.Close()
 
-	err := r.Create("b1")
+	err := r.Create("a", "b", "c", "d")
 	require.NoError(t, err)
 	defer r.Close()
 
-	info, err := r.BucketConfig("b1")
-	require.NoError(t, err)
-
-	b, err := s.Bucket(info.Path...)
+	b, err := s.Bucket("a", "b", "c")
 	require.NoError(t, err)
 	defer b.Close()
 

@@ -6,16 +6,19 @@ import (
 )
 
 // NewBucket returns a Bucket.
-func NewBucket() *Bucket {
+func NewBucket(name string) *Bucket {
 	return &Bucket{
+		Name: name,
 		data: make(map[string]*brazier.Item),
 	}
 }
 
 // Bucket is a mock implementation of a bucket.
 type Bucket struct {
+	Name          string
 	data          map[string]*brazier.Item
 	index         []*brazier.Item
+	children      []*Bucket
 	SaveInvoked   bool
 	GetInvoked    bool
 	DeleteInvoked bool

@@ -1,33 +1,43 @@
 package mock
 
-import (
-	"strings"
-
-	"github.com/asdine/brazier"
-)
+import "github.com/asdine/brazier"
 
 // NewBackend returns a mock backend.
 func NewBackend() *Backend {
-	return &Backend{
-		Buckets: make(map[string]brazier.Bucket),
-	}
+	return &Backend{}
 }
 
 // Backend is a mock backend.
 type Backend struct {
-	Buckets       map[string]brazier.Bucket
+	Buckets       []*Bucket
 	BucketInvoked bool
 	CloseInvoked  bool
 }
 
-// Bucket returns the bucket associated with the given name.
-func (s *Backend) Bucket(path ...string) (brazier.Bucket, error) {
+// Bucket returns the bucket associated with the given path.
+func (s *Backend) Bucket(nodes ...string) (brazier.Bucket, error) {
 	s.BucketInvoked = true
-	name := strings.Join(path, "/")
-	b, ok := s.Buckets[name]
-	if !ok {
-		s.Buckets[name] = NewBucket()
-		b = s.Buckets[name]
+
+	var b *Bucket
+	buckets := &s.Buckets
+
+	var found bool
+	for _, node := range nodes {
+		found = false
+
+		for _, b = range *buckets {
+			if b.Name == node {
+				buckets = &b.children
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			b = NewBucket(node)
+			*buckets = append(*buckets, b)
+			buckets = &b.children
+		}
 	}
 
 	return b, nil

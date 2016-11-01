@@ -1,8 +1,6 @@
 package mock
 
 import (
-	"strings"
-
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
 )
@@ -10,67 +8,83 @@ import (
 // NewRegistry returns a mock Registry.
 func NewRegistry(b brazier.Backend) *Registry {
 	return &Registry{
-		Buckets: make(map[string]brazier.BucketConfig),
 		Backend: b,
 	}
 }
 
+type bucketMeta struct {
+	name     string
+	children []*bucketMeta
+}
+
 // Registry is a mock Registry.
 type Registry struct {
-	Buckets           map[string]brazier.BucketConfig
-	Backend           brazier.Backend
-	index             []string
-	CreateInvoked     bool
-	BucketInvoked     bool
-	BucketInfoInvoked bool
-	CloseInvoked      bool
-	ListInvoked       bool
+	Buckets       []*bucketMeta
+	Backend       brazier.Backend
+	index         []string
+	CreateInvoked bool
+	BucketInvoked bool
+	CloseInvoked  bool
 }
 
 // Create a bucket.
-func (r *Registry) Create(path ...string) error {
+func (r *Registry) Create(nodes ...string) error {
 	r.CreateInvoked = true
-	name := strings.Join(path, "/")
 
-	if _, ok := r.Buckets[name]; ok {
+	buckets := &r.Buckets
+	var found bool
+
+	for _, node := range nodes {
+		found = false
+
+		for _, b := range *buckets {
+			if b.name == node {
+				buckets = &b.children
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			b := &bucketMeta{
+				name: node,
+			}
+			*buckets = append(*buckets, b)
+			buckets = &b.children
+		}
+	}
+
+	if found {
 		return store.ErrAlreadyExists
 	}
 
-	r.Buckets[name] = brazier.BucketConfig{
-		Path: path,
-	}
-	r.index = append(r.index, name)
 	return nil
 }
 
-// BucketConfig returns the bucket informations associated with the given name.
-func (r *Registry) BucketConfig(path ...string) (*brazier.BucketConfig, error) {
-	r.BucketInfoInvoked = true
-	name := strings.Join(path, "/")
-	b, ok := r.Buckets[name]
-	if !ok {
-		return nil, store.ErrNotFound
-	}
-
-	return &b, nil
-}
-
-// Bucket returns the bucket associated with the given name.
-func (r *Registry) Bucket(path ...string) (brazier.Bucket, error) {
+// Bucket returns the bucket associated with the given path.
+func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 	r.BucketInvoked = true
-	name := strings.Join(path, "/")
-	_, ok := r.Buckets[name]
-	if !ok {
+
+	buckets := r.Buckets
+	var found *bucketMeta
+
+	for _, node := range nodes {
+		found = nil
+
+		for _, b := range buckets {
+			if b.name == node {
+				found = b
+				buckets = b.children
+				break
+			}
+		}
+	}
+
+	if found == nil {
 		return nil, store.ErrNotFound
 	}
 
-	return r.Backend.Bucket(name)
-}
-
-// List buckets.
-func (r *Registry) List() ([]string, error) {
-	r.ListInvoked = true
-	return r.index, nil
+	return r.Backend.Bucket(nodes...)
 }
 
 // Close the Registry.
