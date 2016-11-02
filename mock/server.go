@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/store"
 )
 
 // NewServer allocates a new Mock Server
-func NewServer(r brazier.Registry) brazier.Server {
+func NewServer(r *store.Store) brazier.Server {
 	return &Server{
 		quit: make(chan struct{}),
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/config"
 	"github.com/asdine/brazier/rpc/proto"
+	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
 	"github.com/asdine/storm"
 	"github.com/spf13/cobra"
@@ -31,7 +32,8 @@ type app struct {
 	Out        io.Writer
 	Cli        Cli
 	Registry   brazier.Registry
-	Store      brazier.Store
+	Backend    brazier.Backend
+	Store      *store.Store
 	ConfigPath string
 	DataDir    string
 	SocketPath string
@@ -71,15 +73,15 @@ func (a *app) PreRun(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	if a.Store == nil {
-		a.Store, err = boltdb.NewStore(filepath.Join(a.DataDir, defaultDBName))
+	if a.Backend == nil {
+		a.Backend, err = boltdb.NewBackend(filepath.Join(a.DataDir, defaultDBName))
 		if err != nil {
 			return err
 		}
 	}
 
 	if a.Registry == nil {
-		a.Registry, err = boltdb.NewRegistry(filepath.Join(a.DataDir, registryDB), a.Store)
+		a.Registry, err = boltdb.NewRegistry(filepath.Join(a.DataDir, registryDB), a.Backend)
 		if err != nil {
 			return err
 		}
@@ -107,8 +109,8 @@ func (a *app) PostRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if a.Store != nil {
-		err = a.Store.Close()
+	if a.Backend != nil {
+		err = a.Backend.Close()
 		if err != nil {
 			return err
 		}

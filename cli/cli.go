@@ -3,48 +3,34 @@ package cli
 import (
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/json"
-	"github.com/asdine/brazier/store"
 )
 
 // Cli handles command line requests
 type Cli interface {
-	Create(name string) error
-	Save(bucket, key string, data []byte) error
-	Get(bucket, key string) ([]byte, error)
-	List(bucket string) ([]brazier.Item, error)
-	ListBuckets() ([]string, error)
-	Delete(bucket, key string) error
+	Create(path string) error
+	Save(path string, data []byte) error
+	Get(path string) ([]byte, error)
+	List(path string) ([]brazier.Item, error)
+	Delete(path string) error
 }
 
 type cli struct {
 	App *app
 }
 
-func (c *cli) Create(name string) error {
-	return c.App.Registry.Create(name)
+func (c *cli) Create(path string) error {
+	return c.App.Store.CreateBucket(path)
 }
 
-func (c *cli) Save(bucketName, key string, data []byte) error {
-	bucket, err := store.GetBucketOrCreate(c.App.Registry, bucketName)
-	if err != nil {
-		return err
-	}
-	defer bucket.Close()
-
+func (c *cli) Save(path string, data []byte) error {
 	data = json.ToValidJSON(data)
 
-	_, err = bucket.Save(key, data)
+	_, err := c.App.Store.Save(path, data)
 	return err
 }
 
-func (c *cli) Get(bucketName, key string) ([]byte, error) {
-	bucket, err := c.App.Registry.Bucket(bucketName)
-	if err != nil {
-		return nil, err
-	}
-	defer bucket.Close()
-
-	item, err := bucket.Get(key)
+func (c *cli) Get(path string) ([]byte, error) {
+	item, err := c.App.Store.Get(path)
 	if err != nil {
 		return nil, err
 	}
@@ -52,29 +38,10 @@ func (c *cli) Get(bucketName, key string) ([]byte, error) {
 	return append(item.Data, '\n'), nil
 }
 
-func (c *cli) List(bucketName string) ([]brazier.Item, error) {
-	bucket, err := c.App.Registry.Bucket(bucketName)
-	if err != nil {
-		if err != store.ErrNotFound {
-			return nil, err
-		}
-		return nil, nil
-	}
-	defer bucket.Close()
-
-	return bucket.Page(1, -1)
+func (c *cli) List(path string) ([]brazier.Item, error) {
+	return c.App.Store.List(path, 1, -1)
 }
 
-func (c *cli) ListBuckets() ([]string, error) {
-	return c.App.Registry.List()
-}
-
-func (c *cli) Delete(bucket, key string) error {
-	b, err := c.App.Store.Bucket(bucket)
-	if err != nil {
-		return err
-	}
-	defer b.Close()
-
-	return b.Delete(key)
+func (c *cli) Delete(path string) error {
+	return c.App.Store.Delete(path)
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/asdine/brazier/mock"
 	"github.com/asdine/brazier/rpc"
+	"github.com/asdine/brazier/store"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,9 +18,14 @@ func testableApp(t *testing.T) (*app, func()) {
 	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
 	require.NoError(t, err)
 
+	b := mock.NewBackend()
+	r := mock.NewRegistry(b)
+
 	a := app{
 		Out:        bytes.NewBuffer([]byte("")),
-		Store:      mock.NewStore(),
+		Backend:    b,
+		Registry:   r,
+		Store:      store.NewStore(r),
 		DataDir:    dir,
 		SocketPath: filepath.Join(dir, defaultSocketName),
 	}
