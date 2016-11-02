@@ -82,6 +82,11 @@ func (s *Store) CreateBucket(rawPath string) error {
 // Save the value at the given path.
 func (s *Store) Save(rawPath string, value []byte) (*brazier.Item, error) {
 	nodes := splitPath(rawPath)
+
+	if len(nodes) == 0 {
+		return nil, ErrForbidden
+	}
+
 	_, err := s.Registry.Bucket(nodes...)
 	if err == nil {
 		return nil, ErrAlreadyExists
@@ -100,6 +105,11 @@ func (s *Store) Save(rawPath string, value []byte) (*brazier.Item, error) {
 // Get returns the item saved at the given path.
 func (s *Store) Get(rawPath string) (*brazier.Item, error) {
 	nodes, key := SplitPathKey(rawPath)
+
+	if len(nodes) == 0 {
+		return nil, ErrNotFound
+	}
+
 	bucket, err := s.Registry.Bucket(nodes...)
 	if err != nil {
 		return nil, err
@@ -134,4 +144,9 @@ func (s *Store) Delete(rawPath string) error {
 	err = bucket.Delete(key)
 	bucket.Close()
 	return err
+}
+
+// Close the registry and the backend connection.
+func (s *Store) Close() error {
+	return s.Registry.Close()
 }

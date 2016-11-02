@@ -31,6 +31,10 @@ type Registry struct {
 func (r *Registry) Create(nodes ...string) error {
 	r.CreateInvoked = true
 
+	if len(nodes) == 0 {
+		return store.ErrForbidden
+	}
+
 	buckets := &r.Buckets
 	var found bool
 
@@ -64,6 +68,10 @@ func (r *Registry) Create(nodes ...string) error {
 // Bucket returns the bucket associated with the given path.
 func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 	r.BucketInvoked = true
+
+	if len(nodes) == 0 {
+		return nil, store.ErrForbidden
+	}
 
 	buckets := r.Buckets
 	var found *bucketMeta

@@ -96,5 +96,15 @@ func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 
 // Close BoltDB connection
 func (r *Registry) Close() error {
-	return r.DB.Close()
+	err := r.Backend.Close()
+	if err != nil {
+		return errors.Wrap(err, "failed to close backend")
+	}
+
+	err = r.DB.Close()
+	if err != nil {
+		return errors.Wrap(err, "failed to close registry")
+	}
+
+	return nil
 }

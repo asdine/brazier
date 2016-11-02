@@ -8,12 +8,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/config"
 	"github.com/asdine/brazier/rpc/proto"
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
-	"github.com/asdine/storm"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 )
@@ -22,8 +20,6 @@ const (
 	defaultDBName     = "brazier.db"
 	defaultDataDir    = ".brazier"
 	defaultSocketName = "brazier.sock"
-	defaultBucket     = "default"
-	settingsDB        = "settings.db"
 	registryDB        = "registry.db"
 )
 
@@ -31,8 +27,6 @@ const (
 type app struct {
 	Out        io.Writer
 	Cli        Cli
-	Registry   brazier.Registry
-	Backend    brazier.Backend
 	Store      *store.Store
 	ConfigPath string
 	DataDir    string
@@ -73,18 +67,18 @@ func (a *app) PreRun(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	if a.Backend == nil {
-		a.Backend, err = boltdb.NewBackend(filepath.Join(a.DataDir, defaultDBName))
+	if a.Store == nil {
+		backend, err := boltdb.NewBackend(filepath.Join(a.DataDir, defaultDBName))
 		if err != nil {
 			return err
 		}
-	}
 
-	if a.Registry == nil {
-		a.Registry, err = boltdb.NewRegistry(filepath.Join(a.DataDir, registryDB), a.Backend)
+		registry, err := boltdb.NewRegistry(filepath.Join(a.DataDir, registryDB), backend)
 		if err != nil {
 			return err
 		}
+
+		a.Store = store.NewStore(registry)
 	}
 
 	a.Cli = &cli{App: a}
@@ -102,15 +96,8 @@ func (a *app) PostRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if a.Registry != nil {
-		err = a.Registry.Close()
-		if err != nil {
-			return err
-		}
-	}
-
-	if a.Backend != nil {
-		err = a.Backend.Close()
+	if a.Store != nil {
+		err = a.Store.Close()
 		if err != nil {
 			return err
 		}
@@ -176,28 +163,4 @@ func (a *app) rpcClient() (proto.BucketClient, error) {
 
 	a.conn = conn
 	return proto.NewBucketClient(conn), nil
-}
-
-func (a *app) settingsDB() (*storm.DB, error) {
-	return storm.Open(filepath.Join(a.DataDir, settingsDB))
-}
-
-func (a *app) defaultBucket() (string, error) {
-	db, err := a.settingsDB()
-	if err != nil {
-		return "", err
-	}
-	defer db.Close()
-
-	var name string
-	err = db.Get("buckets", "default", &name)
-	if err != nil && err != storm.ErrNotFound {
-		return "", err
-	}
-
-	if name == "" {
-		name = defaultBucket
-	}
-
-	return name, nil
 }

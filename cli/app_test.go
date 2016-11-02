@@ -18,14 +18,9 @@ func testableApp(t *testing.T) (*app, func()) {
 	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
 	require.NoError(t, err)
 
-	b := mock.NewBackend()
-	r := mock.NewRegistry(b)
-
 	a := app{
 		Out:        bytes.NewBuffer([]byte("")),
-		Backend:    b,
-		Registry:   r,
-		Store:      store.NewStore(r),
+		Store:      store.NewStore(mock.NewRegistry(mock.NewBackend())),
 		DataDir:    dir,
 		SocketPath: filepath.Join(dir, defaultSocketName),
 	}

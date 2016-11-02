@@ -10,7 +10,11 @@ import (
 
 func TestRegistry(t *testing.T) {
 	r := mock.NewRegistry(mock.NewBackend())
-	err := r.Create("a", "b", "c")
+
+	err := r.Create()
+	require.Equal(t, store.ErrForbidden, err)
+
+	err = r.Create("a", "b", "c")
 	require.NoError(t, err)
 
 	err = r.Create("a", "b", "c")
@@ -27,6 +31,9 @@ func TestRegistry(t *testing.T) {
 
 	_, err = r.Bucket("a")
 	require.NoError(t, err)
+
+	_, err = r.Bucket()
+	require.Equal(t, store.ErrForbidden, err)
 
 	_, err = r.Bucket("a", "b")
 	require.NoError(t, err)
