@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// NewStore returns a BoltDB store
-func NewStore(path string) (*Store, error) {
+// NewBackend returns a BoltDB backend.
+func NewBackend(path string) (*Backend, error) {
 	var err error
 
 	db, err := storm.Open(
@@ -27,22 +27,22 @@ func NewStore(path string) (*Store, error) {
 		return nil, errors.Wrap(err, "Can't open database")
 	}
 
-	return &Store{
+	return &Backend{
 		DB: db,
 	}, nil
 }
 
-// Store is a BoltDB store
-type Store struct {
+// Backend is a BoltDB backend.
+type Backend struct {
 	DB *storm.DB
 }
 
-// Bucket returns the bucket associated with the given id
-func (s *Store) Bucket(name string) (brazier.Bucket, error) {
-	return NewBucket(s, name, s.DB.From(name)), nil
+// Bucket returns the bucket associated with the given id.
+func (s *Backend) Bucket(nodes ...string) (brazier.Bucket, error) {
+	return NewBucket(s.DB.From(nodes...), nodes...), nil
 }
 
-// Close BoltDB connection
-func (s *Store) Close() error {
+// Close BoltDB connection.
+func (s *Backend) Close() error {
 	return s.DB.Close()
 }

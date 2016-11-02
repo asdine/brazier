@@ -1,19 +1,19 @@
 package boltdb
 
 import (
+	"strings"
 	"time"
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
-	"github.com/asdine/brazier/store/boltdb/internal"
 	"github.com/asdine/storm"
 	"github.com/asdine/storm/codec/protobuf"
 	"github.com/boltdb/bolt"
 	"github.com/pkg/errors"
 )
 
-// NewRegistry returns a BoltDB Registry
-func NewRegistry(path string, s brazier.Store) (*Registry, error) {
+// NewRegistry returns a BoltDB Registry.
+func NewRegistry(path string, b brazier.Backend) (*Registry, error) {
 	var err error
 
 	db, err := storm.Open(
@@ -30,73 +30,81 @@ func NewRegistry(path string, s brazier.Store) (*Registry, error) {
 	}
 
 	return &Registry{
-		DB:    db,
-		Store: s,
+		DB:      db,
+		Backend: b,
 	}, nil
 }
 
-// Registry is a BoltDB store
+// Registry is a BoltDB registry.
 type Registry struct {
-	DB    *storm.DB
-	Store brazier.Store
+	DB      *storm.DB
+	Backend brazier.Backend
 }
 
-// Create a bucket
-func (r *Registry) Create(name string) error {
-	err := r.DB.Save(&internal.Bucket{
-		Name: name,
+// Create a bucket in the registry.
+func (r *Registry) Create(nodes ...string) error {
+	path := strings.Join(nodes, "/")
+
+	err := r.DB.Bolt.Update(func(tx *bolt.Tx) error {
+		b := r.DB.GetBucket(tx, nodes...)
+		if b != nil {
+			return storm.ErrAlreadyExists
+		}
+
+		last := nodes[len(nodes)-1]
+		if len(nodes) > 1 {
+			nodes = nodes[:len(nodes)-1]
+		}
+
+		n := r.DB.From(nodes...).WithTransaction(tx)
+		_, err := n.CreateBucketIfNotExists(tx, last)
+		if err != nil {
+			return errors.Wrapf(err, "failed to create bucket at path %s", path)
+		}
+
+		return nil
 	})
 
 	if err == storm.ErrAlreadyExists {
 		return store.ErrAlreadyExists
 	}
 
-	return err
+	return errors.Wrapf(err, "failed to create bucket at path %s", path)
 }
 
-// BucketConfig returns the bucket informations associated with the given name
-func (r *Registry) BucketConfig(name string) (*brazier.BucketConfig, error) {
-	var b internal.Bucket
-	err := r.DB.One("Name", name, &b)
-	if err != nil {
-		if err == storm.ErrNotFound {
-			return nil, store.ErrNotFound
+// Bucket returns the selected bucket from the Backend.
+func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
+	err := r.DB.Bolt.View(func(tx *bolt.Tx) error {
+		b := r.DB.GetBucket(tx, nodes...)
+		if b == nil {
+			return storm.ErrNotFound
 		}
-		return nil, errors.Wrap(err, "boltdb.registry.Bucket failed to fetch bucket")
+
+		return nil
+	})
+
+	if err == storm.ErrNotFound {
+		return nil, store.ErrNotFound
 	}
 
-	return &brazier.BucketConfig{
-		Name: b.Name,
-	}, nil
-}
-
-// Bucket returns the selected bucket from the Store
-func (r *Registry) Bucket(name string) (brazier.Bucket, error) {
-	info, err := r.BucketConfig(name)
 	if err != nil {
-		return nil, err
-	}
-	return r.Store.Bucket(info.Name)
-}
-
-// List returns the list of all buckets
-func (r *Registry) List() ([]string, error) {
-	var buckets []internal.Bucket
-
-	err := r.DB.All(&buckets)
-	if err != nil {
-		return nil, errors.Wrap(err, "boltdb.registry.List failed to fetch buckets")
+		return nil, errors.Wrapf(err, "failed to fetch bucket at path %s", strings.Join(nodes, "/"))
 	}
 
-	names := make([]string, len(buckets))
-	for i := range buckets {
-		names[i] = buckets[i].Name
-	}
-
-	return names, nil
+	return r.Backend.Bucket(nodes...)
 }
 
 // Close BoltDB connection
 func (r *Registry) Close() error {
-	return r.DB.Close()
+	err := r.Backend.Close()
+	if err != nil {
+		return errors.Wrap(err, "failed to close backend")
+	}
+
+	err = r.DB.Close()
+	if err != nil {
+		return errors.Wrap(err, "failed to close registry")
+	}
+
+	return nil
 }

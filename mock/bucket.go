@@ -5,17 +5,20 @@ import (
 	"github.com/asdine/brazier/store"
 )
 
-// NewBucket returns a Bucket
-func NewBucket() *Bucket {
+// NewBucket returns a Bucket.
+func NewBucket(name string) *Bucket {
 	return &Bucket{
+		Name: name,
 		data: make(map[string]*brazier.Item),
 	}
 }
 
-// Bucket is a mock implementation of a bucket
+// Bucket is a mock implementation of a bucket.
 type Bucket struct {
+	Name          string
 	data          map[string]*brazier.Item
 	index         []*brazier.Item
+	children      []*Bucket
 	SaveInvoked   bool
 	GetInvoked    bool
 	DeleteInvoked bool
@@ -23,7 +26,7 @@ type Bucket struct {
 	CloseInvoked  bool
 }
 
-// Save user data to the bucket. Returns an Item
+// Save user data to the bucket. Returns an Item.
 func (b *Bucket) Save(key string, data []byte) (*brazier.Item, error) {
 	b.SaveInvoked = true
 
@@ -42,7 +45,7 @@ func (b *Bucket) Save(key string, data []byte) (*brazier.Item, error) {
 	return item, nil
 }
 
-// Get an item by key
+// Get an item by key.
 func (b *Bucket) Get(key string) (*brazier.Item, error) {
 	b.GetInvoked = true
 
@@ -65,7 +68,7 @@ func (b *Bucket) Delete(key string) error {
 	return store.ErrNotFound
 }
 
-// Page returns a list of items
+// Page returns a list of items.
 func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
 	b.PageInvoked = true
 
@@ -100,7 +103,7 @@ func (b *Bucket) Page(page int, perPage int) ([]brazier.Item, error) {
 	return items, nil
 }
 
-// Close bucket
+// Close bucket.
 func (b *Bucket) Close() error {
 	b.CloseInvoked = true
 	return nil

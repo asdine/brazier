@@ -2,49 +2,32 @@ syntax = "proto3";
 
 package proto;
 
-// Empty Response
+// Empty response.
 message Empty {}
 
-// The request message containing the name of the bucket.
+// The request message containing the path of a bucket or item.
+message Selector {
+  string path = 1;
+}
+
+// Bucket to be created at the given path.
 message NewBucket {
-  string name = 1;
+  string path = 1;
 }
 
-// Bucket informations
-message BucketInfo {
-  string name = 1;
-}
-
-// List of buckets
-message BucketInfos {
-  repeated BucketInfo buckets = 1;
-}
-
-// Item sent to be saved in the bucket
+// Item sent to be saved in the bucket.
 message NewItem {
-  string bucket = 1;
-  string key = 2;
-  bytes data = 3;
+  string path = 1;
+  bytes data = 2;
 }
 
-// Select a bucket
-message BucketSelector {
-  string bucket = 1;
-}
-
-// Select a key
-message KeySelector {
-  string bucket = 1;
-  string key = 2;
-}
-
-// Item informations
+// Item informations.
 message Item {
   string key = 1;
   bytes data = 2;
 }
 
-// List of items
+// List of items.
 message Items {
   repeated Item items = 1;
 }

@@ -7,11 +7,9 @@ Package internal is a generated protocol buffer package.
 
 It is generated from these files:
 	item.proto
-	bucket.proto
 
 It has these top-level messages:
 	Item
-	Bucket
 */
 package internal
 

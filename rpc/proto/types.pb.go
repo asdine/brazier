@@ -13,7 +13,7 @@ var _ = proto1.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// Empty Response
+// Empty response.
 type Empty struct {
 }
 
@@ -22,77 +22,38 @@ func (m *Empty) String() string            { return proto1.CompactTextString(m) 
 func (*Empty) ProtoMessage()               {}
 func (*Empty) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
-// The request message containing the name of the bucket.
+// The request message containing the path of a bucket or item.
+type Selector struct {
+	Path string `protobuf:"bytes,1,opt,name=path" json:"path,omitempty"`
+}
+
+func (m *Selector) Reset()                    { *m = Selector{} }
+func (m *Selector) String() string            { return proto1.CompactTextString(m) }
+func (*Selector) ProtoMessage()               {}
+func (*Selector) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
+
+// Bucket to be created at the given path.
 type NewBucket struct {
-	Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	Path string `protobuf:"bytes,1,opt,name=path" json:"path,omitempty"`
 }
 
 func (m *NewBucket) Reset()                    { *m = NewBucket{} }
 func (m *NewBucket) String() string            { return proto1.CompactTextString(m) }
 func (*NewBucket) ProtoMessage()               {}
-func (*NewBucket) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
+func (*NewBucket) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{2} }
 
-// Bucket informations
-type BucketInfo struct {
-	Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
-}
-
-func (m *BucketInfo) Reset()                    { *m = BucketInfo{} }
-func (m *BucketInfo) String() string            { return proto1.CompactTextString(m) }
-func (*BucketInfo) ProtoMessage()               {}
-func (*BucketInfo) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{2} }
-
-// List of buckets
-type BucketInfos struct {
-	Buckets []*BucketInfo `protobuf:"bytes,1,rep,name=buckets" json:"buckets,omitempty"`
-}
-
-func (m *BucketInfos) Reset()                    { *m = BucketInfos{} }
-func (m *BucketInfos) String() string            { return proto1.CompactTextString(m) }
-func (*BucketInfos) ProtoMessage()               {}
-func (*BucketInfos) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
-
-func (m *BucketInfos) GetBuckets() []*BucketInfo {
-	if m != nil {
-		return m.Buckets
-	}
-	return nil
-}
-
-// Item sent to be saved in the bucket
+// Item sent to be saved in the bucket.
 type NewItem struct {
-	Bucket string `protobuf:"bytes,1,opt,name=bucket" json:"bucket,omitempty"`
-	Key    string `protobuf:"bytes,2,opt,name=key" json:"key,omitempty"`
-	Data   []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Path string `protobuf:"bytes,1,opt,name=path" json:"path,omitempty"`
+	Data []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
 }
 
 func (m *NewItem) Reset()                    { *m = NewItem{} }
 func (m *NewItem) String() string            { return proto1.CompactTextString(m) }
 func (*NewItem) ProtoMessage()               {}
-func (*NewItem) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
+func (*NewItem) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
 
-// Select a bucket
-type BucketSelector struct {
-	Bucket string `protobuf:"bytes,1,opt,name=bucket" json:"bucket,omitempty"`
-}
-
-func (m *BucketSelector) Reset()                    { *m = BucketSelector{} }
-func (m *BucketSelector) String() string            { return proto1.CompactTextString(m) }
-func (*BucketSelector) ProtoMessage()               {}
-func (*BucketSelector) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
-
-// Select a key
-type KeySelector struct {
-	Bucket string `protobuf:"bytes,1,opt,name=bucket" json:"bucket,omitempty"`
-	Key    string `protobuf:"bytes,2,opt,name=key" json:"key,omitempty"`
-}
-
-func (m *KeySelector) Reset()                    { *m = KeySelector{} }
-func (m *KeySelector) String() string            { return proto1.CompactTextString(m) }
-func (*KeySelector) ProtoMessage()               {}
-func (*KeySelector) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{6} }
-
-// Item informations
+// Item informations.
 type Item struct {
 	Key  string `protobuf:"bytes,1,opt,name=key" json:"key,omitempty"`
 	Data []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
@@ -101,9 +62,9 @@ type Item struct {
 func (m *Item) Reset()                    { *m = Item{} }
 func (m *Item) String() string            { return proto1.CompactTextString(m) }
 func (*Item) ProtoMessage()               {}
-func (*Item) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{7} }
+func (*Item) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
 
-// List of items
+// List of items.
 type Items struct {
 	Items []*Item `protobuf:"bytes,1,rep,name=items" json:"items,omitempty"`
 }
@@ -111,7 +72,7 @@ type Items struct {
 func (m *Items) Reset()                    { *m = Items{} }
 func (m *Items) String() string            { return proto1.CompactTextString(m) }
 func (*Items) ProtoMessage()               {}
-func (*Items) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{8} }
+func (*Items) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
 
 func (m *Items) GetItems() []*Item {
 	if m != nil {
@@ -122,12 +83,9 @@ func (m *Items) GetItems() []*Item {
 
 func init() {
 	proto1.RegisterType((*Empty)(nil), "proto.Empty")
+	proto1.RegisterType((*Selector)(nil), "proto.Selector")
 	proto1.RegisterType((*NewBucket)(nil), "proto.NewBucket")
-	proto1.RegisterType((*BucketInfo)(nil), "proto.BucketInfo")
-	proto1.RegisterType((*BucketInfos)(nil), "proto.BucketInfos")
 	proto1.RegisterType((*NewItem)(nil), "proto.NewItem")
-	proto1.RegisterType((*BucketSelector)(nil), "proto.BucketSelector")
-	proto1.RegisterType((*KeySelector)(nil), "proto.KeySelector")
 	proto1.RegisterType((*Item)(nil), "proto.Item")
 	proto1.RegisterType((*Items)(nil), "proto.Items")
 }
@@ -135,20 +93,16 @@ func init() {
 func init() { proto1.RegisterFile("types.proto", fileDescriptor1) }
 
 var fileDescriptor1 = []byte{
-	// 239 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x84, 0x90, 0x4f, 0x4b, 0x03, 0x31,
-	0x14, 0xc4, 0x49, 0xb7, 0xdb, 0xa5, 0x13, 0x11, 0xcd, 0x41, 0xf6, 0x66, 0xcc, 0x29, 0xa8, 0xf4,
-	0xa0, 0x07, 0xc1, 0xa3, 0x20, 0x52, 0x84, 0x1e, 0xe2, 0x27, 0xd8, 0xd6, 0x27, 0x48, 0xdd, 0x66,
-	0x69, 0x22, 0x25, 0xdf, 0x5e, 0xf2, 0x47, 0x2a, 0x54, 0xf1, 0x94, 0xc9, 0x9b, 0x1f, 0xf3, 0x86,
-	0x07, 0xee, 0xc3, 0x40, 0x6e, 0x36, 0x6c, 0xad, 0xb7, 0xa2, 0x4e, 0x8f, 0x6a, 0x50, 0x3f, 0xf6,
-	0x83, 0x0f, 0xea, 0x1c, 0xd3, 0x05, 0xed, 0x1e, 0x3e, 0x57, 0x6b, 0xf2, 0x42, 0x60, 0xbc, 0xe9,
-	0x7a, 0x6a, 0x99, 0x64, 0x7a, 0x6a, 0x92, 0x56, 0x12, 0xc8, 0xee, 0x7c, 0xf3, 0x66, 0x7f, 0x25,
-	0xee, 0xc1, 0xf7, 0x84, 0x13, 0x57, 0x68, 0x96, 0xe9, 0xeb, 0x5a, 0x26, 0x2b, 0xcd, 0x6f, 0x4e,
-	0xf3, 0xea, 0xd9, 0x1e, 0x32, 0xdf, 0x84, 0x7a, 0x42, 0xb3, 0xa0, 0xdd, 0xdc, 0x53, 0x2f, 0xce,
-	0x30, 0xc9, 0xd3, 0x12, 0x5e, 0x7e, 0xe2, 0x04, 0xd5, 0x9a, 0x42, 0x3b, 0x4a, 0xc3, 0x28, 0x63,
-	0x89, 0xd7, 0xce, 0x77, 0x6d, 0x25, 0x99, 0x3e, 0x32, 0x49, 0x2b, 0x8d, 0xe3, 0x9c, 0xff, 0x42,
-	0x1f, 0xb4, 0xf2, 0x76, 0xfb, 0x57, 0x9e, 0xba, 0x03, 0x7f, 0xa6, 0xf0, 0x1f, 0x76, 0xb8, 0x56,
-	0x5d, 0x63, 0x9c, 0x8a, 0x16, 0x87, 0x1d, 0x16, 0x1a, 0xfd, 0x28, 0x74, 0x89, 0x3a, 0xd2, 0x4e,
-	0x5c, 0xa0, 0x7e, 0x8f, 0xa2, 0x5c, 0x83, 0x97, 0x6b, 0x44, 0xd3, 0x64, 0x67, 0x39, 0x49, 0xa3,
-	0xdb, 0xaf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x66, 0xd0, 0x69, 0x59, 0xaa, 0x01, 0x00, 0x00,
+	// 172 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0xe2, 0x2e, 0xa9, 0x2c, 0x48,
+	0x2d, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x05, 0x53, 0x4a, 0xec, 0x5c, 0xac, 0xae,
+	0xb9, 0x05, 0x25, 0x95, 0x4a, 0x72, 0x5c, 0x1c, 0xc1, 0xa9, 0x39, 0xa9, 0xc9, 0x25, 0xf9, 0x45,
+	0x42, 0x42, 0x5c, 0x2c, 0x05, 0x89, 0x25, 0x19, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x9c, 0x41, 0x60,
+	0xb6, 0x92, 0x3c, 0x17, 0xa7, 0x5f, 0x6a, 0xb9, 0x53, 0x69, 0x72, 0x76, 0x6a, 0x09, 0x56, 0x05,
+	0x86, 0x5c, 0xec, 0x7e, 0xa9, 0xe5, 0x9e, 0x25, 0xa9, 0xb9, 0xd8, 0xa4, 0x41, 0x62, 0x29, 0x89,
+	0x25, 0x89, 0x12, 0x4c, 0x0a, 0x8c, 0x1a, 0x3c, 0x41, 0x60, 0xb6, 0x92, 0x0e, 0x17, 0x0b, 0x58,
+	0xbd, 0x00, 0x17, 0x73, 0x76, 0x6a, 0x25, 0x54, 0x39, 0x88, 0x89, 0x55, 0xb5, 0x16, 0x17, 0x2b,
+	0x48, 0x75, 0xb1, 0x90, 0x22, 0x17, 0x6b, 0x26, 0x88, 0x21, 0xc1, 0xa8, 0xc0, 0xac, 0xc1, 0x6d,
+	0xc4, 0x0d, 0xf1, 0x91, 0x1e, 0x48, 0x32, 0x08, 0x22, 0x93, 0xc4, 0x06, 0x16, 0x32, 0x06, 0x04,
+	0x00, 0x00, 0xff, 0xff, 0x25, 0x8d, 0x23, 0xf6, 0xf3, 0x00, 0x00, 0x00,
 }

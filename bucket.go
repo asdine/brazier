@@ -20,30 +20,20 @@ type Bucket interface {
 	Close() error
 }
 
-// A Store manages the backend of specific buckets.
-type Store interface {
-	// Get a Bucket instance of this Store
-	Bucket(name string) (Bucket, error)
-	// Close the Store connexion.
+// A Backend manages the backend of specific buckets.
+type Backend interface {
+	// Get a Bucket instance of this Backend
+	Bucket(nodes ...string) (Bucket, error)
+	// Close the Backend connexion.
 	Close() error
-}
-
-// BucketConfig contains a bucket's configuration.
-type BucketConfig struct {
-	// Name of the bucket.
-	Name string
 }
 
 // A Registry manages the buckets, their configuration and their associated Store.
 type Registry interface {
-	// Create a bucket and registers it to the Registry.
-	Create(name string) error
-	// Fetch a bucket directly from the associated Store.
-	Bucket(name string) (Bucket, error)
-	// Get a bucket's configuration.
-	BucketConfig(name string) (*BucketConfig, error)
-	// List all the buckets.
-	List() ([]string, error)
+	// Create a bucket and register it to the Registry.
+	Create(nodes ...string) error
+	// Fetch a bucket directly from the associated Backend.
+	Bucket(nodes ...string) (Bucket, error)
 	// Close the registry database.
 	Close() error
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"log"
 	"net/http"
-	"strings"
 
 	graceful "gopkg.in/tylerb/graceful.v1"
 
@@ -14,8 +13,8 @@ import (
 )
 
 // NewServer returns a configured HTTP server
-func NewServer(r brazier.Registry) brazier.Server {
-	http.Handle("/", &Handler{Registry: r})
+func NewServer(r *store.Store) brazier.Server {
+	http.Handle("/", &Handler{Store: r})
 	srv := graceful.Server{
 		Server: &http.Server{},
 	}
@@ -25,105 +24,81 @@ func NewServer(r brazier.Registry) brazier.Server {
 
 // Handler is the main http handler
 type Handler struct {
-	Registry brazier.Registry
+	Store *store.Store
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var bucketName, key string
-
-	p := strings.Trim(r.URL.EscapedPath(), "/")
-	parts := strings.Split(p, "/")
-
-	if len(parts) > 2 {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	bucketName = parts[0]
-	if len(parts) > 1 {
-		key = parts[1]
-	}
+	rawPath := r.URL.EscapedPath()
 
 	switch r.Method {
 	case "PUT":
-		h.saveItem(w, r, bucketName, key)
+		h.saveItem(w, r, rawPath)
 	case "GET":
-		if key != "" {
-			h.getItem(w, r, bucketName, key)
-		} else {
-			h.listBucket(w, r, bucketName)
-		}
+		h.getNode(w, r, rawPath)
 	case "DELETE":
-		h.deleteItem(w, r, bucketName, key)
+		h.deleteItem(w, r, rawPath)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
-func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
-	bucket, err := store.GetBucketOrCreate(h.Registry, bucketName)
-	if err != nil {
-		log.Print(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	defer bucket.Close()
-
+func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, rawPath string) {
 	if r.ContentLength == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	defer r.Body.Close()
 	var buffer bytes.Buffer
-	_, err = buffer.ReadFrom(r.Body)
+	_, err := buffer.ReadFrom(r.Body)
+	r.Body.Close()
 	if err != nil {
 		log.Print(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	data := json.ToValidJSON(buffer.Bytes())
-	_, err = bucket.Save(key, data)
+	_, err = h.Store.Save(rawPath, json.ToValidJSON(buffer.Bytes()))
 	if err != nil {
 		log.Print(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Handler) getItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
-	bucket, err := h.Registry.Bucket(bucketName)
-	if err != nil {
-		if err != store.ErrNotFound {
-			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	defer bucket.Close()
+func (h *Handler) getNode(w http.ResponseWriter, r *http.Request, rawPath string) {
+	var data []byte
 
-	item, err := bucket.Get(key)
+	item, err := h.Store.Get(rawPath)
 	if err != nil {
 		if err != store.ErrNotFound {
 			log.Print(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusNotFound)
-		return
+
+		items, err := h.Store.List(rawPath, 1, -1)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		data, err = json.MarshalList(items)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+	} else {
+		data = item.Data
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(item.Data)
+	w.Write(data)
 }
 
-func (h *Handler) deleteItem(w http.ResponseWriter, r *http.Request, bucketName string, key string) {
-	bucket, err := h.Registry.Bucket(bucketName)
+func (h *Handler) deleteItem(w http.ResponseWriter, r *http.Request, rawPath string) {
+	err := h.Store.Delete(rawPath)
 	if err != nil {
 		if err != store.ErrNotFound {
 			log.Print(err)
@@ -133,52 +108,4 @@ func (h *Handler) deleteItem(w http.ResponseWriter, r *http.Request, bucketName 
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	defer bucket.Close()
-
-	err = bucket.Delete(key)
-	if err != nil {
-		if err != store.ErrNotFound {
-			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-func (h *Handler) listBucket(w http.ResponseWriter, r *http.Request, bucketName string) {
-	bucket, err := h.Registry.Bucket(bucketName)
-	if err != nil {
-		if err != store.ErrNotFound {
-			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		// Returning an empty list if the bucket doesn't exit.
-		// TODO: the user should be able to enable/disable this behaviour
-		// in the configuration.
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte("[]"))
-		return
-	}
-	defer bucket.Close()
-
-	items, err := bucket.Page(1, -1)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	raw, err := json.MarshalList(items)
-	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(raw)
 }

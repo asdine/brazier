@@ -10,6 +10,7 @@ import (
 
 	"github.com/asdine/brazier/mock"
 	"github.com/asdine/brazier/rpc"
+	"github.com/asdine/brazier/store"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +20,7 @@ func testableApp(t *testing.T) (*app, func()) {
 
 	a := app{
 		Out:        bytes.NewBuffer([]byte("")),
-		Store:      mock.NewStore(),
+		Store:      store.NewStore(mock.NewRegistry(mock.NewBackend())),
 		DataDir:    dir,
 		SocketPath: filepath.Join(dir, defaultSocketName),
 	}

@@ -13,12 +13,12 @@ func BenchmarkBucketSave(b *testing.B) {
 	path, cleanup := preparePath(b, "store.db")
 	defer cleanup()
 
-	s, err := boltdb.NewStore(path)
+	s, err := boltdb.NewBackend(path)
 	if err != nil {
 		b.Error(err)
 	}
 
-	bucket, err := s.Bucket("b1")
+	bucket, err := s.Bucket("a", "b", "c")
 	if err != nil {
 		b.Error(err)
 	}
@@ -39,12 +39,12 @@ func BenchmarkBucketGet(b *testing.B) {
 	path, cleanup := preparePath(b, "store.db")
 	defer cleanup()
 
-	s, err := boltdb.NewStore(path)
+	s, err := boltdb.NewBackend(path)
 	if err != nil {
 		b.Error(err)
 	}
 
-	bucket, err := s.Bucket("b1")
+	bucket, err := s.Bucket("a", "b", "c")
 	if err != nil {
 		b.Error(err)
 	}
@@ -69,12 +69,12 @@ func BenchmarkBucketPage(b *testing.B) {
 	path, cleanup := preparePath(b, "store.db")
 	defer cleanup()
 
-	s, err := boltdb.NewStore(path)
+	s, err := boltdb.NewBackend(path)
 	if err != nil {
 		b.Error(err)
 	}
 
-	bucket, err := s.Bucket("b1")
+	bucket, err := s.Bucket("a", "b", "c")
 	if err != nil {
 		b.Error(err)
 	}

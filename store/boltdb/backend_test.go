@@ -39,14 +39,15 @@ func prepareDB(t *testing.T, dbName string, opts ...func(*storm.DB) error) (*sto
 	}
 }
 
-func TestStore(t *testing.T) {
-	path, cleanup := preparePath(t, "store.db")
+func TestBackend(t *testing.T) {
+	path, cleanup := preparePath(t, "backend.db")
 	defer cleanup()
 
-	s, err := boltdb.NewStore(path)
+	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
+	defer s.Close()
 
-	bucket, err := s.Bucket("bucket1")
+	bucket, err := s.Bucket("a")
 	require.NoError(t, err)
 	require.NotNil(t, bucket)
 	require.NotNil(t, s.DB)
@@ -54,13 +55,13 @@ func TestStore(t *testing.T) {
 	err = bucket.Close()
 	require.NoError(t, err)
 
-	b1, err := s.Bucket("bucket1")
+	b1, err := s.Bucket("a")
 	require.NoError(t, err)
 
-	b2, err := s.Bucket("bucket2")
+	b2, err := s.Bucket("b")
 	require.NoError(t, err)
 
-	b1bis, err := s.Bucket("bucket1")
+	b1bis, err := s.Bucket("a", "b", "c")
 	require.NoError(t, err)
 
 	err = b1.Close()
