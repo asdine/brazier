@@ -1,6 +1,7 @@
 package boltdb
 
 import (
+	"bytes"
 	"strings"
 	"time"
 
@@ -92,6 +93,50 @@ func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 	}
 
 	return r.Backend.Bucket(nodes...)
+}
+
+// Children buckets of the specified path.
+func (r *Registry) Children(nodes ...string) ([]brazier.Item, error) {
+	var items []brazier.Item
+	var err error
+
+	err = r.DB.Bolt.View(func(tx *bolt.Tx) error {
+		b := r.DB.GetBucket(tx, nodes...)
+		if b == nil {
+			return store.ErrNotFound
+		}
+
+		items, err = r.childrenOf(b)
+
+		return err
+	})
+
+	return items, err
+}
+
+func (r *Registry) childrenOf(b *bolt.Bucket) ([]brazier.Item, error) {
+	var items []brazier.Item
+	var err error
+
+	c := b.Cursor()
+	for k, v := c.First(); k != nil; k, v = c.Next() {
+		if v != nil || bytes.HasPrefix(k, []byte("__storm")) {
+			continue
+		}
+
+		item := brazier.Item{
+			Key: string(k),
+		}
+
+		item.Children, err = r.childrenOf(b.Bucket(k))
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	return items, nil
 }
 
 // Close BoltDB connection

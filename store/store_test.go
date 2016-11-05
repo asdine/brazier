@@ -83,9 +83,8 @@ func TestStore(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
-		// TODO enforce the following behaviour
-		// _, err = s.Save("/a/b", []byte("Value"))
-		// require.Equal(t, store.ErrAlreadyExists, err)
+		_, err = s.Save("/a/b", []byte("Value"))
+		require.Equal(t, store.ErrAlreadyExists, err)
 	})
 
 	t.Run("Get", func(t *testing.T) {
@@ -121,6 +120,32 @@ func TestStore(t *testing.T) {
 		items, err = s.List("/a/b", 1, 10)
 		require.NoError(t, err)
 		require.Len(t, items, 10)
+	})
+
+	t.Run("Tree", func(t *testing.T) {
+		r := mock.NewRegistry(mock.NewBackend())
+		s := store.NewStore(r)
+
+		for i := 0; i < 3; i++ {
+			for j := 0; j < 5; j++ {
+				item, err := s.Save(fmt.Sprintf("/a/b%d/k%d", i, j), []byte("Value"+strconv.Itoa(j)))
+				require.NoError(t, err)
+				require.NotNil(t, item)
+			}
+		}
+
+		items, err := s.Tree("/a/c")
+		require.Equal(t, store.ErrNotFound, err)
+
+		items, err = s.Tree("/a")
+		require.NoError(t, err)
+		require.Len(t, items, 3)
+		for i := 0; i < 3; i++ {
+			require.Len(t, items[i].Children, 5)
+			for j := 0; j < 5; j++ {
+				require.Equal(t, []byte("Value"+strconv.Itoa(j)), items[i].Children[j].Data)
+			}
+		}
 	})
 
 	t.Run("Delete", func(t *testing.T) {

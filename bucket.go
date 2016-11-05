@@ -2,8 +2,9 @@ package brazier
 
 // An Item is a key value pair saved in a bucket.
 type Item struct {
-	Key  string
-	Data []byte
+	Key      string
+	Data     []byte
+	Children []Item
 }
 
 // A Bucket manages a collection of items.
@@ -34,6 +35,8 @@ type Registry interface {
 	Create(nodes ...string) error
 	// Fetch a bucket directly from the associated Backend.
 	Bucket(nodes ...string) (Bucket, error)
+	// Children buckets of the specified path.
+	Children(nodes ...string) ([]Item, error)
 	// Close the registry database.
 	Close() error
 }

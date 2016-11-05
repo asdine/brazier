@@ -120,6 +120,19 @@ func (s *Store) Get(rawPath string) (*brazier.Item, error) {
 	return i, err
 }
 
+// Delete the key from the bucket.
+func (s *Store) Delete(rawPath string) error {
+	nodes, key := SplitPathKey(rawPath)
+	bucket, err := s.Registry.Bucket(nodes...)
+	if err != nil {
+		return err
+	}
+
+	err = bucket.Delete(key)
+	bucket.Close()
+	return err
+}
+
 // List the content of the bucket.
 func (s *Store) List(rawPath string, page int, perPage int) ([]brazier.Item, error) {
 	nodes := splitPath(rawPath)
@@ -133,17 +146,46 @@ func (s *Store) List(rawPath string, page int, perPage int) ([]brazier.Item, err
 	return list, err
 }
 
-// Delete the key from the bucket.
-func (s *Store) Delete(rawPath string) error {
-	nodes, key := SplitPathKey(rawPath)
-	bucket, err := s.Registry.Bucket(nodes...)
+// Tree returns the content of the bucket and of all its children.
+func (s *Store) Tree(rawPath string) ([]brazier.Item, error) {
+	nodes := splitPath(rawPath)
+	buckets, err := s.Registry.Children(nodes...)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = bucket.Delete(key)
+	return s.tree(buckets, nodes...)
+}
+
+func (s *Store) tree(buckets []brazier.Item, nodes ...string) ([]brazier.Item, error) {
+	var items []brazier.Item
+	var err error
+
+	bucket, err := s.Registry.Bucket(nodes...)
+	if err != nil {
+		return nil, err
+	}
+
+	items, err = bucket.Page(1, -1)
 	bucket.Close()
-	return err
+	if err != nil {
+		return nil, err
+	}
+
+	for _, b := range buckets {
+		i := brazier.Item{
+			Key: b.Key,
+		}
+
+		i.Children, err = s.tree(b.Children, append(nodes, b.Key)...)
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, i)
+	}
+
+	return items, nil
 }
 
 // Close the registry and the backend connection.

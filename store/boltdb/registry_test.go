@@ -72,4 +72,44 @@ func TestRegistry(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, b)
 	})
+
+	t.Run("tree", func(t *testing.T) {
+		pathReg, cleanupReg := preparePath(t, "reg.db")
+		defer cleanupReg()
+		r, err := boltdb.NewRegistry(pathReg, s)
+		require.NoError(t, err)
+		defer r.Close()
+
+		_, err = r.Children("a", "b")
+		require.Equal(t, store.ErrNotFound, err)
+
+		_, err = r.Children()
+		require.Equal(t, store.ErrNotFound, err)
+
+		err = r.Create("1a", "2a", "3a")
+		require.NoError(t, err)
+
+		err = r.Create("1a", "2a", "3b")
+		require.NoError(t, err)
+
+		tree, err := r.Children("1a")
+		require.NoError(t, err)
+		require.Len(t, tree, 1)
+		require.Len(t, tree[0].Children, 2)
+		require.Equal(t, "3a", tree[0].Children[0].Key)
+		require.Equal(t, "3b", tree[0].Children[1].Key)
+
+		tree, err = r.Children("1a", "2a")
+		require.NoError(t, err)
+		require.Len(t, tree, 2)
+		require.Equal(t, "3a", tree[0].Key)
+		require.Equal(t, "3b", tree[1].Key)
+
+		tree, err = r.Children("1a", "2a", "3a")
+		require.NoError(t, err)
+		require.Len(t, tree, 0)
+
+		_, err = r.Children("1a", "2a", "3c")
+		require.Equal(t, store.ErrNotFound, err)
+	})
 }

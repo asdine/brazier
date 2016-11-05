@@ -19,12 +19,13 @@ type bucketMeta struct {
 
 // Registry is a mock Registry.
 type Registry struct {
-	Buckets       []*bucketMeta
-	Backend       brazier.Backend
-	index         []string
-	CreateInvoked bool
-	BucketInvoked bool
-	CloseInvoked  bool
+	Buckets         []*bucketMeta
+	Backend         brazier.Backend
+	index           []string
+	CreateInvoked   bool
+	BucketInvoked   bool
+	CloseInvoked    bool
+	ChildrenInvoked bool
 }
 
 // Create a bucket.
@@ -73,6 +74,15 @@ func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 		return nil, store.ErrForbidden
 	}
 
+	_, err := r.bucket(nodes...)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Backend.Bucket(nodes...)
+}
+
+func (r *Registry) bucket(nodes ...string) (*bucketMeta, error) {
 	buckets := r.Buckets
 	var found *bucketMeta
 
@@ -92,7 +102,35 @@ func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 		return nil, store.ErrNotFound
 	}
 
-	return r.Backend.Bucket(nodes...)
+	return found, nil
+}
+
+// Children buckets of the specified path.
+func (r *Registry) Children(nodes ...string) ([]brazier.Item, error) {
+	b, err := r.bucket(nodes...)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.children(b)
+}
+
+func (r *Registry) children(b *bucketMeta) ([]brazier.Item, error) {
+	var tree []brazier.Item
+
+	for _, child := range b.children {
+		items, err := r.children(child)
+		if err != nil {
+			return nil, err
+		}
+
+		tree = append(tree, brazier.Item{
+			Key:      child.name,
+			Children: items,
+		})
+	}
+
+	return tree, nil
 }
 
 // Close the Registry.

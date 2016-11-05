@@ -14,6 +14,16 @@ func TestBackend(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "c", c.(*mock.Bucket).Name)
 
+	_, err = c.Save("key", []byte("Data"))
+	require.NoError(t, err)
+
+	c, err = bck.Bucket("a", "b", "c")
+	require.NoError(t, err)
+	list, err := c.Page(1, -1)
+	require.NoError(t, err)
+	require.Len(t, list, 1)
+	require.Equal(t, "key", list[0].Key)
+
 	a, err := bck.Bucket("a")
 	require.NoError(t, err)
 	require.Equal(t, "a", a.(*mock.Bucket).Name)
