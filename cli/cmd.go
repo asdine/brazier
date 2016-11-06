@@ -31,7 +31,7 @@ func New() *cobra.Command {
 	cmd.AddCommand(NewSaveCmd(&a))
 	cmd.AddCommand(NewGetCmd(&a))
 	cmd.AddCommand(NewDeleteCmd(&a))
-	cmd.AddCommand(NewListCmd(&a))
+	cmd.AddCommand(NewListCmd(&a, false))
 	cmd.AddCommand(NewServerCmd(&a))
 
 	cmd.PersistentFlags().StringVar(&a.ConfigPath, "config", "", "config file")
@@ -112,7 +112,9 @@ func NewGetCmd(a *app) *cobra.Command {
 }
 
 // NewListCmd creates a "List" cli command
-func NewListCmd(a *app) *cobra.Command {
+func NewListCmd(a *app, recByDefault bool) *cobra.Command {
+	var recursive bool
+
 	cmd := cobra.Command{
 		Use:   "list",
 		Short: "List bucket content",
@@ -122,7 +124,7 @@ func NewListCmd(a *app) *cobra.Command {
 				return errors.New("Wrong number of arguments")
 			}
 
-			items, err := a.Cli.List(args[0])
+			items, err := a.Cli.List(args[0], recursive)
 			if err != nil {
 				return err
 			}
@@ -137,6 +139,8 @@ func NewListCmd(a *app) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().BoolVarP(&recursive, "recursive", "r", recByDefault, "display all the items recursively")
 
 	return &cmd
 }

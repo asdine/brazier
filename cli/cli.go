@@ -10,7 +10,7 @@ type Cli interface {
 	Create(path string) error
 	Save(path string, data []byte) error
 	Get(path string) ([]byte, error)
-	List(path string) ([]brazier.Item, error)
+	List(path string, recursive bool) ([]brazier.Item, error)
 	Delete(path string) error
 }
 
@@ -38,7 +38,11 @@ func (c *cli) Get(path string) ([]byte, error) {
 	return append(item.Data, '\n'), nil
 }
 
-func (c *cli) List(path string) ([]brazier.Item, error) {
+func (c *cli) List(path string, recursive bool) ([]brazier.Item, error) {
+	if recursive {
+		return c.App.Store.Tree(path)
+	}
+
 	return c.App.Store.List(path, 1, -1)
 }
 

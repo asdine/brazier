@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -134,14 +135,15 @@ func testListItems(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
 	s := NewSaveCmd(app)
-	l := NewListCmd(app)
+	l := NewListCmd(app, false)
+	lr := NewListCmd(app, true)
 
 	tests := map[string][]string{
-		"\"abc\"":                  []string{"checkJson/string", "abc"},
-		"\"bcd\"":                  []string{"checkJson/json string", "\"bcd\""},
-		"10":                       []string{"checkJson/number", "10"},
-		"{\"a\":\"b\"}":            []string{"checkJson/object", `{"a": "b"}`},
-		"[\"a\",10,{\"c\":\"d\"}]": []string{"checkJson/array", `["a", 10, {"c": "d"}]`},
+		"\"abc\"":                  []string{"test/checkJson/string", "abc"},
+		"\"bcd\"":                  []string{"test/checkJson/json string", "\"bcd\""},
+		"10":                       []string{"test/checkJson/number", "10"},
+		"{\"a\":\"b\"}":            []string{"test/checkJson/object", `{"a": "b"}`},
+		"[\"a\",10,{\"c\":\"d\"}]": []string{"test/checkJson/array", `["a", 10, {"c": "d"}]`},
 	}
 
 	var expected bytes.Buffer
@@ -157,7 +159,7 @@ func testListItems(t *testing.T, app *app) {
 			first = false
 		}
 		expected.WriteString(`{"key":"`)
-		expected.WriteString(strings.TrimPrefix(cmds[0], "checkJson/"))
+		expected.WriteString(strings.TrimPrefix(cmds[0], "test/checkJson/"))
 		expected.WriteString(`","value":`)
 		expected.WriteString(output)
 		expected.WriteString(`}`)
@@ -165,13 +167,25 @@ func testListItems(t *testing.T, app *app) {
 	expected.WriteString("]\n")
 
 	out.Reset()
-	err := l.RunE(nil, []string{"checkJson"})
+	err := l.RunE(nil, []string{"test/checkJson"})
 	require.NoError(t, err)
 	require.Equal(t, expected.String(), out.String())
 
 	out.Reset()
 	err = l.RunE(nil, []string{"some bucket"})
 	require.Error(t, err)
+
+	out.Reset()
+	err = lr.RunE(nil, []string{"test"})
+	require.NoError(t, err)
+	var output []interface{}
+	err = json.Unmarshal(out.Bytes(), &output)
+	require.NoError(t, err)
+	require.Len(t, output, 1)
+	item := output[0].(map[string]interface{})
+	require.Equal(t, "checkJson", item["key"].(string))
+	list := item["value"].([]interface{})
+	require.Len(t, list, 5)
 }
 
 func testDelete(t *testing.T, app *app) {

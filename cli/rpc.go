@@ -31,19 +31,27 @@ func (r *rpcCli) Get(path string) ([]byte, error) {
 	return append(item.Value, '\n'), nil
 }
 
-func (r *rpcCli) List(path string) ([]brazier.Item, error) {
-	resp, err := r.Client.List(context.Background(), &proto.Selector{Path: path})
+func (r *rpcCli) List(path string, recursive bool) ([]brazier.Item, error) {
+	resp, err := r.Client.List(context.Background(), &proto.Selector{Path: path, Recursive: recursive})
 	if err != nil {
 		return nil, err
 	}
 
-	items := make([]brazier.Item, len(resp.Items))
-	for i, item := range resp.Items {
-		items[i].Key = item.Key
-		items[i].Data = item.Value
+	return r.tree(resp.Items), nil
+}
+
+func (r *rpcCli) tree(items []*proto.Item) []brazier.Item {
+	list := make([]brazier.Item, len(items))
+	for i, item := range items {
+		list[i].Key = item.Key
+		list[i].Data = item.Value
+
+		if item.Children != nil {
+			list[i].Children = r.tree(item.Children)
+		}
 	}
 
-	return items, nil
+	return list
 }
 
 func (r *rpcCli) Delete(path string) error {
