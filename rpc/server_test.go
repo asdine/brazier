@@ -59,7 +59,7 @@ func TestSave(t *testing.T) {
 
 	c := proto.NewBucketClient(conn)
 
-	_, err := c.Save(context.Background(), &proto.NewItem{Path: "a/b/c", Data: []byte("data")})
+	_, err := c.Save(context.Background(), &proto.NewItem{Path: "a/b/c", Value: []byte("data")})
 	require.NoError(t, err)
 
 	require.True(t, r.BucketInvoked)
@@ -88,34 +88,47 @@ func TestList(t *testing.T) {
 	b := bucket.(*mock.Bucket)
 	r.BucketInvoked = false
 
-	resp, err := c.List(context.Background(), &proto.Selector{Path: "a/b/c"})
-	require.NoError(t, err)
-	require.Len(t, resp.Items, 0)
-	require.True(t, r.BucketInvoked)
-	require.True(t, b.PageInvoked)
-
-	r.BucketInvoked = false
-	b.PageInvoked = false
-
-	var list [][]byte
-
-	for i := 0; i < 20; i++ {
-		item, err := b.Save(fmt.Sprintf("key%d", i), []byte("data"))
+	t.Run("list", func(t *testing.T) {
+		resp, err := c.List(context.Background(), &proto.Selector{Path: "a/b/c"})
 		require.NoError(t, err)
-		b.SaveInvoked = false
-		list = append(list, item.Data)
-	}
+		require.Len(t, resp.Items, 0)
+		require.True(t, r.BucketInvoked)
+		require.True(t, b.PageInvoked)
 
-	resp, err = c.List(context.Background(), &proto.Selector{Path: "a/b/c"})
-	require.NoError(t, err)
-	for i := 0; i < 20; i++ {
-		require.Equal(t, list[i], resp.Items[i].Data)
-	}
-	require.True(t, r.BucketInvoked)
-	require.True(t, b.PageInvoked)
+		r.BucketInvoked = false
+		b.PageInvoked = false
 
-	_, err = c.List(context.Background(), &proto.Selector{Path: "a/b/d"})
-	require.Error(t, err)
+		var list [][]byte
+
+		for i := 0; i < 20; i++ {
+			item, err := b.Save(fmt.Sprintf("key%d", i), []byte("data"))
+			require.NoError(t, err)
+			b.SaveInvoked = false
+			list = append(list, item.Data)
+		}
+
+		resp, err = c.List(context.Background(), &proto.Selector{Path: "a/b/c"})
+		require.NoError(t, err)
+		for i := 0; i < 20; i++ {
+			require.Equal(t, list[i], resp.Items[i].Value)
+		}
+		require.True(t, r.BucketInvoked)
+		require.True(t, b.PageInvoked)
+
+		_, err = c.List(context.Background(), &proto.Selector{Path: "a/b/d"})
+		require.Error(t, err)
+	})
+
+	t.Run("tree", func(t *testing.T) {
+		resp, err := c.List(context.Background(), &proto.Selector{Path: "a", Recursive: true})
+		require.NoError(t, err)
+		require.Len(t, resp.Items, 1)
+		require.Equal(t, "b", resp.Items[0].Key)
+		require.Len(t, resp.Items[0].Children, 1)
+		require.Equal(t, "c", resp.Items[0].Children[0].Key)
+		require.Len(t, resp.Items[0].Children[0].Children, 20)
+		require.Equal(t, "key0", resp.Items[0].Children[0].Children[0].Key)
+	})
 }
 
 func TestGet(t *testing.T) {
@@ -141,7 +154,7 @@ func TestGet(t *testing.T) {
 	require.Equal(t, "c", resp.Key)
 	require.True(t, r.BucketInvoked)
 	require.True(t, b.GetInvoked)
-	require.Equal(t, item.Data, resp.Data)
+	require.Equal(t, item.Data, resp.Value)
 
 	resp, err = c.Get(context.Background(), &proto.Selector{Path: "a/b/d"})
 	require.Error(t, err)

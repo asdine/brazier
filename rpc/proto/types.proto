@@ -8,6 +8,7 @@ message Empty {}
 // The request message containing the path of a bucket or item.
 message Selector {
   string path = 1;
+  bool recursive = 2;
 }
 
 // Bucket to be created at the given path.
@@ -18,13 +19,14 @@ message NewBucket {
 // Item sent to be saved in the bucket.
 message NewItem {
   string path = 1;
-  bytes data = 2;
+  bytes value = 2;
 }
 
 // Item informations.
 message Item {
   string key = 1;
-  bytes data = 2;
+  bytes value = 2;
+  repeated Item children = 3;
 }
 
 // List of items.

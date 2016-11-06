@@ -18,7 +18,7 @@ func (r *rpcCli) Create(path string) error {
 }
 
 func (r *rpcCli) Save(path string, data []byte) error {
-	_, err := r.Client.Save(context.Background(), &proto.NewItem{Path: path, Data: data})
+	_, err := r.Client.Save(context.Background(), &proto.NewItem{Path: path, Value: data})
 	return err
 }
 
@@ -28,7 +28,7 @@ func (r *rpcCli) Get(path string) ([]byte, error) {
 		return nil, err
 	}
 
-	return append(item.Data, '\n'), nil
+	return append(item.Value, '\n'), nil
 }
 
 func (r *rpcCli) List(path string) ([]brazier.Item, error) {
@@ -40,7 +40,7 @@ func (r *rpcCli) List(path string) ([]brazier.Item, error) {
 	items := make([]brazier.Item, len(resp.Items))
 	for i, item := range resp.Items {
 		items[i].Key = item.Key
-		items[i].Data = item.Data
+		items[i].Data = item.Value
 	}
 
 	return items, nil

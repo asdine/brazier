@@ -49,7 +49,7 @@ func (s *Server) Create(ctx context.Context, in *proto.Selector) (*proto.Empty, 
 
 // Save an item to the bucket.
 func (s *Server) Save(ctx context.Context, in *proto.NewItem) (*proto.Empty, error) {
-	data := json.ToValidJSON(in.Data)
+	data := json.ToValidJSON(in.Value)
 
 	_, err := s.Store.Save(in.Path, data)
 	if err != nil {
@@ -67,8 +67,8 @@ func (s *Server) Get(ctx context.Context, in *proto.Selector) (*proto.Item, erro
 	}
 
 	r := proto.Item{
-		Key:  item.Key,
-		Data: item.Data,
+		Key:   item.Key,
+		Value: item.Data,
 	}
 
 	return &r, nil
@@ -86,18 +86,33 @@ func (s *Server) Delete(ctx context.Context, in *proto.Selector) (*proto.Empty, 
 
 // List the content of a bucket.
 func (s *Server) List(ctx context.Context, in *proto.Selector) (*proto.Items, error) {
-	items, err := s.Store.List(in.Path, 1, -1)
+	var items []brazier.Item
+	var err error
+
+	if in.Recursive {
+		items, err = s.Store.Tree(in.Path)
+	} else {
+		items, err = s.Store.List(in.Path, 1, -1)
+	}
 	if err != nil {
 		return nil, err
 	}
 
+	return &proto.Items{Items: s.tree(items)}, nil
+}
+
+func (s *Server) tree(items []brazier.Item) []*proto.Item {
 	list := make([]*proto.Item, len(items))
 	for i := range items {
 		list[i] = &proto.Item{
-			Key:  items[i].Key,
-			Data: items[i].Data,
+			Key:   items[i].Key,
+			Value: items[i].Data,
+		}
+
+		if items[i].Children != nil {
+			list[i].Children = s.tree(items[i].Children)
 		}
 	}
 
-	return &proto.Items{Items: list}, nil
+	return list
 }
