@@ -21,15 +21,15 @@ type Bucket interface {
 	Close() error
 }
 
-// A Backend manages the backend of specific buckets.
+// A Backend is able to create buckets that can be used to store and fetch data.
 type Backend interface {
-	// Get a Bucket instance of this Backend
+	// Get a bucket managing the given path.
 	Bucket(nodes ...string) (Bucket, error)
-	// Close the Backend connexion.
+	// Close the backend connection.
 	Close() error
 }
 
-// A Registry manages the buckets, their configuration and their associated Store.
+// A Registry manages the buckets, their configuration and their associated Backend.
 type Registry interface {
 	// Create a bucket and register it to the Registry.
 	Create(nodes ...string) error
@@ -37,6 +37,6 @@ type Registry interface {
 	Bucket(nodes ...string) (Bucket, error)
 	// Children buckets of the specified path.
 	Children(nodes ...string) ([]Item, error)
-	// Close the registry database.
+	// Close the registry connection.
 	Close() error
 }

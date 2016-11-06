@@ -17,8 +17,8 @@ func New() *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:                "brazier",
-		Short:              "Brazier",
-		Long:               `Brazier`,
+		Short:              "A JSON storage with command line, HTTP and gRPC support.",
+		Long:               `A JSON storage with command line, HTTP and gRPC support.`,
 		Run:                a.Run,
 		SilenceErrors:      true,
 		SilenceUsage:       true,
@@ -42,9 +42,13 @@ func New() *cobra.Command {
 // NewCreateCmd creates a "create" cli command
 func NewCreateCmd(a *app) *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "create",
+		Use:   "create PATH",
 		Short: "Create a bucket",
-		Long:  `Create a bucket`,
+		Long: `Create a bucket at the given path.
+A path is a bucket name or a list of bucket names separated by the character '/'.`,
+		Example: `brazier create friends
+brazier create food/vegetables
+brazier create food/drinks/sodas`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return errors.New("Bucket name is missing")
@@ -66,9 +70,12 @@ func NewCreateCmd(a *app) *cobra.Command {
 // NewSaveCmd creates a "Save" cli command
 func NewSaveCmd(a *app) *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "save",
+		Use:   "save PATH",
 		Short: "Save a value in a bucket",
-		Long:  `Save a value in a bucket`,
+		Long: `Save a value in a bucket. A value can be anything.
+JSON values are automatically detected.`,
+		Example: `brazier save friends/john/phone 555-666
+brazier save users/1 '{"username": "john"}'`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 2 {
 				return errors.New("Wrong number of arguments")
@@ -90,9 +97,9 @@ func NewSaveCmd(a *app) *cobra.Command {
 // NewGetCmd creates a "Get" cli command
 func NewGetCmd(a *app) *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "get",
+		Use:   "get PATH",
 		Short: "Get a value from a bucket",
-		Long:  `Get a value from a bucket`,
+		Long:  `Get a value from a bucket.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("Wrong number of arguments")
@@ -116,9 +123,9 @@ func NewListCmd(a *app, recByDefault bool) *cobra.Command {
 	var recursive bool
 
 	cmd := cobra.Command{
-		Use:   "list",
+		Use:   "list PATH",
 		Short: "List bucket content",
-		Long:  "List bucket content",
+		Long:  "List bucket content.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("Wrong number of arguments")
@@ -140,7 +147,7 @@ func NewListCmd(a *app, recByDefault bool) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&recursive, "recursive", "r", recByDefault, "display all the items recursively")
+	cmd.Flags().BoolVarP(&recursive, "recursive", "r", recByDefault, "display all the items recursively from the given path.")
 
 	return &cmd
 }
@@ -148,9 +155,9 @@ func NewListCmd(a *app, recByDefault bool) *cobra.Command {
 // NewDeleteCmd creates a "Delete" cli command
 func NewDeleteCmd(a *app) *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "delete",
+		Use:   "delete PATH",
 		Short: "Delete a key from a bucket",
-		Long:  `Delete a key from a bucket`,
+		Long:  `Delete a key from a bucket.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("Wrong number of arguments")
