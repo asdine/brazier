@@ -1,5 +1,4 @@
 NAME      := brazier
-GOFILES   := $(shell find . -type f -name '*.go')
 PACKAGES  := $(shell glide novendor)
 
 .PHONY: all build $(NAME) deps restore test
@@ -8,7 +7,7 @@ all: build
 
 build: $(NAME)
 
-$(NAME): $(GOFILES)
+$(NAME):
 	go install ./cmd/$@
 
 deps:
