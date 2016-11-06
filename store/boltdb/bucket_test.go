@@ -16,15 +16,19 @@ func TestBucketSave(t *testing.T) {
 	s, err := boltdb.NewBackend(path)
 	require.NoError(t, err)
 
-	b, err := s.Bucket("a", "b", "c")
+	b, err := s.Bucket("1a")
 	require.NoError(t, err)
 
-	i, err := b.Save("id", []byte("Data"))
+	i1, err := b.Save("2a", []byte("Data"))
 	require.NoError(t, err)
-	require.Equal(t, "id", i.Key)
-	require.Equal(t, []byte("Data"), i.Data)
+	require.Equal(t, "2a", i1.Key)
+	require.Equal(t, []byte("Data"), i1.Data)
 
-	j, err := b.Save("id", []byte("New Data"))
+	i2, err := b.Get("2a")
+	require.NoError(t, err)
+	require.Equal(t, *i1, *i2)
+
+	j, err := b.Save("2a", []byte("New Data"))
 	require.NoError(t, err)
 	require.Equal(t, []byte("New Data"), j.Data)
 

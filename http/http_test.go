@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -140,9 +141,9 @@ func TestListItems(t *testing.T) {
 	registry := mock.NewRegistry(mock.NewBackend())
 	h.Store = store.NewStore(registry)
 
-	err := registry.Create("a")
+	err := registry.Create("1a")
 	require.NoError(t, err)
-	bucket, err := registry.Bucket("a")
+	bucket, err := registry.Bucket("1a")
 	require.NoError(t, err)
 	b := bucket.(*mock.Bucket)
 
@@ -151,16 +152,54 @@ func TestListItems(t *testing.T) {
 		require.NoError(t, err)
 	}
 
+	err = h.Store.CreateBucket("/1a/id20")
+	require.NoError(t, err)
+
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/a", nil)
+	r, _ := http.NewRequest("GET", "/1a", nil)
 	h.ServeHTTP(w, r)
 	require.Equal(t, http.StatusOK, w.Code)
 	require.True(t, b.PageInvoked)
 	require.True(t, b.CloseInvoked)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
 
+	var list []interface{}
+	err = json.Unmarshal(w.Body.Bytes(), &list)
+	require.NoError(t, err)
+
+	for i := range list {
+		item := list[i].(map[string]interface{})
+		require.Equal(t, fmt.Sprintf("id%d", i), item["key"])
+	}
+
 	w = httptest.NewRecorder()
 	r, _ = http.NewRequest("GET", "/z", nil)
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestTree(t *testing.T) {
+	var h brazierHttp.Handler
+
+	registry := mock.NewRegistry(mock.NewBackend())
+	s := store.NewStore(registry)
+	h.Store = s
+
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 5; j++ {
+			item, err := s.Save(fmt.Sprintf("/a/b%d/k%d", i, j), []byte(`"Value"`))
+			require.NoError(t, err)
+			require.NotNil(t, item)
+		}
+	}
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/a?recursive=true", nil)
+	h.ServeHTTP(w, r)
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
+	w = httptest.NewRecorder()
+	r, _ = http.NewRequest("GET", "/z?recursive=true", nil)
 	h.ServeHTTP(w, r)
 	require.Equal(t, http.StatusNotFound, w.Code)
 }
@@ -228,7 +267,7 @@ func TestNestedBuckets(t *testing.T) {
 		h.ServeHTTP(w, r)
 		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, "application/json", w.Header().Get("Content-Type"))
-		require.Equal(t, `[{"data":`+string(expectedBody)+`,"key":"d"}]`, w.Body.String())
+		require.Equal(t, `[{"key":"d","value":`+string(expectedBody)+`}]`, w.Body.String())
 	})
 
 	t.Run("delete", func(t *testing.T) {

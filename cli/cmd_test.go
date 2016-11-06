@@ -156,11 +156,11 @@ func testListItems(t *testing.T, app *app) {
 		} else {
 			first = false
 		}
-		expected.WriteString(`{"data":`)
-		expected.WriteString(output)
-		expected.WriteString(`,"key":"`)
+		expected.WriteString(`{"key":"`)
 		expected.WriteString(strings.TrimPrefix(cmds[0], "checkJson/"))
-		expected.WriteString(`"}`)
+		expected.WriteString(`","value":`)
+		expected.WriteString(output)
+		expected.WriteString(`}`)
 	}
 	expected.WriteString("]\n")
 

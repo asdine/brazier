@@ -12,10 +12,14 @@ func TestMarshalList(t *testing.T) {
 	items := []brazier.Item{
 		{Key: "k1", Data: []byte(`"Data1"`)},
 		{Key: "k2", Data: []byte(`"Data2"`)},
-		{Key: "k3", Data: []byte(`"Data3"`)},
+		{Key: "k3", Children: []brazier.Item{
+			{Key: "k1", Data: []byte(`"Data1"`)},
+			{Key: "k2", Data: []byte(`"Data2"`)},
+			{Key: "k3", Data: []byte(`"Data3"`)},
+		}},
 	}
 
-	expected := `[{"data":"Data1","key":"k1"},{"data":"Data2","key":"k2"},{"data":"Data3","key":"k3"}]`
+	expected := `[{"key":"k1","value":"Data1"},{"key":"k2","value":"Data2"},{"key":"k3","value":[{"key":"k1","value":"Data1"},{"key":"k2","value":"Data2"},{"key":"k3","value":"Data3"}]}]`
 	out, err := json.MarshalList(items)
 	require.NoError(t, err)
 	require.Equal(t, expected, string(out))

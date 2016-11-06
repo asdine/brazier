@@ -52,12 +52,16 @@ func (r *Registry) Create(nodes ...string) error {
 			return storm.ErrAlreadyExists
 		}
 
+		var n storm.Node
+		n = r.DB
+
 		last := nodes[len(nodes)-1]
 		if len(nodes) > 1 {
 			nodes = nodes[:len(nodes)-1]
+			n = r.DB.From(nodes...)
 		}
 
-		n := r.DB.From(nodes...).WithTransaction(tx)
+		n = n.WithTransaction(tx)
 		_, err := n.CreateBucketIfNotExists(tx, last)
 		if err != nil {
 			return errors.Wrapf(err, "failed to create bucket at path %s", path)

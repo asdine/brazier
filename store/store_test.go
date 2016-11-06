@@ -70,7 +70,8 @@ func TestStore(t *testing.T) {
 	})
 
 	t.Run("Save", func(t *testing.T) {
-		r := mock.NewRegistry(mock.NewBackend())
+		bck := mock.NewBackend()
+		r := mock.NewRegistry(bck)
 		s := store.NewStore(r)
 
 		_, err := s.Save("/", []byte("Value"))
@@ -79,11 +80,19 @@ func TestStore(t *testing.T) {
 		_, err = s.Save("/a", []byte("Value"))
 		require.Equal(t, store.ErrForbidden, err)
 
-		item, err := s.Save("/a/b/c", []byte("Value"))
+		item, err := s.Save("/1a/2a", []byte("Value"))
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
-		_, err = s.Save("/a/b", []byte("Value"))
+		b, err := bck.Bucket("1a")
+		require.NoError(t, err)
+
+		item, err = b.Get("2a")
+		require.NoError(t, err)
+		require.Equal(t, "2a", item.Key)
+		require.Equal(t, []byte("Value"), item.Data)
+
+		_, err = s.Save("/1a", []byte("Value"))
 		require.Equal(t, store.ErrAlreadyExists, err)
 	})
 
@@ -134,7 +143,13 @@ func TestStore(t *testing.T) {
 			}
 		}
 
-		items, err := s.Tree("/a/c")
+		items, err := s.Tree("/")
+		require.Equal(t, store.ErrNotFound, err)
+
+		items, err = s.Tree("/z")
+		require.Equal(t, store.ErrNotFound, err)
+
+		items, err = s.Tree("/a/c")
 		require.Equal(t, store.ErrNotFound, err)
 
 		items, err = s.Tree("/a")

@@ -1,10 +1,12 @@
 package boltdb_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
+	"github.com/boltdb/bolt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,6 +27,23 @@ func TestRegistry(t *testing.T) {
 
 		err = r.Create("a")
 		require.NoError(t, err)
+
+		r.DB.Bolt.View(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte("a"))
+			require.NotNil(t, b)
+			c := b.Cursor()
+			var notEmpty bool
+			for k, _ := c.First(); k != nil; k, _ = c.Next() {
+				if bytes.HasPrefix(k, []byte("__storm")) {
+					continue
+				}
+				notEmpty = true
+				break
+			}
+
+			require.False(t, notEmpty)
+			return nil
+		})
 
 		err = r.Create("a")
 		require.Equal(t, store.ErrAlreadyExists, err)

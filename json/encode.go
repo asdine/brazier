@@ -9,18 +9,28 @@ import (
 
 // MarshalList marshals a list of items
 func MarshalList(items []brazier.Item) ([]byte, error) {
+	return json.Marshal(marshalList(items))
+}
+
+func marshalList(items []brazier.Item) []map[string]interface{} {
 	list := make([]map[string]interface{}, len(items))
 
 	for i := range items {
 		k := items[i].Key
-		v := json.RawMessage(items[i].Data)
 		list[i] = map[string]interface{}{
-			"key":  k,
-			"data": &v,
+			"key": k,
 		}
+		if items[i].Children != nil {
+			list[i]["value"] = marshalList(items[i].Children)
+
+			continue
+		}
+
+		v := json.RawMessage(items[i].Data)
+		list[i]["value"] = &v
 	}
 
-	return json.Marshal(list)
+	return list
 }
 
 // ToValidJSON converts data to a valid JSON payload

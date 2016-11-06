@@ -39,7 +39,7 @@ type Backend struct {
 
 // Bucket returns the bucket associated with the given id.
 func (s *Backend) Bucket(nodes ...string) (brazier.Bucket, error) {
-	return NewBucket(s.DB.From(nodes...), nodes...), nil
+	return NewBucket(s.DB.From(nodes...)), nil
 }
 
 // Close BoltDB connection.

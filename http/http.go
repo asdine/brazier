@@ -78,7 +78,12 @@ func (h *Handler) getNode(w http.ResponseWriter, r *http.Request, rawPath string
 			return
 		}
 
-		items, err := h.Store.List(rawPath, 1, -1)
+		var items []brazier.Item
+		if r.URL.Query().Get("recursive") != "" {
+			items, err = h.Store.Tree(rawPath)
+		} else {
+			items, err = h.Store.List(rawPath, 1, -1)
+		}
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -86,6 +91,7 @@ func (h *Handler) getNode(w http.ResponseWriter, r *http.Request, rawPath string
 
 		data, err = json.MarshalList(items)
 		if err != nil {
+			log.Print(err)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
