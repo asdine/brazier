@@ -1,14 +1,15 @@
 package boltdb
 
 import (
-	"bytes"
 	"strings"
 	"time"
 
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/store"
+	"github.com/asdine/brazier/store/boltdb/internal"
 	"github.com/asdine/storm"
 	"github.com/asdine/storm/codec/protobuf"
+	"github.com/asdine/storm/q"
 	"github.com/boltdb/bolt"
 	"github.com/pkg/errors"
 )
@@ -44,56 +45,53 @@ type Registry struct {
 
 // Create a bucket in the registry.
 func (r *Registry) Create(nodes ...string) error {
-	path := strings.Join(nodes, "/")
+	tx, err := r.DB.Begin(true)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create bucket at path %s", strings.Join(nodes, "/"))
+	}
+	defer tx.Rollback()
 
-	err := r.DB.Bolt.Update(func(tx *bolt.Tx) error {
-		b := r.DB.GetBucket(tx, nodes...)
-		if b != nil {
-			return storm.ErrAlreadyExists
+	var path string
+	for i, node := range nodes {
+		if path != "" {
+			path += "/"
 		}
+		path += node
+		err = tx.Save(&internal.Meta{
+			Key: path,
+		})
 
-		var n storm.Node
-		n = r.DB
-
-		last := nodes[len(nodes)-1]
-		if len(nodes) > 1 {
-			nodes = nodes[:len(nodes)-1]
-			n = r.DB.From(nodes...)
-		}
-
-		n = n.WithTransaction(tx)
-		_, err := n.CreateBucketIfNotExists(tx, last)
-		if err != nil {
+		if err != nil && err != storm.ErrAlreadyExists {
 			return errors.Wrapf(err, "failed to create bucket at path %s", path)
 		}
 
-		return nil
-	})
-
-	if err == storm.ErrAlreadyExists {
-		return store.ErrAlreadyExists
+		// last node must not exist
+		if err == storm.ErrAlreadyExists && i == len(nodes)-1 {
+			return store.ErrAlreadyExists
+		}
 	}
 
-	return errors.Wrapf(err, "failed to create bucket at path %s", path)
+	err = tx.Commit()
+	if err != nil {
+		return errors.Wrapf(err, "failed to create bucket at path %s", strings.Join(nodes, "/"))
+	}
+
+	return nil
 }
 
 // Bucket returns the selected bucket from the Backend.
 func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
-	err := r.DB.Bolt.View(func(tx *bolt.Tx) error {
-		b := r.DB.GetBucket(tx, nodes...)
-		if b == nil {
-			return storm.ErrNotFound
-		}
+	var meta internal.Meta
 
-		return nil
-	})
+	path := strings.Join(nodes, "/")
 
+	err := r.DB.One("Key", path, &meta)
 	if err == storm.ErrNotFound {
 		return nil, store.ErrNotFound
 	}
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to fetch bucket at path %s", strings.Join(nodes, "/"))
+		return nil, errors.Wrapf(err, "failed to fetch bucket at path %s", path)
 	}
 
 	return r.Backend.Bucket(nodes...)
@@ -101,46 +99,94 @@ func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 
 // Children buckets of the specified path.
 func (r *Registry) Children(nodes ...string) ([]brazier.Item, error) {
-	var items []brazier.Item
-	var err error
+	var metas []internal.Meta
 
-	err = r.DB.Bolt.View(func(tx *bolt.Tx) error {
-		b := r.DB.GetBucket(tx, nodes...)
-		if b == nil {
-			return store.ErrNotFound
+	path := strings.Join(nodes, "/")
+
+	err := r.DB.Select(
+		q.NewFieldMatcher(
+			"Key",
+			&childMatcher{prefix: path},
+		),
+	).Find(&metas)
+	if err != nil {
+		if err == storm.ErrNotFound {
+			return nil, store.ErrNotFound
 		}
 
-		items, err = r.childrenOf(b)
-
-		return err
-	})
-
-	return items, err
-}
-
-func (r *Registry) childrenOf(b *bolt.Bucket) ([]brazier.Item, error) {
-	var items []brazier.Item
-	var err error
-
-	c := b.Cursor()
-	for k, v := c.First(); k != nil; k, v = c.Next() {
-		if v != nil || bytes.HasPrefix(k, []byte("__storm")) {
-			continue
-		}
-
-		item := brazier.Item{
-			Key: string(k),
-		}
-
-		item.Children, err = r.childrenOf(b.Bucket(k))
-		if err != nil {
-			return nil, err
-		}
-
-		items = append(items, item)
+		return nil, errors.Wrapf(err, "failed to fetch bucket children at path %s", path)
 	}
 
-	return items, nil
+	tree := keyTree{
+		children: make(map[string]*keyTree),
+	}
+	for _, m := range metas {
+		key := strings.TrimPrefix(m.Key, path)
+		if key == "" {
+			continue
+		}
+		key = strings.TrimPrefix(key, "/")
+
+		new := childrenToTree(tree.children, strings.Split(key, "/")...)
+		if new != nil {
+			tree.index = append(tree.index, new)
+		}
+	}
+
+	return treeToItems(&tree), nil
+}
+
+type keyTree struct {
+	key      string
+	children map[string]*keyTree
+	index    []*keyTree
+}
+
+func childrenToTree(tree map[string]*keyTree, nodes ...string) *keyTree {
+	if len(nodes) == 0 {
+		return nil
+	}
+
+	var fresh bool
+
+	t, ok := tree[nodes[0]]
+	if !ok {
+		fresh = true
+		t = &keyTree{
+			key: nodes[0],
+		}
+		tree[nodes[0]] = t
+	}
+
+	if t.children == nil {
+		t.children = make(map[string]*keyTree)
+	}
+
+	if len(nodes) > 1 {
+		new := childrenToTree(t.children, nodes[1:len(nodes)]...)
+		if new != nil {
+			t.index = append(t.index, new)
+		}
+	}
+
+	if fresh {
+		return t
+	}
+
+	return nil
+}
+
+func treeToItems(tree *keyTree) []brazier.Item {
+	items := make([]brazier.Item, len(tree.index))
+
+	for i, t := range tree.index {
+		items[i].Key = t.key
+		if t.children != nil {
+			items[i].Children = treeToItems(t)
+		}
+	}
+
+	return items
 }
 
 // Close BoltDB connection
@@ -156,4 +202,21 @@ func (r *Registry) Close() error {
 	}
 
 	return nil
+}
+
+type childMatcher struct {
+	prefix string
+}
+
+func (c *childMatcher) MatchField(v interface{}) (bool, error) {
+	key, ok := v.(string)
+	if !ok {
+		return false, nil
+	}
+
+	if !strings.HasPrefix(key, c.prefix) {
+		return false, nil
+	}
+
+	return len(key) >= len(c.prefix), nil
 }

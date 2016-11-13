@@ -1,12 +1,10 @@
 package boltdb_test
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/asdine/brazier/store"
 	"github.com/asdine/brazier/store/boltdb"
-	"github.com/boltdb/bolt"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,23 +25,6 @@ func TestRegistry(t *testing.T) {
 
 		err = r.Create("a")
 		require.NoError(t, err)
-
-		r.DB.Bolt.View(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte("a"))
-			require.NotNil(t, b)
-			c := b.Cursor()
-			var notEmpty bool
-			for k, _ := c.First(); k != nil; k, _ = c.Next() {
-				if bytes.HasPrefix(k, []byte("__storm")) {
-					continue
-				}
-				notEmpty = true
-				break
-			}
-
-			require.False(t, notEmpty)
-			return nil
-		})
 
 		err = r.Create("a")
 		require.Equal(t, store.ErrAlreadyExists, err)
@@ -105,24 +86,25 @@ func TestRegistry(t *testing.T) {
 		_, err = r.Children()
 		require.Equal(t, store.ErrNotFound, err)
 
-		err = r.Create("1a", "2a", "3a")
+		err = r.Create("1a", "2a", "3b")
 		require.NoError(t, err)
 
-		err = r.Create("1a", "2a", "3b")
+		err = r.Create("1a", "2a", "3a")
 		require.NoError(t, err)
 
 		tree, err := r.Children("1a")
 		require.NoError(t, err)
 		require.Len(t, tree, 1)
 		require.Len(t, tree[0].Children, 2)
-		require.Equal(t, "3a", tree[0].Children[0].Key)
-		require.Equal(t, "3b", tree[0].Children[1].Key)
+		require.Equal(t, "3b", tree[0].Children[0].Key)
+		require.Equal(t, "3a", tree[0].Children[1].Key)
 
 		tree, err = r.Children("1a", "2a")
 		require.NoError(t, err)
 		require.Len(t, tree, 2)
-		require.Equal(t, "3a", tree[0].Key)
-		require.Equal(t, "3b", tree[1].Key)
+		// check if the insert order is preserved
+		require.Equal(t, "3b", tree[0].Key)
+		require.Equal(t, "3a", tree[1].Key)
 
 		tree, err = r.Children("1a", "2a", "3a")
 		require.NoError(t, err)

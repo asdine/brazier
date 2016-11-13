@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package internal;
+
+message Meta {
+  // @inject_tag: storm:"id"
+  int64 id = 1;
+  // @inject_tag: storm:"unique"
+  string key = 2;
+}
