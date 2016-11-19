@@ -10,6 +10,10 @@ import (
 func TestBackend(t *testing.T) {
 	bck := mock.NewBackend()
 
+	root, err := bck.Bucket()
+	require.NoError(t, err)
+	require.Equal(t, "/", root.(*mock.Bucket).Name)
+
 	c, err := bck.Bucket("a", "b", "c")
 	require.NoError(t, err)
 	require.Equal(t, "c", c.(*mock.Bucket).Name)
@@ -28,5 +32,5 @@ func TestBackend(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "a", a.(*mock.Bucket).Name)
 
-	require.Len(t, bck.Buckets, 1)
+	require.Len(t, bck.Tree.Children, 1)
 }

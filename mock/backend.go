@@ -4,12 +4,14 @@ import "github.com/asdine/brazier"
 
 // NewBackend returns a mock backend.
 func NewBackend() *Backend {
-	return &Backend{}
+	return &Backend{
+		Tree: NewBucket("/"),
+	}
 }
 
 // Backend is a mock backend.
 type Backend struct {
-	Buckets       []*Bucket
+	Tree          *Bucket
 	BucketInvoked bool
 	CloseInvoked  bool
 }
@@ -18,8 +20,12 @@ type Backend struct {
 func (s *Backend) Bucket(nodes ...string) (brazier.Bucket, error) {
 	s.BucketInvoked = true
 
+	if len(nodes) == 0 {
+		return s.Tree, nil
+	}
+
 	var b *Bucket
-	buckets := &s.Buckets
+	buckets := &s.Tree.Children
 
 	var found bool
 	for _, node := range nodes {
@@ -27,7 +33,7 @@ func (s *Backend) Bucket(nodes ...string) (brazier.Bucket, error) {
 
 		for _, b = range *buckets {
 			if b.Name == node {
-				buckets = &b.children
+				buckets = &b.Children
 				found = true
 				break
 			}
@@ -36,7 +42,7 @@ func (s *Backend) Bucket(nodes ...string) (brazier.Bucket, error) {
 		if !found {
 			b = NewBucket(node)
 			*buckets = append(*buckets, b)
-			buckets = &b.children
+			buckets = &b.Children
 		}
 	}
 

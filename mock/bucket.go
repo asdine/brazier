@@ -18,7 +18,7 @@ type Bucket struct {
 	Name          string
 	data          map[string]*brazier.Item
 	index         []*brazier.Item
-	children      []*Bucket
+	Children      []*Bucket
 	SaveInvoked   bool
 	GetInvoked    bool
 	DeleteInvoked bool

@@ -49,7 +49,10 @@ func TestRegistry(t *testing.T) {
 		require.NoError(t, err)
 		defer r.Close()
 
-		b, err := r.Bucket("a")
+		b, err := r.Bucket()
+		require.NoError(t, err)
+
+		b, err = r.Bucket("a")
 		require.Equal(t, store.ErrNotFound, err)
 
 		b, err = r.Bucket("a", "b")
@@ -83,8 +86,9 @@ func TestRegistry(t *testing.T) {
 		_, err = r.Children("a", "b")
 		require.Equal(t, store.ErrNotFound, err)
 
-		_, err = r.Children()
-		require.Equal(t, store.ErrNotFound, err)
+		tree, err := r.Children()
+		require.NoError(t, err)
+		require.Len(t, tree, 0)
 
 		err = r.Create("1a", "2a", "3b")
 		require.NoError(t, err)
@@ -92,7 +96,11 @@ func TestRegistry(t *testing.T) {
 		err = r.Create("1a", "2a", "3a")
 		require.NoError(t, err)
 
-		tree, err := r.Children("1a")
+		tree, err = r.Children()
+		require.NoError(t, err)
+		require.Len(t, tree, 1)
+
+		tree, err = r.Children("1a")
 		require.NoError(t, err)
 		require.Len(t, tree, 1)
 		require.Len(t, tree[0].Children, 2)
@@ -112,5 +120,14 @@ func TestRegistry(t *testing.T) {
 
 		_, err = r.Children("1a", "2a", "3c")
 		require.Equal(t, store.ErrNotFound, err)
+
+		// all children from root
+		tree, err = r.Children()
+		require.NoError(t, err)
+		require.Len(t, tree, 1)
+		require.Len(t, tree[0].Children, 1)
+		require.Len(t, tree[0].Children[0].Children, 2)
+		require.Equal(t, "3b", tree[0].Children[0].Children[0].Key)
+		require.Equal(t, "3a", tree[0].Children[0].Children[1].Key)
 	})
 }
