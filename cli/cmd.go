@@ -28,7 +28,7 @@ func New() *cobra.Command {
 
 	cmd.SetOutput(os.Stdout)
 	cmd.AddCommand(NewCreateCmd(&a))
-	cmd.AddCommand(NewSaveCmd(&a))
+	cmd.AddCommand(NewPutCmd(&a))
 	cmd.AddCommand(NewGetCmd(&a))
 	cmd.AddCommand(NewDeleteCmd(&a))
 	cmd.AddCommand(NewListCmd(&a, false))
@@ -68,20 +68,20 @@ brazier create food/drinks/sodas`,
 }
 
 // NewSaveCmd creates a "Save" cli command
-func NewSaveCmd(a *app) *cobra.Command {
+func NewPutCmd(a *app) *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "save PATH",
-		Short: "Save a value in a bucket",
-		Long: `Save a value in a bucket. A value can be anything.
+		Use:   "put PATH",
+		Short: "Set or replace a value in a bucket",
+		Long: `Set or replace a value in a bucket. A value can be anything.
 JSON values are automatically detected.`,
-		Example: `brazier save friends/john/phone 555-666
-brazier save users/1 '{"username": "john"}'`,
+		Example: `brazier put friends/john/phone 555-666
+brazier put users/1 '{"username": "john"}'`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 2 {
 				return errors.New("Wrong number of arguments")
 			}
 
-			err := a.Cli.Save(args[0], []byte(args[1]))
+			err := a.Cli.Put(args[0], []byte(args[1]))
 			if err != nil {
 				return err
 			}

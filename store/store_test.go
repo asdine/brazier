@@ -74,13 +74,13 @@ func TestStore(t *testing.T) {
 		r := mock.NewRegistry(bck)
 		s := store.NewStore(r)
 
-		_, err := s.Save("/", []byte("Value"))
+		_, err := s.Put("/", []byte("Value"))
 		require.Equal(t, store.ErrForbidden, err)
 
-		_, err = s.Save("/a", []byte("Value"))
+		_, err = s.Put("/a", []byte("Value"))
 		require.Equal(t, store.ErrForbidden, err)
 
-		item, err := s.Save("/1a/2a", []byte("Value"))
+		item, err := s.Put("/1a/2a", []byte("Value"))
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
@@ -92,7 +92,7 @@ func TestStore(t *testing.T) {
 		require.Equal(t, "2a", item.Key)
 		require.Equal(t, []byte("Value"), item.Data)
 
-		_, err = s.Save("/1a", []byte("Value"))
+		_, err = s.Put("/1a", []byte("Value"))
 		require.Equal(t, store.ErrAlreadyExists, err)
 	})
 
@@ -100,7 +100,7 @@ func TestStore(t *testing.T) {
 		r := mock.NewRegistry(mock.NewBackend())
 		s := store.NewStore(r)
 
-		item, err := s.Save("/a/b/c", []byte("Value"))
+		item, err := s.Put("/a/b/c", []byte("Value"))
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
@@ -118,7 +118,7 @@ func TestStore(t *testing.T) {
 		s := store.NewStore(r)
 
 		for i := 0; i < 10; i++ {
-			item, err := s.Save(fmt.Sprintf("/a/b/k%d", i), []byte("Value"+strconv.Itoa(i)))
+			item, err := s.Put(fmt.Sprintf("/a/b/k%d", i), []byte("Value"+strconv.Itoa(i)))
 			require.NoError(t, err)
 			require.NotNil(t, item)
 		}
@@ -137,7 +137,7 @@ func TestStore(t *testing.T) {
 
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 5; j++ {
-				item, err := s.Save(fmt.Sprintf("/a/b%d/k%d", i, j), []byte("Value"+strconv.Itoa(j)))
+				item, err := s.Put(fmt.Sprintf("/a/b%d/k%d", i, j), []byte("Value"+strconv.Itoa(j)))
 				require.NoError(t, err)
 				require.NotNil(t, item)
 			}
@@ -168,7 +168,7 @@ func TestStore(t *testing.T) {
 		s := store.NewStore(r)
 
 		for i := 0; i < 10; i++ {
-			item, err := s.Save(fmt.Sprintf("/a/b/k%d", i), []byte("Value"+strconv.Itoa(i)))
+			item, err := s.Put(fmt.Sprintf("/a/b/k%d", i), []byte("Value"+strconv.Itoa(i)))
 			require.NoError(t, err)
 			require.NotNil(t, item)
 		}

@@ -8,7 +8,7 @@ import (
 // Cli handles command line requests
 type Cli interface {
 	Create(path string) error
-	Save(path string, data []byte) error
+	Put(path string, data []byte) error
 	Get(path string) ([]byte, error)
 	List(path string, recursive bool) ([]brazier.Item, error)
 	Delete(path string) error
@@ -22,10 +22,10 @@ func (c *cli) Create(path string) error {
 	return c.App.Store.CreateBucket(path)
 }
 
-func (c *cli) Save(path string, data []byte) error {
+func (c *cli) Put(path string, data []byte) error {
 	data = json.ToValidJSON(data)
 
-	_, err := c.App.Store.Save(path, data)
+	_, err := c.App.Store.Put(path, data)
 	return err
 }
 

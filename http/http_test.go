@@ -187,7 +187,7 @@ func TestTree(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 5; j++ {
-			item, err := s.Save(fmt.Sprintf("/a/b%d/k%d", i, j), []byte(`"Value"`))
+			item, err := s.Put(fmt.Sprintf("/a/b%d/k%d", i, j), []byte(`"Value"`))
 			require.NoError(t, err)
 			require.NotNil(t, item)
 		}

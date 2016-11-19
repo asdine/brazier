@@ -30,13 +30,13 @@ func NewServerCmd(a *app) *cobra.Command {
 
 	cmd := cobra.Command{
 		Use:   "server",
-		Short: "Run Brazier as an HTTP and RPC server",
-		Long:  "Run Brazier as an HTTP and RPC server",
+		Short: "Run Brazier as an HTTP and gRPC server",
+		Long:  "Run Brazier as an HTTP and gRPC server",
 		RunE:  serverCmd.Serve,
 	}
 
 	cmd.Flags().StringVar(&serverCmd.App.Config.HTTP.Address, "http-addr", ":5656", "HTTP address")
-	cmd.Flags().StringVar(&serverCmd.App.Config.RPC.Address, "rpc-addr", "127.0.0.1:5657", "RPC address")
+	cmd.Flags().StringVar(&serverCmd.App.Config.RPC.Address, "rpc-addr", "127.0.0.1:5657", "gRPC address")
 	return &cmd
 }
 

@@ -96,7 +96,7 @@ func testCreate(t *testing.T, app *app) {
 func testSave(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
-	s := NewSaveCmd(app)
+	s := NewPutCmd(app)
 
 	err := s.RunE(nil, nil)
 	require.EqualError(t, err, "Wrong number of arguments")
@@ -109,7 +109,7 @@ func testSave(t *testing.T, app *app) {
 func testGet(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
-	s := NewSaveCmd(app)
+	s := NewPutCmd(app)
 	g := NewGetCmd(app)
 
 	tests := map[string][]string{
@@ -134,7 +134,7 @@ func testGet(t *testing.T, app *app) {
 func testListItems(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
-	s := NewSaveCmd(app)
+	s := NewPutCmd(app)
 	l := NewListCmd(app, false)
 	lr := NewListCmd(app, true)
 
@@ -191,7 +191,7 @@ func testListItems(t *testing.T, app *app) {
 func testDelete(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
-	s := NewSaveCmd(app)
+	s := NewPutCmd(app)
 	d := NewDeleteCmd(app)
 
 	err := s.RunE(nil, []string{"a/b/c/d", "my value"})

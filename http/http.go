@@ -57,7 +57,7 @@ func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, rawPath strin
 		return
 	}
 
-	_, err = h.Store.Save(rawPath, json.ToValidJSON(buffer.Bytes()))
+	_, err = h.Store.Put(rawPath, json.ToValidJSON(buffer.Bytes()))
 	if err != nil {
 		log.Print(err)
 		w.WriteHeader(http.StatusBadRequest)

@@ -51,7 +51,7 @@ func (s *Server) Create(ctx context.Context, in *proto.Selector) (*proto.Empty, 
 func (s *Server) Save(ctx context.Context, in *proto.NewItem) (*proto.Empty, error) {
 	data := json.ToValidJSON(in.Value)
 
-	_, err := s.Store.Save(in.Path, data)
+	_, err := s.Store.Put(in.Path, data)
 	if err != nil {
 		return nil, err
 	}

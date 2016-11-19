@@ -80,7 +80,7 @@ func (s *Store) CreateBucket(rawPath string) error {
 }
 
 // Save the value at the given path.
-func (s *Store) Save(rawPath string, value []byte) (*brazier.Item, error) {
+func (s *Store) Put(rawPath string, value []byte) (*brazier.Item, error) {
 	nodes := splitPath(rawPath)
 
 	if len(nodes) == 0 {

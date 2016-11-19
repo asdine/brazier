@@ -17,7 +17,7 @@ func (r *rpcCli) Create(path string) error {
 	return err
 }
 
-func (r *rpcCli) Save(path string, data []byte) error {
+func (r *rpcCli) Put(path string, data []byte) error {
 	_, err := r.Client.Save(context.Background(), &proto.NewItem{Path: path, Value: data})
 	return err
 }
