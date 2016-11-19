@@ -30,11 +30,11 @@ func TestCliGet(t *testing.T) {
 	testGet(t, app)
 }
 
-func TestCliListItems(t *testing.T) {
+func TestCliGetListItems(t *testing.T) {
 	app, cleanup := testableApp(t)
 	defer cleanup()
 
-	testListItems(t, app)
+	testGetListItems(t, app)
 }
 
 func TestCliDelete(t *testing.T) {
@@ -65,11 +65,11 @@ func TestCliRPCGet(t *testing.T) {
 	testGet(t, app)
 }
 
-func TestCliRPCListItems(t *testing.T) {
+func TestCliRPCGetListItems(t *testing.T) {
 	app, cleanup := testableAppRPC(t)
 	defer cleanup()
 
-	testListItems(t, app)
+	testGetListItems(t, app)
 }
 
 func TestCliRPCDelete(t *testing.T) {
@@ -88,9 +88,9 @@ func testCreate(t *testing.T, app *app) {
 	require.Error(t, err)
 	require.EqualError(t, err, "Bucket name is missing")
 
-	err = c.RunE(nil, []string{"my bucket/my other bucket"})
+	err = c.RunE(nil, []string{"my bucket/my other bucket/"})
 	require.NoError(t, err)
-	require.Equal(t, "Bucket \"my bucket/my other bucket\" successfully created.\n", out.String())
+	require.Equal(t, "Bucket \"my bucket/my other bucket/\" successfully created.\n", out.String())
 }
 
 func testSave(t *testing.T, app *app) {
@@ -110,7 +110,7 @@ func testGet(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
 	s := NewPutCmd(app)
-	g := NewGetCmd(app)
+	g := NewGetCmd(app, false)
 
 	tests := map[string][]string{
 		"\"abc\"\n":                  []string{"checkJson/string", "abc"},
@@ -131,12 +131,12 @@ func testGet(t *testing.T, app *app) {
 	}
 }
 
-func testListItems(t *testing.T, app *app) {
+func testGetListItems(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
 	s := NewPutCmd(app)
-	l := NewListCmd(app, false)
-	lr := NewListCmd(app, true)
+	g := NewGetCmd(app, false)
+	gr := NewGetCmd(app, true)
 
 	tests := map[string][]string{
 		"\"abc\"":                  []string{"test/checkJson/string", "abc"},
@@ -167,16 +167,16 @@ func testListItems(t *testing.T, app *app) {
 	expected.WriteString("]\n")
 
 	out.Reset()
-	err := l.RunE(nil, []string{"test/checkJson"})
+	err := g.RunE(nil, []string{"test/checkJson/"})
 	require.NoError(t, err)
 	require.Equal(t, expected.String(), out.String())
 
 	out.Reset()
-	err = l.RunE(nil, []string{"some bucket"})
+	err = g.RunE(nil, []string{"some bucket/"})
 	require.Error(t, err)
 
 	out.Reset()
-	err = lr.RunE(nil, []string{"test"})
+	err = gr.RunE(nil, []string{"test/"})
 	require.NoError(t, err)
 	var output []interface{}
 	err = json.Unmarshal(out.Bytes(), &output)

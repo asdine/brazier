@@ -1,9 +1,12 @@
 package cli
 
 import (
+	"strings"
+
 	"golang.org/x/net/context"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/json"
 	"github.com/asdine/brazier/rpc/proto"
 )
 
@@ -22,22 +25,27 @@ func (r *rpcCli) Put(path string, data []byte) error {
 	return err
 }
 
-func (r *rpcCli) Get(path string) ([]byte, error) {
+func (r *rpcCli) Get(path string, recursive bool) ([]byte, error) {
+	if strings.HasSuffix(path, "/") {
+		resp, err := r.Client.List(context.Background(), &proto.Selector{Path: path, Recursive: recursive})
+		if err != nil {
+			return nil, err
+		}
+
+		data, err := json.MarshalList(r.tree(resp.Items))
+		if err != nil {
+			return nil, err
+		}
+
+		return append(data, '\n'), nil
+	}
+
 	item, err := r.Client.Get(context.Background(), &proto.Selector{Path: path})
 	if err != nil {
 		return nil, err
 	}
 
 	return append(item.Value, '\n'), nil
-}
-
-func (r *rpcCli) List(path string, recursive bool) ([]brazier.Item, error) {
-	resp, err := r.Client.List(context.Background(), &proto.Selector{Path: path, Recursive: recursive})
-	if err != nil {
-		return nil, err
-	}
-
-	return r.tree(resp.Items), nil
 }
 
 func (r *rpcCli) tree(items []*proto.Item) []brazier.Item {

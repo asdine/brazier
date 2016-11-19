@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"strings"
+
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/json"
 )
@@ -9,8 +11,7 @@ import (
 type Cli interface {
 	Create(path string) error
 	Put(path string, data []byte) error
-	Get(path string) ([]byte, error)
-	List(path string, recursive bool) ([]brazier.Item, error)
+	Get(path string, recursive bool) ([]byte, error)
 	Delete(path string) error
 }
 
@@ -29,21 +30,35 @@ func (c *cli) Put(path string, data []byte) error {
 	return err
 }
 
-func (c *cli) Get(path string) ([]byte, error) {
+func (c *cli) Get(path string, recursive bool) ([]byte, error) {
+	if strings.HasSuffix(path, "/") {
+		var items []brazier.Item
+		var err error
+
+		if recursive {
+			items, err = c.App.Store.Tree(path)
+		} else {
+			items, err = c.App.Store.List(path, 1, -1)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		data, err := json.MarshalList(items)
+		if err != nil {
+			return nil, err
+		}
+
+		return append(data, '\n'), nil
+	}
+
 	item, err := c.App.Store.Get(path)
 	if err != nil {
 		return nil, err
 	}
 
 	return append(item.Data, '\n'), nil
-}
-
-func (c *cli) List(path string, recursive bool) ([]brazier.Item, error) {
-	if recursive {
-		return c.App.Store.Tree(path)
-	}
-
-	return c.App.Store.List(path, 1, -1)
 }
 
 func (c *cli) Delete(path string) error {
