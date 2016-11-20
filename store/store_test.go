@@ -196,6 +196,7 @@ func testStore(t *testing.T, backendType string) {
 		require.Len(t, items, 3)
 		for i := 0; i < 3; i++ {
 			require.Len(t, items[i].Children, 5)
+			require.Equal(t, fmt.Sprintf("b%d/", i), items[i].Key)
 			for j := 0; j < 5; j++ {
 				require.Equal(t, []byte("Value"+strconv.Itoa(j)), items[i].Children[j].Data)
 			}

@@ -137,7 +137,7 @@ func (s *Store) tree(buckets []brazier.Item, nodes ...string) ([]brazier.Item, e
 
 	for _, b := range buckets {
 		i := brazier.Item{
-			Key: b.Key,
+			Key: b.Key + "/",
 		}
 
 		i.Children, err = s.tree(b.Children, append(nodes, b.Key)...)

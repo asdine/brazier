@@ -179,7 +179,7 @@ func testGetListItems(t *testing.T, app *app) {
 	require.NoError(t, err)
 	require.Len(t, output, 1)
 	item := output[0].(map[string]interface{})
-	require.Equal(t, "checkJson", item["key"].(string))
+	require.Equal(t, "checkJson/", item["key"].(string))
 	list := item["value"].([]interface{})
 	require.Len(t, list, 5)
 }
