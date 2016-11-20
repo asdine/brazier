@@ -45,7 +45,7 @@ func (c *cli) Get(path string, recursive bool) ([]byte, error) {
 			return nil, err
 		}
 
-		data, err := json.MarshalList(items)
+		data, err := json.MarshalListPretty(items)
 		if err != nil {
 			return nil, err
 		}

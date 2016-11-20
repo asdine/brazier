@@ -32,7 +32,7 @@ func (r *rpcCli) Get(path string, recursive bool) ([]byte, error) {
 			return nil, err
 		}
 
-		data, err := json.MarshalList(r.tree(resp.Children))
+		data, err := json.MarshalListPretty(r.tree(resp.Children))
 		if err != nil {
 			return nil, err
 		}

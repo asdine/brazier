@@ -138,38 +138,34 @@ func testGetListItems(t *testing.T, app *app) {
 	g := NewGetCmd(app, false)
 	gr := NewGetCmd(app, true)
 
-	tests := map[string][]string{
-		"\"abc\"":                  []string{"test/checkJson/string", "abc"},
-		"\"bcd\"":                  []string{"test/checkJson/json string", "\"bcd\""},
-		"10":                       []string{"test/checkJson/number", "10"},
-		"{\"a\":\"b\"}":            []string{"test/checkJson/object", `{"a": "b"}`},
-		"[\"a\",10,{\"c\":\"d\"}]": []string{"test/checkJson/array", `["a", 10, {"c": "d"}]`},
+	tests := []map[string][]string{
+		{"\"abc\"": []string{"test/checkJson/string", "abc"}},
+		{"\"bcd\"": []string{"test/checkJson/json string", "\"bcd\""}},
+		{"10": []string{"test/checkJson/number", "10"}},
+		{"{\"a\":\"b\"}": []string{"test/checkJson/object", `{"a": "b"}`}},
+		{"[\"a\",10,{\"c\":\"d\"}]": []string{"test/checkJson/array", `["a", 10, {"c": "d"}]`}},
 	}
 
-	var expected bytes.Buffer
+	var expected []map[string]interface{}
+	for _, test := range tests {
+		for output, cmds := range test {
+			err := s.RunE(nil, cmds)
+			require.NoError(t, err)
 
-	expected.WriteByte('[')
-	first := true
-	for output, cmds := range tests {
-		err := s.RunE(nil, cmds)
-		require.NoError(t, err)
-		if !first {
-			expected.WriteByte(',')
-		} else {
-			first = false
+			kv := make(map[string]interface{})
+			kv["key"] = strings.TrimPrefix(cmds[0], "test/checkJson/")
+			v := json.RawMessage(output)
+			kv["value"] = &v
+			expected = append(expected, kv)
 		}
-		expected.WriteString(`{"key":"`)
-		expected.WriteString(strings.TrimPrefix(cmds[0], "test/checkJson/"))
-		expected.WriteString(`","value":`)
-		expected.WriteString(output)
-		expected.WriteString(`}`)
 	}
-	expected.WriteString("]\n")
 
 	out.Reset()
 	err := g.RunE(nil, []string{"test/checkJson/"})
 	require.NoError(t, err)
-	require.Equal(t, expected.String(), out.String())
+	rawExpected, err := json.Marshal(expected)
+	require.NoError(t, err)
+	require.JSONEq(t, string(rawExpected), out.String())
 
 	out.Reset()
 	err = g.RunE(nil, []string{"some bucket/"})

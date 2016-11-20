@@ -12,6 +12,11 @@ func MarshalList(items []brazier.Item) ([]byte, error) {
 	return json.Marshal(marshalList(items))
 }
 
+// MarshalListPretty marshals a list of items
+func MarshalListPretty(items []brazier.Item) ([]byte, error) {
+	return json.MarshalIndent(marshalList(items), "", "  ")
+}
+
 func marshalList(items []brazier.Item) []map[string]interface{} {
 	list := make([]map[string]interface{}, len(items))
 
