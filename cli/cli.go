@@ -31,9 +31,11 @@ func (c *cli) Put(path string, data []byte) error {
 }
 
 func (c *cli) Get(path string, recursive bool) ([]byte, error) {
+	var err error
+	var data []byte
+
 	if strings.HasSuffix(path, "/") {
 		var items []brazier.Item
-		var err error
 
 		if recursive {
 			items, err = c.App.Store.Tree(path)
@@ -45,20 +47,21 @@ func (c *cli) Get(path string, recursive bool) ([]byte, error) {
 			return nil, err
 		}
 
-		data, err := json.MarshalListPretty(items)
+		data, err = json.MarshalListPretty(items)
+	} else {
+		item, err := c.App.Store.Get(path)
 		if err != nil {
 			return nil, err
 		}
 
-		return append(data, '\n'), nil
+		data, err = json.PrettyPrintRaw(item.Data)
 	}
 
-	item, err := c.App.Store.Get(path)
 	if err != nil {
 		return nil, err
 	}
 
-	return append(item.Data, '\n'), nil
+	return append(data, '\n'), nil
 }
 
 func (c *cli) Delete(path string) error {

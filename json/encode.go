@@ -17,6 +17,11 @@ func MarshalListPretty(items []brazier.Item) ([]byte, error) {
 	return json.MarshalIndent(marshalList(items), "", "  ")
 }
 
+func PrettyPrintRaw(data []byte) ([]byte, error) {
+	raw := json.RawMessage(data)
+	return json.MarshalIndent(&raw, "", "  ")
+}
+
 func marshalList(items []brazier.Item) []map[string]interface{} {
 	list := make([]map[string]interface{}, len(items))
 

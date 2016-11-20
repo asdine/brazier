@@ -126,7 +126,7 @@ func testGet(t *testing.T, app *app) {
 		out.Reset()
 		err = g.RunE(nil, cmds[:1])
 		require.NoError(t, err)
-		require.Equal(t, expected, out.String())
+		require.JSONEq(t, expected, out.String())
 		out.Reset()
 	}
 }

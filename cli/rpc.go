@@ -26,26 +26,30 @@ func (r *rpcCli) Put(path string, data []byte) error {
 }
 
 func (r *rpcCli) Get(path string, recursive bool) ([]byte, error) {
+	var err error
+	var data []byte
+
 	if strings.HasSuffix(path, "/") {
 		resp, err := r.Client.List(context.Background(), &proto.Selector{Path: path, Recursive: recursive})
 		if err != nil {
 			return nil, err
 		}
 
-		data, err := json.MarshalListPretty(r.tree(resp.Children))
+		data, err = json.MarshalListPretty(r.tree(resp.Children))
+	} else {
+		item, err := r.Client.Get(context.Background(), &proto.Selector{Path: path})
 		if err != nil {
 			return nil, err
 		}
 
-		return append(data, '\n'), nil
+		data, err = json.PrettyPrintRaw(item.Value)
 	}
 
-	item, err := r.Client.Get(context.Background(), &proto.Selector{Path: path})
 	if err != nil {
 		return nil, err
 	}
 
-	return append(item.Value, '\n'), nil
+	return append(data, '\n'), nil
 }
 
 func (r *rpcCli) tree(items []*proto.Node) []brazier.Item {
