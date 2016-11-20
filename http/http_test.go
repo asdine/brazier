@@ -152,11 +152,11 @@ func TestListItems(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	err = h.Store.CreateBucket("/1a/id20")
+	err = h.Store.CreateBucket("/1a/id20/")
 	require.NoError(t, err)
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/1a", nil)
+	r, _ := http.NewRequest("GET", "/1a/", nil)
 	h.ServeHTTP(w, r)
 	require.Equal(t, http.StatusOK, w.Code)
 	require.True(t, b.PageInvoked)
@@ -194,7 +194,7 @@ func TestTree(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	r, _ := http.NewRequest("GET", "/a?recursive=true", nil)
+	r, _ := http.NewRequest("GET", "/a/?recursive=true", nil)
 	h.ServeHTTP(w, r)
 	require.Equal(t, http.StatusOK, w.Code)
 	require.Equal(t, "application/json", w.Header().Get("Content-Type"))
@@ -263,7 +263,7 @@ func TestNestedBuckets(t *testing.T) {
 
 	t.Run("list", func(t *testing.T) {
 		w := httptest.NewRecorder()
-		r, _ := http.NewRequest("GET", "/a/b/c", nil)
+		r, _ := http.NewRequest("GET", "/a/b/c/", nil)
 		h.ServeHTTP(w, r)
 		require.Equal(t, http.StatusOK, w.Code)
 		require.Equal(t, "application/json", w.Header().Get("Content-Type"))

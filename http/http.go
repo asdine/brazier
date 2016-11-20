@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"strings"
 
 	graceful "gopkg.in/tylerb/graceful.v1"
 
@@ -32,7 +33,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "PUT":
-		h.saveItem(w, r, rawPath)
+		h.putItem(w, r, rawPath)
 	case "GET":
 		h.getNode(w, r, rawPath)
 	case "DELETE":
@@ -42,7 +43,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, rawPath string) {
+func (h *Handler) putItem(w http.ResponseWriter, r *http.Request, rawPath string) {
 	if r.ContentLength == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -68,35 +69,44 @@ func (h *Handler) saveItem(w http.ResponseWriter, r *http.Request, rawPath strin
 }
 
 func (h *Handler) getNode(w http.ResponseWriter, r *http.Request, rawPath string) {
-	var data []byte
-
-	item, err := h.Store.Get(rawPath)
-	if err != nil {
-		if err != store.ErrNotFound {
+	if !strings.HasSuffix(rawPath, "/") {
+		item, err := h.Store.Get(rawPath)
+		if err != nil {
+			if err == store.ErrNotFound {
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
 			log.Print(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(item.Data)
+		return
+	}
 
-		var items []brazier.Item
-		if r.URL.Query().Get("recursive") != "" {
-			items, err = h.Store.Tree(rawPath)
-		} else {
-			items, err = h.Store.List(rawPath, 1, -1)
-		}
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
-		data, err = json.MarshalList(items)
-		if err != nil {
-			log.Print(err)
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
+	var items []brazier.Item
+	var err error
+	if r.URL.Query().Get("recursive") != "" {
+		items, err = h.Store.Tree(rawPath)
 	} else {
-		data = item.Data
+		items, err = h.Store.List(rawPath, 1, -1)
+	}
+	if err != nil {
+		if err == store.ErrNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		log.Print(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	data, err := json.MarshalList(items)
+	if err != nil {
+		log.Print(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
