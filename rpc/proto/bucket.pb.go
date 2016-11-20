@@ -15,7 +15,8 @@ It has these top-level messages:
 	NewBucket
 	NewItem
 	Item
-	Items
+	Node
+	Tree
 */
 package proto
 
@@ -52,10 +53,10 @@ const _ = grpc.SupportPackageIsVersion4
 type BucketClient interface {
 	// Create a bucket
 	Create(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Empty, error)
-	// Saves user data
-	Save(ctx context.Context, in *NewItem, opts ...grpc.CallOption) (*Empty, error)
+	// Put user data
+	Put(ctx context.Context, in *NewItem, opts ...grpc.CallOption) (*Empty, error)
 	// List the bucket content
-	List(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Items, error)
+	List(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Tree, error)
 	// Get an item
 	Get(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Item, error)
 	// Delete an item
@@ -79,17 +80,17 @@ func (c *bucketClient) Create(ctx context.Context, in *Selector, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *bucketClient) Save(ctx context.Context, in *NewItem, opts ...grpc.CallOption) (*Empty, error) {
+func (c *bucketClient) Put(ctx context.Context, in *NewItem, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := grpc.Invoke(ctx, "/proto.Bucket/Save", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/proto.Bucket/Put", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *bucketClient) List(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Items, error) {
-	out := new(Items)
+func (c *bucketClient) List(ctx context.Context, in *Selector, opts ...grpc.CallOption) (*Tree, error) {
+	out := new(Tree)
 	err := grpc.Invoke(ctx, "/proto.Bucket/List", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
@@ -120,10 +121,10 @@ func (c *bucketClient) Delete(ctx context.Context, in *Selector, opts ...grpc.Ca
 type BucketServer interface {
 	// Create a bucket
 	Create(context.Context, *Selector) (*Empty, error)
-	// Saves user data
-	Save(context.Context, *NewItem) (*Empty, error)
+	// Put user data
+	Put(context.Context, *NewItem) (*Empty, error)
 	// List the bucket content
-	List(context.Context, *Selector) (*Items, error)
+	List(context.Context, *Selector) (*Tree, error)
 	// Get an item
 	Get(context.Context, *Selector) (*Item, error)
 	// Delete an item
@@ -152,20 +153,20 @@ func _Bucket_Create_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Bucket_Save_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Bucket_Put_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NewItem)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BucketServer).Save(ctx, in)
+		return srv.(BucketServer).Put(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Bucket/Save",
+		FullMethod: "/proto.Bucket/Put",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BucketServer).Save(ctx, req.(*NewItem))
+		return srv.(BucketServer).Put(ctx, req.(*NewItem))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -233,8 +234,8 @@ var _Bucket_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Bucket_Create_Handler,
 		},
 		{
-			MethodName: "Save",
-			Handler:    _Bucket_Save_Handler,
+			MethodName: "Put",
+			Handler:    _Bucket_Put_Handler,
 		},
 		{
 			MethodName: "List",
@@ -256,15 +257,15 @@ var _Bucket_serviceDesc = grpc.ServiceDesc{
 func init() { proto1.RegisterFile("bucket.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 155 bytes of a gzipped FileDescriptorProto
+	// 153 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0xe2, 0x49, 0x2a, 0x4d, 0xce,
 	0x4e, 0x2d, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x05, 0x53, 0x52, 0xdc, 0x25, 0x95,
-	0x05, 0xa9, 0xc5, 0x10, 0x31, 0xa3, 0x6b, 0x8c, 0x5c, 0x6c, 0x4e, 0x60, 0x45, 0x42, 0x9a, 0x5c,
+	0x05, 0xa9, 0xc5, 0x10, 0x31, 0xa3, 0x2b, 0x8c, 0x5c, 0x6c, 0x4e, 0x60, 0x45, 0x42, 0x9a, 0x5c,
 	0x6c, 0xce, 0x45, 0xa9, 0x89, 0x25, 0xa9, 0x42, 0xfc, 0x10, 0x49, 0xbd, 0xe0, 0xd4, 0x9c, 0xd4,
 	0xe4, 0x92, 0xfc, 0x22, 0x29, 0x1e, 0xa8, 0x80, 0x6b, 0x6e, 0x41, 0x49, 0xa5, 0x12, 0x83, 0x90,
-	0x1a, 0x17, 0x4b, 0x70, 0x62, 0x59, 0xaa, 0x10, 0x1f, 0x54, 0xdc, 0x2f, 0xb5, 0xdc, 0xb3, 0x24,
-	0x35, 0x17, 0x43, 0x9d, 0x3a, 0x17, 0x8b, 0x4f, 0x66, 0x71, 0x09, 0x6e, 0x03, 0x41, 0xba, 0x8a,
-	0x95, 0x18, 0x84, 0x54, 0xb9, 0x98, 0xdd, 0x53, 0xb1, 0xa8, 0xe3, 0x46, 0x52, 0xa7, 0xc4, 0x00,
-	0x72, 0xa2, 0x4b, 0x6a, 0x4e, 0x2a, 0x11, 0x4e, 0x4c, 0x62, 0x03, 0x73, 0x8d, 0x01, 0x01, 0x00,
-	0x00, 0xff, 0xff, 0x10, 0x11, 0xae, 0xc4, 0x03, 0x01, 0x00, 0x00,
+	0x2a, 0x17, 0x73, 0x40, 0x69, 0x89, 0x10, 0x1f, 0x54, 0xd8, 0x2f, 0xb5, 0xdc, 0xb3, 0x24, 0x35,
+	0x17, 0x43, 0x99, 0x1a, 0x17, 0x8b, 0x4f, 0x66, 0x71, 0x09, 0xa6, 0x79, 0xdc, 0x50, 0x81, 0x90,
+	0xa2, 0xd4, 0x54, 0x88, 0x71, 0xee, 0xa9, 0x78, 0x94, 0x81, 0x0c, 0x57, 0x62, 0x00, 0x39, 0xd0,
+	0x25, 0x35, 0x27, 0x95, 0x08, 0x07, 0x26, 0xb1, 0x81, 0xb9, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0xb5, 0x65, 0xc5, 0xb6, 0x01, 0x01, 0x00, 0x00,
 }

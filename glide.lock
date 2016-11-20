@@ -1,5 +1,5 @@
-hash: 8b84bd05fc94889e8d481c58307303ac4b2a57e7a86c9467fca9b68ccca5ac82
-updated: 2016-11-06T15:01:00.838347653+01:00
+hash: 162d1e2746c11cf8259a0f45ce3277b1ebc54bee97373b0c1210ba55d71ee268
+updated: 2016-11-20T00:58:41.112834815+01:00
 imports:
 - name: github.com/asdine/storm
   version: fc722d51650c78f96f62fbc03ae3518791df486c
@@ -19,6 +19,8 @@ imports:
   - trees
   - trees/redblacktree
   - utils
+- name: github.com/favadi/protoc-go-inject-tag
+  version: 4d553ad953b0d5129ab7d28cb9836816b6532d5e
 - name: github.com/ghodss/yaml
   version: bea76d6a4713e18b7f5321a2b020738552def3ea
 - name: github.com/golang/protobuf

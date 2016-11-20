@@ -8,10 +8,10 @@ import "types.proto";
 service Bucket {
   // Create a bucket
   rpc Create (Selector) returns (Empty) {}
-  // Saves user data
-  rpc Save (NewItem) returns (Empty) {}
+  // Put user data
+  rpc Put (NewItem) returns (Empty) {}
   // List the bucket content
-  rpc List (Selector) returns (Items) {}
+  rpc List (Selector) returns (Tree) {}
   // Get an item
   rpc Get (Selector) returns (Item) {}
   // Delete an item

@@ -48,7 +48,7 @@ func (s *Server) Create(ctx context.Context, in *proto.Selector) (*proto.Empty, 
 }
 
 // Save an item to the bucket.
-func (s *Server) Save(ctx context.Context, in *proto.NewItem) (*proto.Empty, error) {
+func (s *Server) Put(ctx context.Context, in *proto.NewItem) (*proto.Empty, error) {
 	data := json.ToValidJSON(in.Value)
 
 	_, err := s.Store.Put(in.Path, data)
@@ -85,7 +85,7 @@ func (s *Server) Delete(ctx context.Context, in *proto.Selector) (*proto.Empty, 
 }
 
 // List the content of a bucket.
-func (s *Server) List(ctx context.Context, in *proto.Selector) (*proto.Items, error) {
+func (s *Server) List(ctx context.Context, in *proto.Selector) (*proto.Tree, error) {
 	var items []brazier.Item
 	var err error
 
@@ -98,13 +98,13 @@ func (s *Server) List(ctx context.Context, in *proto.Selector) (*proto.Items, er
 		return nil, err
 	}
 
-	return &proto.Items{Items: s.tree(items)}, nil
+	return &proto.Tree{Children: s.tree(items)}, nil
 }
 
-func (s *Server) tree(items []brazier.Item) []*proto.Item {
-	list := make([]*proto.Item, len(items))
+func (s *Server) tree(items []brazier.Item) []*proto.Node {
+	list := make([]*proto.Node, len(items))
 	for i := range items {
-		list[i] = &proto.Item{
+		list[i] = &proto.Node{
 			Key:   items[i].Key,
 			Value: items[i].Data,
 		}

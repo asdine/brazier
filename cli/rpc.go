@@ -21,7 +21,7 @@ func (r *rpcCli) Create(path string) error {
 }
 
 func (r *rpcCli) Put(path string, data []byte) error {
-	_, err := r.Client.Save(context.Background(), &proto.NewItem{Path: path, Value: data})
+	_, err := r.Client.Put(context.Background(), &proto.NewItem{Path: path, Value: data})
 	return err
 }
 
@@ -32,7 +32,7 @@ func (r *rpcCli) Get(path string, recursive bool) ([]byte, error) {
 			return nil, err
 		}
 
-		data, err := json.MarshalList(r.tree(resp.Items))
+		data, err := json.MarshalList(r.tree(resp.Children))
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func (r *rpcCli) Get(path string, recursive bool) ([]byte, error) {
 	return append(item.Value, '\n'), nil
 }
 
-func (r *rpcCli) tree(items []*proto.Item) []brazier.Item {
+func (r *rpcCli) tree(items []*proto.Node) []brazier.Item {
 	list := make([]brazier.Item, len(items))
 	for i, item := range items {
 		list[i].Key = item.Key
