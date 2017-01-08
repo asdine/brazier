@@ -25,6 +25,20 @@ func (m *Meta) String() string            { return proto.CompactTextString(m) }
 func (*Meta) ProtoMessage()               {}
 func (*Meta) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
+func (m *Meta) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *Meta) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*Meta)(nil), "internal.Meta")
 }

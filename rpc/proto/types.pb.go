@@ -33,6 +33,20 @@ func (m *Selector) String() string            { return proto1.CompactTextString(
 func (*Selector) ProtoMessage()               {}
 func (*Selector) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
 
+func (m *Selector) GetPath() string {
+	if m != nil {
+		return m.Path
+	}
+	return ""
+}
+
+func (m *Selector) GetRecursive() bool {
+	if m != nil {
+		return m.Recursive
+	}
+	return false
+}
+
 // Bucket to be created at the given path.
 type NewBucket struct {
 	Path string `protobuf:"bytes,1,opt,name=path" json:"path,omitempty"`
@@ -42,6 +56,13 @@ func (m *NewBucket) Reset()                    { *m = NewBucket{} }
 func (m *NewBucket) String() string            { return proto1.CompactTextString(m) }
 func (*NewBucket) ProtoMessage()               {}
 func (*NewBucket) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{2} }
+
+func (m *NewBucket) GetPath() string {
+	if m != nil {
+		return m.Path
+	}
+	return ""
+}
 
 // Item sent to be saved in the bucket.
 type NewItem struct {
@@ -54,6 +75,20 @@ func (m *NewItem) String() string            { return proto1.CompactTextString(m
 func (*NewItem) ProtoMessage()               {}
 func (*NewItem) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
 
+func (m *NewItem) GetPath() string {
+	if m != nil {
+		return m.Path
+	}
+	return ""
+}
+
+func (m *NewItem) GetValue() []byte {
+	if m != nil {
+		return m.Value
+	}
+	return nil
+}
+
 // Item informations.
 type Item struct {
 	Key   string `protobuf:"bytes,1,opt,name=key" json:"key,omitempty"`
@@ -64,6 +99,20 @@ func (m *Item) Reset()                    { *m = Item{} }
 func (m *Item) String() string            { return proto1.CompactTextString(m) }
 func (*Item) ProtoMessage()               {}
 func (*Item) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
+
+func (m *Item) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *Item) GetValue() []byte {
+	if m != nil {
+		return m.Value
+	}
+	return nil
+}
 
 // A Node can be either an item or a bucket.
 type Node struct {
@@ -76,6 +125,20 @@ func (m *Node) Reset()                    { *m = Node{} }
 func (m *Node) String() string            { return proto1.CompactTextString(m) }
 func (*Node) ProtoMessage()               {}
 func (*Node) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
+
+func (m *Node) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *Node) GetValue() []byte {
+	if m != nil {
+		return m.Value
+	}
+	return nil
+}
 
 func (m *Node) GetChildren() []*Node {
 	if m != nil {

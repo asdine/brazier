@@ -47,7 +47,7 @@ func (s *Server) Create(ctx context.Context, in *proto.Selector) (*proto.Empty, 
 	return &proto.Empty{}, nil
 }
 
-// Save an item to the bucket.
+// Put an item in the bucket.
 func (s *Server) Put(ctx context.Context, in *proto.NewItem) (*proto.Empty, error) {
 	data := json.ToValidJSON(in.Value)
 

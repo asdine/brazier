@@ -43,6 +43,27 @@ func (m *Item) String() string            { return proto.CompactTextString(m) }
 func (*Item) ProtoMessage()               {}
 func (*Item) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
+func (m *Item) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *Item) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *Item) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*Item)(nil), "internal.Item")
 }
