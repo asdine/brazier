@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"strings"
+
 	"github.com/asdine/brazier"
 	"github.com/asdine/brazier/json"
 )
@@ -8,9 +10,8 @@ import (
 // Cli handles command line requests
 type Cli interface {
 	Create(path string) error
-	Save(path string, data []byte) error
-	Get(path string) ([]byte, error)
-	List(path string, recursive bool) ([]brazier.Item, error)
+	Put(path string, data []byte) error
+	Get(path string, recursive bool) ([]byte, error)
 	Delete(path string) error
 }
 
@@ -22,28 +23,45 @@ func (c *cli) Create(path string) error {
 	return c.App.Store.CreateBucket(path)
 }
 
-func (c *cli) Save(path string, data []byte) error {
+func (c *cli) Put(path string, data []byte) error {
 	data = json.ToValidJSON(data)
 
-	_, err := c.App.Store.Save(path, data)
+	_, err := c.App.Store.Put(path, data)
 	return err
 }
 
-func (c *cli) Get(path string) ([]byte, error) {
-	item, err := c.App.Store.Get(path)
+func (c *cli) Get(path string, recursive bool) ([]byte, error) {
+	var err error
+	var data []byte
+
+	if strings.HasSuffix(path, "/") {
+		var items []brazier.Item
+
+		if recursive {
+			items, err = c.App.Store.Tree(path)
+		} else {
+			items, err = c.App.Store.List(path, 1, -1)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		data, err = json.MarshalListPretty(items)
+	} else {
+		item, err := c.App.Store.Get(path)
+		if err != nil {
+			return nil, err
+		}
+
+		data, err = json.PrettyPrintRaw(item.Data)
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	return append(item.Data, '\n'), nil
-}
-
-func (c *cli) List(path string, recursive bool) ([]brazier.Item, error) {
-	if recursive {
-		return c.App.Store.Tree(path)
-	}
-
-	return c.App.Store.List(path, 1, -1)
+	return append(data, '\n'), nil
 }
 
 func (c *cli) Delete(path string) error {

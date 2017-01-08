@@ -1,9 +1,12 @@
 package cli
 
 import (
+	"strings"
+
 	"golang.org/x/net/context"
 
 	"github.com/asdine/brazier"
+	"github.com/asdine/brazier/json"
 	"github.com/asdine/brazier/rpc/proto"
 )
 
@@ -17,30 +20,39 @@ func (r *rpcCli) Create(path string) error {
 	return err
 }
 
-func (r *rpcCli) Save(path string, data []byte) error {
-	_, err := r.Client.Save(context.Background(), &proto.NewItem{Path: path, Value: data})
+func (r *rpcCli) Put(path string, data []byte) error {
+	_, err := r.Client.Put(context.Background(), &proto.NewItem{Path: path, Value: data})
 	return err
 }
 
-func (r *rpcCli) Get(path string) ([]byte, error) {
-	item, err := r.Client.Get(context.Background(), &proto.Selector{Path: path})
+func (r *rpcCli) Get(path string, recursive bool) ([]byte, error) {
+	var err error
+	var data []byte
+
+	if strings.HasSuffix(path, "/") {
+		resp, err := r.Client.List(context.Background(), &proto.Selector{Path: path, Recursive: recursive})
+		if err != nil {
+			return nil, err
+		}
+
+		data, err = json.MarshalListPretty(r.tree(resp.Children))
+	} else {
+		item, err := r.Client.Get(context.Background(), &proto.Selector{Path: path})
+		if err != nil {
+			return nil, err
+		}
+
+		data, err = json.PrettyPrintRaw(item.Value)
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	return append(item.Value, '\n'), nil
+	return append(data, '\n'), nil
 }
 
-func (r *rpcCli) List(path string, recursive bool) ([]brazier.Item, error) {
-	resp, err := r.Client.List(context.Background(), &proto.Selector{Path: path, Recursive: recursive})
-	if err != nil {
-		return nil, err
-	}
-
-	return r.tree(resp.Items), nil
-}
-
-func (r *rpcCli) tree(items []*proto.Item) []brazier.Item {
+func (r *rpcCli) tree(items []*proto.Node) []brazier.Item {
 	list := make([]brazier.Item, len(items))
 	for i, item := range items {
 		list[i].Key = item.Key

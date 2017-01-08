@@ -1,6 +1,7 @@
 package boltdb
 
 import (
+	"path"
 	"strings"
 	"time"
 
@@ -31,6 +32,14 @@ func NewRegistry(path string, b brazier.Backend) (*Registry, error) {
 		return nil, errors.Wrap(err, "Can't open database")
 	}
 
+	// Initialize root bucket.
+	err = db.Save(&internal.Meta{
+		Key: "/",
+	})
+	if err != nil && err != storm.ErrAlreadyExists {
+		return nil, errors.Wrap(err, "failed to create bucket root bucket")
+	}
+
 	return &Registry{
 		DB:      db,
 		Backend: b,
@@ -51,18 +60,15 @@ func (r *Registry) Create(nodes ...string) error {
 	}
 	defer tx.Rollback()
 
-	var path string
+	key := "/"
 	for i, node := range nodes {
-		if path != "" {
-			path += "/"
-		}
-		path += node
+		key += node + "/"
 		err = tx.Save(&internal.Meta{
-			Key: path,
+			Key: key,
 		})
 
 		if err != nil && err != storm.ErrAlreadyExists {
-			return errors.Wrapf(err, "failed to create bucket at path %s", path)
+			return errors.Wrapf(err, "failed to create bucket at path %s", key)
 		}
 
 		// last node must not exist
@@ -82,16 +88,19 @@ func (r *Registry) Create(nodes ...string) error {
 // Bucket returns the selected bucket from the Backend.
 func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 	var meta internal.Meta
+	key := "/"
 
-	path := strings.Join(nodes, "/")
+	if len(nodes) > 0 {
+		key = path.Join("/", strings.Join(nodes, "/")) + "/"
+	}
 
-	err := r.DB.One("Key", path, &meta)
+	err := r.DB.One("Key", key, &meta)
 	if err == storm.ErrNotFound {
 		return nil, store.ErrNotFound
 	}
 
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to fetch bucket at path %s", path)
+		return nil, errors.Wrapf(err, "failed to fetch bucket at path %s", key)
 	}
 
 	return r.Backend.Bucket(nodes...)
@@ -101,12 +110,15 @@ func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 func (r *Registry) Children(nodes ...string) ([]brazier.Item, error) {
 	var metas []internal.Meta
 
-	path := strings.Join(nodes, "/")
+	prefix := path.Join("/", strings.Join(nodes, "/"))
+	if !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
+	}
 
 	err := r.DB.Select(
 		q.NewFieldMatcher(
 			"Key",
-			&childMatcher{prefix: path},
+			&childMatcher{prefix: prefix},
 		),
 	).Find(&metas)
 	if err != nil {
@@ -114,18 +126,18 @@ func (r *Registry) Children(nodes ...string) ([]brazier.Item, error) {
 			return nil, store.ErrNotFound
 		}
 
-		return nil, errors.Wrapf(err, "failed to fetch bucket children at path %s", path)
+		return nil, errors.Wrapf(err, "failed to fetch bucket children at path %s", prefix)
 	}
 
 	tree := keyTree{
 		children: make(map[string]*keyTree),
 	}
 	for _, m := range metas {
-		key := strings.TrimPrefix(m.Key, path)
+		key := strings.TrimPrefix(m.Key, prefix)
 		if key == "" {
 			continue
 		}
-		key = strings.TrimPrefix(key, "/")
+		key = strings.Trim(key, "/")
 
 		new := childrenToTree(tree.children, strings.Split(key, "/")...)
 		if new != nil {

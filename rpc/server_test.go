@@ -43,7 +43,7 @@ func TestCreate(t *testing.T) {
 
 	c := proto.NewBucketClient(conn)
 
-	_, err := c.Create(context.Background(), &proto.Selector{Path: "a/b/c"})
+	_, err := c.Create(context.Background(), &proto.Selector{Path: "a/b/c/"})
 	require.NoError(t, err)
 
 	require.True(t, r.CreateInvoked)
@@ -51,7 +51,7 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestSave(t *testing.T) {
+func TestPut(t *testing.T) {
 	r := mock.NewRegistry(mock.NewBackend())
 	s := store.NewStore(r)
 	conn, cleanup := newServer(t, s)
@@ -59,7 +59,7 @@ func TestSave(t *testing.T) {
 
 	c := proto.NewBucketClient(conn)
 
-	_, err := c.Save(context.Background(), &proto.NewItem{Path: "a/b/c", Value: []byte("data")})
+	_, err := c.Put(context.Background(), &proto.NewItem{Path: "a/b/c", Value: []byte("data")})
 	require.NoError(t, err)
 
 	require.True(t, r.BucketInvoked)
@@ -89,9 +89,9 @@ func TestList(t *testing.T) {
 	r.BucketInvoked = false
 
 	t.Run("list", func(t *testing.T) {
-		resp, err := c.List(context.Background(), &proto.Selector{Path: "a/b/c"})
+		resp, err := c.List(context.Background(), &proto.Selector{Path: "a/b/c/"})
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 0)
+		require.Len(t, resp.Children, 0)
 		require.True(t, r.BucketInvoked)
 		require.True(t, b.PageInvoked)
 
@@ -107,10 +107,10 @@ func TestList(t *testing.T) {
 			list = append(list, item.Data)
 		}
 
-		resp, err = c.List(context.Background(), &proto.Selector{Path: "a/b/c"})
+		resp, err = c.List(context.Background(), &proto.Selector{Path: "a/b/c/"})
 		require.NoError(t, err)
 		for i := 0; i < 20; i++ {
-			require.Equal(t, list[i], resp.Items[i].Value)
+			require.Equal(t, list[i], resp.Children[i].Value)
 		}
 		require.True(t, r.BucketInvoked)
 		require.True(t, b.PageInvoked)
@@ -120,14 +120,14 @@ func TestList(t *testing.T) {
 	})
 
 	t.Run("tree", func(t *testing.T) {
-		resp, err := c.List(context.Background(), &proto.Selector{Path: "a", Recursive: true})
+		resp, err := c.List(context.Background(), &proto.Selector{Path: "a/", Recursive: true})
 		require.NoError(t, err)
-		require.Len(t, resp.Items, 1)
-		require.Equal(t, "b", resp.Items[0].Key)
-		require.Len(t, resp.Items[0].Children, 1)
-		require.Equal(t, "c", resp.Items[0].Children[0].Key)
-		require.Len(t, resp.Items[0].Children[0].Children, 20)
-		require.Equal(t, "key0", resp.Items[0].Children[0].Children[0].Key)
+		require.Len(t, resp.Children, 1)
+		require.Equal(t, "b/", resp.Children[0].Key)
+		require.Len(t, resp.Children[0].Children, 1)
+		require.Equal(t, "c/", resp.Children[0].Children[0].Key)
+		require.Len(t, resp.Children[0].Children[0].Children, 20)
+		require.Equal(t, "key0", resp.Children[0].Children[0].Children[0].Key)
 	})
 }
 

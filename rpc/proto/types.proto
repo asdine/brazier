@@ -26,10 +26,16 @@ message NewItem {
 message Item {
   string key = 1;
   bytes value = 2;
-  repeated Item children = 3;
 }
 
-// List of items.
-message Items {
-  repeated Item items = 1;
+// A Node can be either an item or a bucket.
+message Node {
+  string key = 1;
+  bytes value = 2;
+  repeated Node children = 3;
+}
+
+// Tree of Nodes.
+message Tree {
+  repeated Node children = 1;
 }

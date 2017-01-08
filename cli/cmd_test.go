@@ -30,11 +30,11 @@ func TestCliGet(t *testing.T) {
 	testGet(t, app)
 }
 
-func TestCliListItems(t *testing.T) {
+func TestCliGetListItems(t *testing.T) {
 	app, cleanup := testableApp(t)
 	defer cleanup()
 
-	testListItems(t, app)
+	testGetListItems(t, app)
 }
 
 func TestCliDelete(t *testing.T) {
@@ -65,11 +65,11 @@ func TestCliRPCGet(t *testing.T) {
 	testGet(t, app)
 }
 
-func TestCliRPCListItems(t *testing.T) {
+func TestCliRPCGetListItems(t *testing.T) {
 	app, cleanup := testableAppRPC(t)
 	defer cleanup()
 
-	testListItems(t, app)
+	testGetListItems(t, app)
 }
 
 func TestCliRPCDelete(t *testing.T) {
@@ -88,15 +88,15 @@ func testCreate(t *testing.T, app *app) {
 	require.Error(t, err)
 	require.EqualError(t, err, "Bucket name is missing")
 
-	err = c.RunE(nil, []string{"my bucket/my other bucket"})
+	err = c.RunE(nil, []string{"my bucket/my other bucket/"})
 	require.NoError(t, err)
-	require.Equal(t, "Bucket \"my bucket/my other bucket\" successfully created.\n", out.String())
+	require.Equal(t, "Bucket \"my bucket/my other bucket/\" successfully created.\n", out.String())
 }
 
 func testSave(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
-	s := NewSaveCmd(app)
+	s := NewPutCmd(app)
 
 	err := s.RunE(nil, nil)
 	require.EqualError(t, err, "Wrong number of arguments")
@@ -109,8 +109,8 @@ func testSave(t *testing.T, app *app) {
 func testGet(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
-	s := NewSaveCmd(app)
-	g := NewGetCmd(app)
+	s := NewPutCmd(app)
+	g := NewGetCmd(app, false)
 
 	tests := map[string][]string{
 		"\"abc\"\n":                  []string{"checkJson/string", "abc"},
@@ -126,64 +126,60 @@ func testGet(t *testing.T, app *app) {
 		out.Reset()
 		err = g.RunE(nil, cmds[:1])
 		require.NoError(t, err)
-		require.Equal(t, expected, out.String())
+		require.JSONEq(t, expected, out.String())
 		out.Reset()
 	}
 }
 
-func testListItems(t *testing.T, app *app) {
+func testGetListItems(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
-	s := NewSaveCmd(app)
-	l := NewListCmd(app, false)
-	lr := NewListCmd(app, true)
+	s := NewPutCmd(app)
+	g := NewGetCmd(app, false)
+	gr := NewGetCmd(app, true)
 
-	tests := map[string][]string{
-		"\"abc\"":                  []string{"test/checkJson/string", "abc"},
-		"\"bcd\"":                  []string{"test/checkJson/json string", "\"bcd\""},
-		"10":                       []string{"test/checkJson/number", "10"},
-		"{\"a\":\"b\"}":            []string{"test/checkJson/object", `{"a": "b"}`},
-		"[\"a\",10,{\"c\":\"d\"}]": []string{"test/checkJson/array", `["a", 10, {"c": "d"}]`},
+	tests := []map[string][]string{
+		{"\"abc\"": []string{"test/checkJson/string", "abc"}},
+		{"\"bcd\"": []string{"test/checkJson/json string", "\"bcd\""}},
+		{"10": []string{"test/checkJson/number", "10"}},
+		{"{\"a\":\"b\"}": []string{"test/checkJson/object", `{"a": "b"}`}},
+		{"[\"a\",10,{\"c\":\"d\"}]": []string{"test/checkJson/array", `["a", 10, {"c": "d"}]`}},
 	}
 
-	var expected bytes.Buffer
+	var expected []map[string]interface{}
+	for _, test := range tests {
+		for output, cmds := range test {
+			err := s.RunE(nil, cmds)
+			require.NoError(t, err)
 
-	expected.WriteByte('[')
-	first := true
-	for output, cmds := range tests {
-		err := s.RunE(nil, cmds)
-		require.NoError(t, err)
-		if !first {
-			expected.WriteByte(',')
-		} else {
-			first = false
+			kv := make(map[string]interface{})
+			kv["key"] = strings.TrimPrefix(cmds[0], "test/checkJson/")
+			v := json.RawMessage(output)
+			kv["value"] = &v
+			expected = append(expected, kv)
 		}
-		expected.WriteString(`{"key":"`)
-		expected.WriteString(strings.TrimPrefix(cmds[0], "test/checkJson/"))
-		expected.WriteString(`","value":`)
-		expected.WriteString(output)
-		expected.WriteString(`}`)
 	}
-	expected.WriteString("]\n")
 
 	out.Reset()
-	err := l.RunE(nil, []string{"test/checkJson"})
+	err := g.RunE(nil, []string{"test/checkJson/"})
 	require.NoError(t, err)
-	require.Equal(t, expected.String(), out.String())
+	rawExpected, err := json.Marshal(expected)
+	require.NoError(t, err)
+	require.JSONEq(t, string(rawExpected), out.String())
 
 	out.Reset()
-	err = l.RunE(nil, []string{"some bucket"})
+	err = g.RunE(nil, []string{"some bucket/"})
 	require.Error(t, err)
 
 	out.Reset()
-	err = lr.RunE(nil, []string{"test"})
+	err = gr.RunE(nil, []string{"test/"})
 	require.NoError(t, err)
 	var output []interface{}
 	err = json.Unmarshal(out.Bytes(), &output)
 	require.NoError(t, err)
 	require.Len(t, output, 1)
 	item := output[0].(map[string]interface{})
-	require.Equal(t, "checkJson", item["key"].(string))
+	require.Equal(t, "checkJson/", item["key"].(string))
 	list := item["value"].([]interface{})
 	require.Len(t, list, 5)
 }
@@ -191,7 +187,7 @@ func testListItems(t *testing.T, app *app) {
 func testDelete(t *testing.T, app *app) {
 	out := app.Out.(*bytes.Buffer)
 
-	s := NewSaveCmd(app)
+	s := NewPutCmd(app)
 	d := NewDeleteCmd(app)
 
 	err := s.RunE(nil, []string{"a/b/c/d", "my value"})

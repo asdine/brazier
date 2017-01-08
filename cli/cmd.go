@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/asdine/brazier/json"
 	"github.com/spf13/cobra"
 )
 
@@ -28,10 +27,9 @@ func New() *cobra.Command {
 
 	cmd.SetOutput(os.Stdout)
 	cmd.AddCommand(NewCreateCmd(&a))
-	cmd.AddCommand(NewSaveCmd(&a))
-	cmd.AddCommand(NewGetCmd(&a))
+	cmd.AddCommand(NewPutCmd(&a))
+	cmd.AddCommand(NewGetCmd(&a, false))
 	cmd.AddCommand(NewDeleteCmd(&a))
-	cmd.AddCommand(NewListCmd(&a, false))
 	cmd.AddCommand(NewServerCmd(&a))
 
 	cmd.PersistentFlags().StringVar(&a.ConfigPath, "config", "", "config file")
@@ -68,20 +66,20 @@ brazier create food/drinks/sodas`,
 }
 
 // NewSaveCmd creates a "Save" cli command
-func NewSaveCmd(a *app) *cobra.Command {
+func NewPutCmd(a *app) *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "save PATH",
-		Short: "Save a value in a bucket",
-		Long: `Save a value in a bucket. A value can be anything.
+		Use:   "put PATH",
+		Short: "Set or replace a value in a bucket",
+		Long: `Set or replace a value in a bucket. A value can be anything.
 JSON values are automatically detected.`,
-		Example: `brazier save friends/john/phone 555-666
-brazier save users/1 '{"username": "john"}'`,
+		Example: `brazier put friends/john/phone 555-666
+brazier put users/1 '{"username": "john"}'`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 2 {
 				return errors.New("Wrong number of arguments")
 			}
 
-			err := a.Cli.Save(args[0], []byte(args[1]))
+			err := a.Cli.Put(args[0], []byte(args[1]))
 			if err != nil {
 				return err
 			}
@@ -95,17 +93,19 @@ brazier save users/1 '{"username": "john"}'`,
 }
 
 // NewGetCmd creates a "Get" cli command
-func NewGetCmd(a *app) *cobra.Command {
+func NewGetCmd(a *app, recByDefault bool) *cobra.Command {
+	var recursive bool
+
 	cmd := cobra.Command{
 		Use:   "get PATH",
-		Short: "Get a value from a bucket",
-		Long:  `Get a value from a bucket.`,
+		Short: "Get a value from a key or list bucket content",
+		Long:  `Get a value from a key or list bucket content.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("Wrong number of arguments")
 			}
 
-			out, err := a.Cli.Get(args[0])
+			out, err := a.Cli.Get(args[0], recursive)
 			if err != nil {
 				return err
 			}
@@ -115,39 +115,7 @@ func NewGetCmd(a *app) *cobra.Command {
 		},
 	}
 
-	return &cmd
-}
-
-// NewListCmd creates a "List" cli command
-func NewListCmd(a *app, recByDefault bool) *cobra.Command {
-	var recursive bool
-
-	cmd := cobra.Command{
-		Use:   "list PATH",
-		Short: "List bucket content",
-		Long:  "List bucket content.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) != 1 {
-				return errors.New("Wrong number of arguments")
-			}
-
-			items, err := a.Cli.List(args[0], recursive)
-			if err != nil {
-				return err
-			}
-
-			data, err := json.MarshalList(items)
-			if err != nil {
-				return err
-			}
-
-			a.Out.Write(data)
-			a.Out.Write([]byte("\n"))
-			return nil
-		},
-	}
-
-	cmd.Flags().BoolVarP(&recursive, "recursive", "r", recByDefault, "display all the items recursively from the given path.")
+	cmd.Flags().BoolVarP(&recursive, "recursive", "r", recByDefault, "display all the items recursively from the given bucket path.")
 
 	return &cmd
 }

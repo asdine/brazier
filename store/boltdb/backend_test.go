@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/asdine/brazier/store/boltdb"
-	"github.com/asdine/storm"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,19 +21,6 @@ func preparePath(t errorHandler, dbName string) (string, func()) {
 	}
 
 	return filepath.Join(dir, dbName), func() {
-		os.RemoveAll(dir)
-	}
-}
-
-func prepareDB(t *testing.T, dbName string, opts ...func(*storm.DB) error) (*storm.DB, func()) {
-	dir, err := ioutil.TempDir(os.TempDir(), "brazier")
-	require.NoError(t, err)
-
-	db, err := storm.Open(filepath.Join(dir, dbName), opts...)
-	require.NoError(t, err)
-
-	return db, func() {
-		db.Close()
 		os.RemoveAll(dir)
 	}
 }

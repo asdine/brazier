@@ -19,7 +19,7 @@ type bucketMeta struct {
 
 // Registry is a mock Registry.
 type Registry struct {
-	Buckets         []*bucketMeta
+	BucketTree      bucketMeta
 	Backend         brazier.Backend
 	index           []string
 	CreateInvoked   bool
@@ -36,7 +36,7 @@ func (r *Registry) Create(nodes ...string) error {
 		return store.ErrForbidden
 	}
 
-	buckets := &r.Buckets
+	buckets := &r.BucketTree.children
 	var found bool
 
 	for _, node := range nodes {
@@ -70,10 +70,6 @@ func (r *Registry) Create(nodes ...string) error {
 func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 	r.BucketInvoked = true
 
-	if len(nodes) == 0 {
-		return nil, store.ErrForbidden
-	}
-
 	_, err := r.bucket(nodes...)
 	if err != nil {
 		return nil, err
@@ -83,8 +79,12 @@ func (r *Registry) Bucket(nodes ...string) (brazier.Bucket, error) {
 }
 
 func (r *Registry) bucket(nodes ...string) (*bucketMeta, error) {
-	buckets := r.Buckets
+	buckets := r.BucketTree.children
 	var found *bucketMeta
+
+	if len(nodes) == 0 {
+		return &r.BucketTree, nil
+	}
 
 	for _, node := range nodes {
 		found = nil

@@ -34,7 +34,7 @@ func TestRegistry(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = r.Bucket()
-	require.Equal(t, store.ErrForbidden, err)
+	require.NoError(t, err)
 
 	_, err = r.Bucket("a", "b")
 	require.NoError(t, err)
