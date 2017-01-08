@@ -1,3 +1,3 @@
 package brazier
 
-const version = "0.3.0-DEV"
+const version = "0.3.0"
