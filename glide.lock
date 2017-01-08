@@ -1,8 +1,8 @@
-hash: 162d1e2746c11cf8259a0f45ce3277b1ebc54bee97373b0c1210ba55d71ee268
-updated: 2016-11-20T00:58:41.112834815+01:00
+hash: 498d9df6e5d926bd8bbab8327f00505fc9f8cfa7196d4561a672cc854b270382
+updated: 2017-01-08T15:11:50.074156435+01:00
 imports:
 - name: github.com/asdine/storm
-  version: fc722d51650c78f96f62fbc03ae3518791df486c
+  version: c40e8d95426a80b23797ca9818ff2142a9401ddf
   subpackages:
   - codec
   - codec/json
@@ -19,25 +19,22 @@ imports:
   - trees
   - trees/redblacktree
   - utils
-- name: github.com/favadi/protoc-go-inject-tag
-  version: 4d553ad953b0d5129ab7d28cb9836816b6532d5e
 - name: github.com/ghodss/yaml
-  version: bea76d6a4713e18b7f5321a2b020738552def3ea
+  version: 04f313413ffd65ce25f2541bfd2b2ceec5c0908c
 - name: github.com/golang/protobuf
-  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
+  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
   subpackages:
   - proto
-  - protoc-gen-go
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/spf13/cobra
-  version: 6e91dded25d73176bf7f60b40dd7aa1f0bf9be8d
+  version: 1dd5ff2e11b6dca62fdcb275eb804b94607d8b06
 - name: github.com/spf13/pflag
-  version: 5ccb023bc27df288a957c5e994cd44fd19619465
+  version: 25f8b5b07aece3207895bf19f7ab517eb3b22a40
 - name: golang.org/x/net
-  version: 55a3084c9119aeb9ba2437d595b0a7e9cb635da9
+  version: b7883d29650d340156352196ef5e434db117757b
   subpackages:
   - context
   - http2
@@ -47,11 +44,18 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/sys
-  version: c200b10b5d5e122be351b67af224adc6128af5bf
+  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
   subpackages:
   - unix
+- name: golang.org/x/text
+  version: 44f4f658a783b0cee41fe0a23b8fc91d9c120558
+  subpackages:
+  - secure/bidirule
+  - transform
+  - unicode/bidi
+  - unicode/norm
 - name: google.golang.org/grpc
-  version: 777daa17ff9b5daef1cfdf915088a2ada3332bf0
+  version: 708a7f9f3283aa2d4f6132d287d78683babe55c8
   subpackages:
   - codes
   - credentials
@@ -60,6 +64,8 @@ imports:
   - metadata
   - naming
   - peer
+  - stats
+  - tap
   - transport
 - name: gopkg.in/tylerb/graceful.v1
   version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
